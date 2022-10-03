@@ -40,3 +40,10 @@ target_include_directories(
     $<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/src>
 )
 
+# Examples ====================================================================
+# option(EXAMPLES "Examples" ON)
+# message(STATUS "Building examples is ${EXAMPLES}")
+# if (EXAMPLES)
+#     add_subdirectory(examples)
+# endif()
+

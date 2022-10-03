@@ -1,3 +1,8 @@
+/**************************************\
+ * The MIT License (MIT)
+ * Copyright (c) 2022 Kevin Walchko
+ * see LICENSE for full details
+\**************************************/
 #pragma once
 
 /********************************************
@@ -6,9 +11,7 @@ Quaternion complementary filter:
 https://ahrs.readthedocs.io/en/latest/filters/complementary.html
 *********************************************/
 
-#include "lsm6dsox/lsm6dsox.h"
-#include <Arduino.h>
-#include <cmath>
+#include "lsm6dsox/lsm6dsox.hpp"
 #include "timers.hpp"
 #include "units.hpp"
 

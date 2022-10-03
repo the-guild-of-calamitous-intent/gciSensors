@@ -2,9 +2,9 @@
 
 // https://github.com/esp8266/Arduino/blob/master/libraries/Wire/Wire.h
 
-#ifndef TwoWire_h
+// #ifndef TwoWire_h
+// #define TwoWire_h
 
-#include <stdint.h>
 #include <stdint.h>
 #include <stddef.h>
 
@@ -36,4 +36,4 @@ class TwoWire {
 
 extern TwoWire Wire;
 
-#endif
+// #endif

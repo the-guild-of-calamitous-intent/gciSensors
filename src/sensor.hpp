@@ -1,3 +1,8 @@
+/**************************************\
+ * The MIT License (MIT)
+ * Copyright (c) 2022 Kevin Walchko
+ * see LICENSE for full details
+\**************************************/
 #pragma once
 
 #include <Arduino.h>
@@ -117,7 +122,7 @@ public:
     return value;
   }
 
-  inline bool checkErr(int val) { return (val < 0) ? false : true; }
+  // inline bool checkErr(int val) { return (val < 0) ? false : true; }
 
   TwoWire *i2c;
   uint8_t addr;
