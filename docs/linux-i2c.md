@@ -85,13 +85,18 @@ class TwoWire {
   public:
   TwoWire() {
     const char* device = "/dev/i2c-1"; // -0 is used for other stuff
-    if ((fd = open (device, O_RDWR)) < 0) printf("Fail open %s\n", device);
+    if ((fd = open (device, O_RDWR)) < 0) {
+      printf("Fail open %s\n", device);
+		}
   }
   
   // set handle as slave address
-  void beginTransmission(uint8_t address) {
-    addr = address;
-    if (ioctl (fd, I2C_SLAVE, addr) < 0) printf("write error\n");
+  void beginTransmission(uint8_t addr) {
+    //addr = address;
+    if (ioctl (fd, I2C_SLAVE, addr) < 0) {
+      printf("write error\n");
+      close(fd); // something is wrong, so stop?
+    }
   }
   
   uint8_t endTransmission(bool sendStop) {
@@ -100,11 +105,12 @@ class TwoWire {
   
   uint8_t write(uint8_t data) {
     // pack buffer
+    i2c_smbus_write_byte_data
   }
   
   // how do I get reg into this???
   void readBlock(uint8_t reg, uint8_t length) {
-    if (i2c_smbus_read_block_data(fd, addr, length, buffer) < 0) printf("block read error\n");
+    if (i2c_smbus_read_block_data(fd, reg, length, buffer) < 0) printf("block read error\n");
     // could also close fd on error and exit?
   }
   
@@ -112,7 +118,7 @@ class TwoWire {
   
   protected:
   uint8_t buffer[32];
-  uint8_t addr;
+  //uint8_t addr; // dont' need to save??
                 
 };
     
