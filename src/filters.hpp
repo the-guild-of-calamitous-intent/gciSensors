@@ -64,6 +64,8 @@ struct rpy_t {
   float r, p, y;
 };
 
+/*!
+*/
 class QCF {
   public:
   QCF(float a=0.02f): alpha(a) {}
