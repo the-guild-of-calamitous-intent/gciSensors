@@ -6,6 +6,7 @@
 #pragma once
 
 #include <math.h>
+#include <algorithm>  // std::min
 #include "units.hpp"
 
 namespace Earth {
@@ -17,6 +18,8 @@ constexpr float SEMI_MAJOR_AXIS_KM = SEMI_MAJOR_AXIS_M / 1000.0f; // Km
 constexpr float STD_PRESSURE_PA = 101325.0f;	// Pa
 constexpr float SPIN_RATE_RPS = 7.2921150e-5f; // rad / sec
 constexpr float G0 = 9.7803253359; // Gravity [m/sec^2]
+
+using std::min;
 
 // change to lla_t??
 struct gps_t {

@@ -46,17 +46,18 @@ public:
   bits - how many bits for mask
   shift - how much to shift data by
   */
+  // bool updateCtrlReg()
   bool Write(const uint8_t reg, const uint8_t data, const uint8_t bits,
              const uint8_t shift) {
     uint8_t val;
     if (!ReadRegisters(reg, 1, &val)) {
       return false;
     }
-    uint8_t mask_ = (1 << (bits)) - 1;
-    uint8_t data_ = data & mask_;
-    mask_ <<= shift;
-    val &= ~mask_;
-    val |= data_ << shift;
+    uint8_t mask = (1 << (bits)) - 1;
+    uint8_t d = data & mask;
+    mask <<= shift;
+    val &= ~mask;
+    val |= d << shift;
     return WriteRegister(reg, val);
   }
 

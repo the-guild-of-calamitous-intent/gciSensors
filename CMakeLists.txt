@@ -36,14 +36,42 @@ add_library(${PROJECT_NAME}
 )
 target_include_directories(
     ${PROJECT_NAME} PUBLIC
-    $<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/mock>
+    #$<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/mock>
+    $<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/linux>
     $<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/src>
 )
 
+target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+        wirelib
+)
+
+if (UNIX)
+    if (APPLE)
+        message(STATUS "Detected APPLE, using mock i2c")
+        add_subdirectory(mock)
+        target_include_directories(
+            ${PROJECT_NAME} PUBLIC
+            $<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/mock>
+            $<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/src>
+        )
+    else ()
+        message(STATUS "Detected LINUX, using linux i2c")
+        add_subdirectory(linux)
+        target_include_directories(
+            ${PROJECT_NAME} PUBLIC
+            $<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/linux>
+            $<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/src>
+        )
+    endif (APPLE)
+endif (UNIX)
+
+# add_subdirectory(examples)
+
 # Examples ====================================================================
-# option(EXAMPLES "Examples" ON)
-# message(STATUS "Building examples is ${EXAMPLES}")
-# if (EXAMPLES)
-#     add_subdirectory(examples)
-# endif()
+option(EXAMPLES "Examples" ON)
+message(STATUS "Building examples is ${EXAMPLES}")
+if (EXAMPLES)
+    add_subdirectory(examples)
+endif()
 

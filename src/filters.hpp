@@ -64,6 +64,8 @@ struct rpy_t {
   float r, p, y;
 };
 
+
+#if 0
 /*!
 */
 class QCF {
@@ -97,6 +99,8 @@ class QCF {
   Quaternion qw;  // quaternion from gyros
   Quaternion qam; // quaternion from accels
 };
+
+#endif
 
 
 ////////////////////////////////////////////////////////////
