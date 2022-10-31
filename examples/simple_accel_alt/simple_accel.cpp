@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 
+using namespace std;
 using namespace LSM6DSOX;
 
 // gciLSM6DSOX IMU(&Wire, LSM6DSOX_ADDRESS); // if not using default address
@@ -21,8 +22,8 @@ enum data_type {
 // ComplementaryFilter rpycf;
 
 void setup() {
-  // Serial.begin(1000000);
-  // while (!Serial) delay(10);
+  Serial.begin(1000000);
+  while (!Serial) delay(10);
 
   Wire.begin();
   Wire.setClock(400000);
@@ -37,7 +38,7 @@ void loop() {
   sox_t s = IMU.read();
 
   if (s.ok == false) {
-    Serial.println("crap");
+    Serial.println("crap: " + to_string(s.ax));
     return;
   }
 

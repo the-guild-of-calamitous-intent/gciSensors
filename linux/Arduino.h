@@ -25,18 +25,37 @@ static void delayMicroseconds(uint32_t us) {usleep(us);}
 
 struct SerialPort {
   void begin(int r) {}
+
+  // void print(int a) {
+  //   std::cout << a;
+  // }
+
   void print(std::string a) {
     std::cout << a;
   }
+
   void print(float a, int v=0) {
     std::cout << a;
   }
+
+  // void println(unsigned long a) {
+  //   std::cout << a << std::endl;
+  // }
+
+  // void println(int a) {
+  //   std::cout << a << std::endl;
+  // }
+
   void println(float a, int v=0) {
     std::cout << a << std::endl;
   }
+
   void println(std::string a) {
     std::cout << a << std::endl;
   }
+
+  // this isn't real, so always return "true"
+  inline explicit operator bool() const noexcept {return true;}
 };
 
 extern SerialPort Serial;
