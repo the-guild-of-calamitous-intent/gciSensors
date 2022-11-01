@@ -33,6 +33,7 @@ add_library(${PROJECT_NAME}
     src/bmp390/bosch/bmp3imp.cpp
     src/lis3mdl/lis3mdl.cpp
     src/lsm6dsox/lsm6dsox.cpp
+    src/sensor.cpp
 )
 target_include_directories(
     ${PROJECT_NAME} PUBLIC
