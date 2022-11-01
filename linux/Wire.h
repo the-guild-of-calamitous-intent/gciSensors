@@ -67,108 +67,188 @@ extern "C" {
     #include <i2c/smbus.h>
 }
 
-constexpr uint8_t I2C_BUFFER_SIZE = 32;
+constexpr uint8_t I2C_MAX_BUFFER_SIZE = 32;
 
-// #ifndef I2C_SET_SPEED
-// #define I2C_SET_SPEED 0x0758  // Set I2C Bus Speed - is this right?
-// #endif
+
 
 class TwoWire {
   public:
-  TwoWire(): counter(0), fd(0), readcntr(0) {}
-  ~TwoWire() {
-    end();
-  }
-
-  void end() {
-    if (fd >= 0) close(fd);
-    printf("TwoWire bye\n");
-  }
-
-  void    begin(int sda=0, int scl=0, uint8_t address=0) {
+  TwoWire(){
     const char* device = "/dev/i2c-1"; // -0 is used for other stuff
     if ((fd = open (device, O_RDWR)) < 0) {
-      char err[32];
-      sprintf(err, "Fail open %s\n", device);
-      perror(err);
+      printf("Fail open %s\n", device);
 		}
   }
 
-  // NOT sure this works, either 100000 or 400000 ... just set /boot/config.txt to 400k
-  // void    setClock(uint32_t speed) {
-  //   ioctl(fd, I2C_SET_SPEED, speed);
-  // }
-  void    setClock(uint32_t speed) {} // just set /boot/config.txt to 400k
-  void    setClockStretchLimit(uint32_t) {}
+  void begin() {}
+  void setClock(uint32_t speed) {} // just set /boot/config.txt to 400k
 
-  void    beginTransmission(uint8_t addr) {
-    counter = 0;
+  void set(uint8_t address) {
+    addr = address;
     if (ioctl (fd, I2C_SLAVE, addr) < 0) {
       printf("write error\n");
       close(fd); // something is wrong, so stop?
     }
   }
 
-  uint8_t endTransmission(uint8_t stop=0) {
-    // i2c_smbus_write_block_data(fd,)
-    ssize_t num = ::write(fd, buffer, counter);
-    if (num <= 0) printf("endTransmition::write failed\n");
-    return 0;
-  }
+  bool read(const uint8_t reg, const uint8_t count, uint8_t *const data) {
+    // if (count > I2C_MAX_BUFFER_SIZE) count = I2C_MAX_BUFFER_SIZE;
 
-  uint8_t  requestFrom(uint8_t addr, uint8_t length, uint8_t sendStop=0) {
-    int num = 0;
-    // if((num = i2c_smbus_read_i2c_block_data(fd, addr, length, buffer)) < 0) printf("block read error\n");
+    // send out to sensor
+    msgs[0].addr = addr;
+    msgs[0].flags = 0;
+    msgs[0].len = 1;
+    msgs[0].buf = outbuf;
+    outbuf[0] = reg;
 
-    // num = ::read(fd, buffer, counter);
-    // if (num < 0) printf("requestFrom::error on read\n");
-    // else printf(">> %f\n", buffer[0]);
-    // readcntr = 0;
+    // read in from sensor
+    msgs[1].addr = addr;
+    msgs[1].flags = I2C_M_RD; // read data, from slave to master
+    msgs[1].len = count;
+    msgs[1].buf = data; //inbuf;
 
-    for (int i=0; i < length; i++) { // FIXME: do block read above ... why isn't this working?
-      num += ::read(fd, &buffer[i], 1);
+    i2c_data.msgs = msgs;
+    i2c_data.nmsgs = 2;
+
+    if (ioctl(fd, I2C_RDWR, &i2c_data) < 0) {
+        perror("ioctl(I2C_RDWR) in i2c_read");
+        return false;
     }
-    return uint8_t(num);
-  }
-  // uint8_t requestFrom(int, int, int=0) {return 0;}
 
-  uint8_t write(uint8_t data) {
-    buffer[counter++] = data;
-    return 1;
+    return true;
   }
 
-  uint8_t write(const uint8_t* data, uint8_t len) {
-    memcpy(buffer, data, len);
-    counter += len;
-    return len;
+  bool write(const uint8_t reg, const uint8_t data) {
+    outbuf[0] = reg;
+    outbuf[1] = data;
+    // memcpy(&outbuf[1], &data, len);
+
+    msgs[0].addr = addr;
+    msgs[0].flags = 0;
+    msgs[0].len = 2;
+    msgs[0].buf = outbuf;
+
+    i2c_data.msgs = msgs;
+    i2c_data.nmsgs = 1;
+
+    if (ioctl(fd, I2C_RDWR, &i2c_data) < 0) {
+        perror("ioctl(I2C_RDWR) in i2c_write");
+        return false;
+    }
+
+    return true;
   }
 
-  uint8_t read(void) {
-    if (readcntr >= counter) return 0x00;
-    return buffer[readcntr++];
-  }
-
-  // read block of data
-  uint8_t readBlock(uint8_t reg, uint8_t len=1) {
-    if (len > I2C_BUFFER_SIZE) len = I2C_BUFFER_SIZE;
-    memset(buffer, 0 , I2C_BUFFER_SIZE);
-    int32_t ans = i2c_smbus_read_i2c_block_data(fd, reg, len, buffer);
-    return (ans & 0xFF);
-  }
-
-  // value?
-  uint8_t writeBlock(uint8_t reg, uint8_t len, uint8_t* data) {
-    int32_t ans = i2c_smbus_write_block_data(fd, reg, len, data);
-    // ::write(fd, data, len);
-    return (ans & 0xFF);
-  }
-
-  uint8_t buffer[I2C_BUFFER_SIZE];
 
   protected:
   int fd;
-  uint8_t counter;
-  uint8_t readcntr;
+  uint8_t outbuf[2];
+  struct i2c_msg msgs[2];
+  struct i2c_rdwr_ioctl_data i2c_data;
+  uint8_t addr;
 };
+
+
+// #ifndef I2C_SET_SPEED
+// #define I2C_SET_SPEED 0x0758  // Set I2C Bus Speed - is this right?
+// #endif
+
+// class TwoWire {
+//   public:
+//   TwoWire(): counter(0), fd(0), readcntr(0) {}
+//   ~TwoWire() {
+//     end();
+//   }
+
+//   void end() {
+//     if (fd >= 0) close(fd);
+//     printf("TwoWire bye\n");
+//   }
+
+//   void    begin(int sda=0, int scl=0, uint8_t address=0) {
+//     const char* device = "/dev/i2c-1"; // -0 is used for other stuff
+//     if ((fd = open (device, O_RDWR)) < 0) {
+//       char err[32];
+//       sprintf(err, "Fail open %s\n", device);
+//       perror(err);
+// 		}
+//   }
+
+//   // NOT sure this works, either 100000 or 400000 ... just set /boot/config.txt to 400k
+//   // void    setClock(uint32_t speed) {
+//   //   ioctl(fd, I2C_SET_SPEED, speed);
+//   // }
+//   void    setClock(uint32_t speed) {} // just set /boot/config.txt to 400k
+//   void    setClockStretchLimit(uint32_t) {}
+
+//   void    beginTransmission(uint8_t addr) {
+//     counter = 0;
+//     if (ioctl (fd, I2C_SLAVE, addr) < 0) {
+//       printf("write error\n");
+//       close(fd); // something is wrong, so stop?
+//     }
+//   }
+
+//   uint8_t endTransmission(uint8_t stop=0) {
+//     // i2c_smbus_write_block_data(fd,)
+//     ssize_t num = ::write(fd, buffer, counter);
+//     if (num <= 0) printf("endTransmition::write failed\n");
+//     return 0;
+//   }
+
+//   uint8_t  requestFrom(uint8_t addr, uint8_t length, uint8_t sendStop=0) {
+//     int num = 0;
+//     // if((num = i2c_smbus_read_i2c_block_data(fd, addr, length, buffer)) < 0) printf("block read error\n");
+
+//     // num = ::read(fd, buffer, counter);
+//     // if (num < 0) printf("requestFrom::error on read\n");
+//     // else printf(">> %f\n", buffer[0]);
+//     // readcntr = 0;
+
+//     for (int i=0; i < length; i++) { // FIXME: do block read above ... why isn't this working?
+//       num += ::read(fd, &buffer[i], 1);
+//     }
+//     return uint8_t(num);
+//   }
+//   // uint8_t requestFrom(int, int, int=0) {return 0;}
+
+//   uint8_t write(uint8_t data) {
+//     buffer[counter++] = data;
+//     return 1;
+//   }
+
+//   uint8_t write(const uint8_t* data, uint8_t len) {
+//     memcpy(buffer, data, len);
+//     counter += len;
+//     return len;
+//   }
+
+//   uint8_t read(void) {
+//     if (readcntr >= counter) return 0x00;
+//     return buffer[readcntr++];
+//   }
+
+//   // read block of data
+//   uint8_t readBlock(uint8_t reg, uint8_t len=1) {
+//     if (len > I2C_BUFFER_SIZE) len = I2C_BUFFER_SIZE;
+//     memset(buffer, 0 , I2C_BUFFER_SIZE);
+//     int32_t ans = i2c_smbus_read_i2c_block_data(fd, reg, len, buffer);
+//     return (ans & 0xFF);
+//   }
+
+//   // value?
+//   uint8_t writeBlock(uint8_t reg, uint8_t len, uint8_t* data) {
+//     int32_t ans = i2c_smbus_write_block_data(fd, reg, len, data);
+//     // ::write(fd, data, len);
+//     return (ans & 0xFF);
+//   }
+
+//   uint8_t buffer[I2C_BUFFER_SIZE];
+
+//   protected:
+//   int fd;
+//   uint8_t counter;
+//   uint8_t readcntr;
+// };
 
 extern TwoWire Wire; // declared in C++ file

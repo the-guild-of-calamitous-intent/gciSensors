@@ -34,7 +34,7 @@ void setup() {
 }
 
 void loop() {
-  int val = ACCEL;
+  int val = AGT;
   sox_t s = IMU.read();
 
   if (s.ok == false) {
