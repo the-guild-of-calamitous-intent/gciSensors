@@ -1,6 +1,7 @@
 LIST(APPEND apps
-    simple_press_alt/simple_press.cpp
-    simple_accel_alt/simple_accel.cpp
+    linux/simple_press.cpp
+    linux/simple_accel.cpp
+    linux/simple_mag.cpp
 )
 
 # message(STATUS ">> ${CMAKE_BINARY_DIR}/_deps/marko-src/include")
