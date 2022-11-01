@@ -13,7 +13,7 @@ void setup() {
   Wire.begin();
   Wire.setClock(400000);
 
-  Serial.println("bmp390 init");
+  Serial.println("bmp390 init start");
 
   if (!bmp.init()) delay(500);
 

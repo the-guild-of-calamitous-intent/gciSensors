@@ -7,101 +7,7 @@
 
 #include <Arduino.h>
 #include <Wire.h>
-#include <stdint.h>     // int types
-
-
-// #ifdef __linux__
-// #include <unistd.h>			// file read/write
-// #include <fcntl.h>		  // file open
-// #include <sys/ioctl.h>	// Needed for I2C port
-// #include <cstdio>       // printf
-// #include <cstring>      // memset
-
-// // sudo apt-get install libi2c-dev
-// extern "C" {
-//     #include <linux/i2c-dev.h>
-//     #include <i2c/smbus.h>
-// }
-
-// constexpr uint8_t I2C_MAX_BUFFER_SIZE = 32;
-
-// class TwoWire {
-//   public:
-//   TwoWire(){
-//     const char* device = "/dev/i2c-1"; // -0 is used for other stuff
-//     if ((fd = open (device, O_RDWR)) < 0) {
-//       printf("Fail open %s\n", device);
-// 		}
-//   }
-
-//   void set(uint8_t addr) {
-//     if (ioctl (fd, I2C_SLAVE, addr) < 0) {
-//       printf("write error\n");
-//       close(fd); // something is wrong, so stop?
-//     }
-//   }
-
-//   bool read(const uint8_t reg, const uint8_t count, uint8_t *const data) {
-//     // if (count > I2C_MAX_BUFFER_SIZE) count = I2C_MAX_BUFFER_SIZE;
-
-//     // send out to sensor
-//     msgs[0].addr = addr;
-//     msgs[0].flags = 0;
-//     msgs[0].len = 1;
-//     msgs[0].buf = outbuf;
-//     outbuf[0] = reg;
-
-//     // read in from sensor
-//     msgs[1].addr = addr;
-//     msgs[1].flags = I2C_M_RD; // read data, from slave to master
-//     msgs[1].len = count;
-//     msgs[1].buf = data; //inbuf;
-
-//     i2c_data.msgs = msgs;
-//     i2c_data.nmsgs = 2;
-
-//     if (ioctl(fd, I2C_RDWR, &i2c_data) < 0) {
-//         perror("ioctl(I2C_RDWR) in i2c_read");
-//         return false;
-//     }
-
-//     return true;
-//   }
-
-//   bool write(const uint8_t reg, const uint8_t data) {
-//     outbuf[0] = reg;
-//     outbuf[1] = data;
-//     // memcpy(&outbuf[1], &data, len);
-
-//     msgs[0].addr = addr;
-//     msgs[0].flags = 0;
-//     msgs[0].len = 2;
-//     msgs[0].buf = outbuf;
-
-//     i2c_data.msgs = msgs;
-//     i2c_data.nmsgs = 1;
-
-//     if (ioctl(fd, I2C_RDWR, &i2c_data) < 0) {
-//         perror("ioctl(I2C_RDWR) in i2c_write");
-//         return false;
-//     }
-
-//     return true;
-//   }
-
-
-//   protected:
-//   int fd;
-//   uint8_t outbuf[2];
-//   struct i2c_msg msgs[2];
-//   struct i2c_rdwr_ioctl_data i2c_data;
-// };
-
-// extern TwoWire Wire;
-// #else
-#include <Arduino.h>
-#include <Wire.h>
-// #endif
+#include <stdint.h>   // int types
 
 /*
 I don't like some of this ... need to clean it up!
@@ -123,8 +29,8 @@ public:
       return false;
     }
     val >>= shift;
-    uint8_t mask_ = (1 << (bits)) - 1;
-    *data = val & mask_;
+    uint8_t mask = (1 << (bits)) - 1;
+    *data = val & mask;
     return true;
   }
 
@@ -167,8 +73,8 @@ public:
    */
   bool WriteRegister(const uint8_t reg, const uint8_t data) {
   #ifdef __linux__
-  i2c->set(addr);
-  return i2c->write(reg,data);
+    i2c->set(addr);
+    return i2c->write(reg,data);
   #else
     uint8_t ret_val;
     i2c->beginTransmission(addr);
@@ -177,12 +83,10 @@ public:
     i2c->endTransmission();
 
     delay(10);
-    ReadRegisters(reg, sizeof(ret_val), &ret_val);
-    if (data == ret_val) {
-      return true;
-    } else {
-      return false;
-    }
+    ReadRegisters(reg, 1, &ret_val);
+    if (data == ret_val) return true;
+    return false;
+
   #endif
   }
 
@@ -200,23 +104,23 @@ public:
   bool ReadRegisters(const uint8_t reg, const uint8_t count,
                      uint8_t *const data) {
   #ifdef __linux__
-  i2c->set(addr);
-  return i2c->read(reg,count,data);
+    i2c->set(addr);
+    return i2c->read(reg,count,data);
   #else
     i2c->beginTransmission(addr);
     i2c->write(reg);
     i2c->endTransmission(false);
     // delay(500);
-    uint8_t bytes_rx_ = i2c->requestFrom(static_cast<uint8_t>(addr), count);
-    if (bytes_rx_ == count) {
-      for (size_t i = 0; i < count; i++) {
+    uint8_t bytes_rx = i2c->requestFrom(static_cast<uint8_t>(addr), count);
+    if (bytes_rx == count) {
+      for (uint8_t i = 0; i < count; i++) {
         data[i] = i2c->read();
       }
       return true;
-    } else {
-      Serial.println("ReadRegisters::bad read " + std::to_string(bytes_rx_) + " expected: " + std::to_string(count));
-      return false;
     }
+    Serial.println("ReadRegisters::bad read: " + std::to_string(bytes_rx) + " expected: " + std::to_string(count));
+    return false;
+
   #endif
   }
 
@@ -225,7 +129,7 @@ public:
   */
   uint8_t readRegister(uint8_t reg) {
     uint8_t value;
-    if (ReadRegisters(reg, sizeof(value), &value) != 1)
+    if (ReadRegisters(reg, 1, &value) != 1)
       return -1;
     return value;
   }
