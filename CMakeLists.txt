@@ -35,17 +35,25 @@ add_library(${PROJECT_NAME}
     src/lsm6dsox/lsm6dsox.cpp
     src/sensor.cpp
 )
-target_include_directories(
-    ${PROJECT_NAME} PUBLIC
-    #$<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/mock>
-    $<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/linux>
-    $<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/src>
-)
+# target_include_directories(
+#     ${PROJECT_NAME} PUBLIC
+#     #$<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/mock>
+#     $<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/linux>
+#     $<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/src>
+# )
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         wirelib
+        # $<$<PLATFORM_ID:Linux>:wirelib>
 )
+
+# target_include_directories(
+#     ${PROJECT_NAME} PUBLIC
+#     $<$<PLATFORM_ID:Linux>:BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/linux>
+#     $<$<PLATFORM_ID:Apple>:$<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/mock>>
+#     $<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/src>
+# )
 
 if (UNIX)
     if (APPLE)

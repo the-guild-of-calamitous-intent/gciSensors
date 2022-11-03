@@ -9,10 +9,17 @@ foreach(MAINS ${apps})
     message(STATUS ">> ${MAINS} as ${APP}")
     add_executable(${APP} ${MAINS})
 
+    if (APPLE)
+    target_include_directories(${APP}
+        PRIVATE
+            ${CMAKE_SOURCE_DIR}/mock
+    )
+    else()
     target_include_directories(${APP}
         PRIVATE
             ${CMAKE_SOURCE_DIR}/linux
     )
+    endif()
 
     target_link_libraries(${APP}
         PRIVATE
