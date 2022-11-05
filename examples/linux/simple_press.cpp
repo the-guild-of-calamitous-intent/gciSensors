@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-using namespace std;
+// using namespace std;
 using namespace BMP390;
 
 gciBMP390 bmp(&Wire);

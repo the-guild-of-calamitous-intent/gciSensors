@@ -1,5 +1,9 @@
 
 #include <gciSensors.hpp>
+#include "Arduino.h"
+#include "Wire.h"
+#include <iostream>
+#include <string>
 
 using namespace LIS3MDL;
 

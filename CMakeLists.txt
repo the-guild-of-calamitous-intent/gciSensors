@@ -25,6 +25,29 @@ message(STATUS " ${OSN}: ${OS_VERSION}")
 message(STATUS " ${PROC}")
 message(STATUS "-------------------------------------")
 
+# CPM =========================================================================
+set(CPM_DOWNLOAD_LOCATION "${CMAKE_BINARY_DIR}/cmake/CPM.cmake")
+set(CPM_VERSION v0.35.1)
+if(NOT (EXISTS ${CPM_DOWNLOAD_LOCATION}))
+    message(STATUS "Downloading CPM.cmake")
+    file(DOWNLOAD
+        https://github.com/cpm-cmake/CPM.cmake/releases/download/${CPM_VERSION}/CPM.cmake
+        ${CPM_DOWNLOAD_LOCATION}
+    )
+else()
+    message(STATUS "CPM ${CPM_VERSION} ready")
+endif()
+include(${CPM_DOWNLOAD_LOCATION})
+
+CPMAddPackage(
+    NAME squaternion
+    VERSION 2022.08.20
+    # TAG latest
+    GITHUB_REPOSITORY MomsFriendlyRobotCompany/squaternion.cpp
+    OPTIONS
+        "EXAMPLES OFF"
+)
+
 # set(CMAKE_CXX_COMPILER -Wunused ) doesn't work
 
 # Add the library target
@@ -45,8 +68,10 @@ add_library(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         wirelib
+        # ${squaternion_SOURCE_DIR}
         # $<$<PLATFORM_ID:Linux>:wirelib>
 )
+add_dependencies(${PROJECT_NAME} squaternion)
 
 # target_include_directories(
 #     ${PROJECT_NAME} PUBLIC
@@ -58,11 +83,13 @@ target_link_libraries(${PROJECT_NAME}
 if (UNIX)
     if (APPLE)
         message(STATUS "Detected APPLE, using mock i2c")
+        message(STATUS ">> ${squaternion_SOURCE_DIR}")
         add_subdirectory(mock)
         target_include_directories(
             ${PROJECT_NAME} PUBLIC
             $<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/mock>
             $<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/src>
+            ${squaternion_SOURCE_DIR}/src
         )
     else ()
         message(STATUS "Detected LINUX, using linux i2c")

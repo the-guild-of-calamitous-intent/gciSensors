@@ -9,6 +9,11 @@
 #include <iostream>
 #include <string>
 
+using std::string;
+using std::to_string;
+// using std::cout;
+// using std::endl;
+
 static void pinMode(uint8_t pin, uint8_t mode) {}
 static void digitalWrite(uint8_t pin, uint8_t val) {}
 static int digitalRead(uint8_t pin) {return 0;}
@@ -30,12 +35,12 @@ struct SerialPort {
   //   std::cout << a;
   // }
 
-  void print(std::string a) {
-    std::cout << a;
+  void print(string a) {
+    cout << a;
   }
 
   void print(float a, int v=0) {
-    std::cout << a;
+    cout << a;
   }
 
   // void println(unsigned long a) {
@@ -47,11 +52,11 @@ struct SerialPort {
   // }
 
   void println(float a, int v=0) {
-    std::cout << a << std::endl;
+    cout << a << endl;
   }
 
-  void println(std::string a) {
-    std::cout << a << std::endl;
+  void println(string a) {
+    cout << a << endl;
   }
 
   // this isn't real, so always return "true"

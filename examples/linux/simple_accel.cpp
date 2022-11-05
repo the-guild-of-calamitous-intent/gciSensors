@@ -4,7 +4,7 @@
 #include <iostream>
 #include <string>
 
-using namespace std;
+// using namespace std;
 using namespace LSM6DSOX;
 
 // gciLSM6DSOX IMU(&Wire, LSM6DSOX_ADDRESS); // if not using default address

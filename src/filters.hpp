@@ -65,7 +65,8 @@ struct rpy_t {
 };
 
 
-#if 0
+#if 1
+#include "squaternion.hpp"
 /*!
 */
 class QCF {

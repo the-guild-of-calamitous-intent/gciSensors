@@ -7,7 +7,9 @@
 #include <stddef.h>
 #include <string>
 
-using namespace std;
+// using namespace std;
+using std::string;
+using std::to_string;
 
 static void pinMode(uint8_t pin, uint8_t mode) {}
 static void digitalWrite(uint8_t pin, uint8_t val) {}
