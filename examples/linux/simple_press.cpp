@@ -15,7 +15,10 @@ void setup() {
 
   Serial.println("bmp390 init start");
 
-  if (!bmp.init()) delay(500);
+  while (!bmp.init()) {
+    delay(500);
+    Serial.println("something wrong ...");
+  }
 
   Serial.println("setup done ...");
 }

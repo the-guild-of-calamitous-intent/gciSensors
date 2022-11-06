@@ -13,6 +13,7 @@ using std::string;
 using std::to_string;
 using std::cout;
 using std::endl;
+using std::isinf;
 
 static void pinMode(uint8_t pin, uint8_t mode) {}
 static void digitalWrite(uint8_t pin, uint8_t val) {}

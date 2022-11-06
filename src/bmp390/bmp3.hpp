@@ -35,6 +35,9 @@ enum FilterCoef : uint8_t {
   FILTER_COEF_128 = BMP3_IIR_FILTER_COEFF_127,
 };
 
+
+constexpr uint8_t MODE_NORMAL = 0x03;
+
 struct pt_t {
   float press, temp;
   bool ok;
@@ -75,52 +78,29 @@ public:
   }
 
   inline bool reset() { return soft_reset(); }
-  inline int8_t get_error_code() const { return err_; }
+  // inline int8_t get_error_code() const { return err_; }
 
   bool found;
 
 protected:
-  int8_t err_;
-  // uint32_t settings_select_;
-  bmp3_settings req_settings_, settings_;
-  // union {
-  //   uint8_t  b[24];
-  //   uint16_t s[12];
-  //   uint32_t i[6];
-  // }
+  // int8_t err_;
   uint8_t buffer[BMP3_LEN_CALIB_DATA];
-  struct bmp3_reg_calib_data reg_calib_data;
 
 
   inline uint32_t to_24b(uint8_t *b) {
     return (uint32_t)b[0] | (uint32_t)b[1] << 8| (uint32_t)b[2] << 16;
   }
-  bool bmp3_get_sensor_data(uint8_t sensor_comp, struct bmp3_data *comp_data) {
-    bool ok = ReadRegisters(BMP3_REG_DATA, BMP3_LEN_P_T_DATA, buffer);
-    if (ok) {
-      uint32_t pres = to_24b(&buffer[0]);
-      uint32_t temp = to_24b(&buffer[3]);
-      return true;
-    }
-    return false;
-  }
-  // int8_t bmp3_get_regs(uint8_t reg_addr, uint8_t *reg_data, uint32_t len) {}
-  // void parse_sensor_data(const uint8_t *reg_data, struct bmp3_uncomp_data *uncomp_data) {}
-  // int8_t compensate_data(
-  //   uint8_t sensor_comp,
-  //   const struct bmp3_uncomp_data *uncomp_data,
-  //   struct bmp3_data *comp_data,
-  //   struct bmp3_calib_data *calib_data) {}
+
   // datasheet pg 28
 float compensate_temperature(const uint32_t uncomp_temp) {
-  float pd1 = (float)(uncomp_temp - calib.par_t1);
-  float pd2 = (float)(pd1 * calib.par_t2);
-  calib.t_lin = pd2 + (pd1*pd1) * calib.par_t3;
+  float pd1 = (float)uncomp_temp - calib.par_t1;
+  float pd2 = pd1 * calib.par_t2;
+  calib.t_lin = pd2 + (pd1 * pd1) * calib.par_t3;
   return calib.t_lin;
 }
 
 // datasheet pg 28
-float compensate_pressure(uint32_t uncomp_press) {
+float compensate_pressure(const uint32_t uncomp_press) {
   float pd1 = calib.par_p6 * calib.t_lin;
   float pd2 = calib.par_p7 * (calib.t_lin * calib.t_lin);
   float pd3 = calib.par_p8 * (calib.t_lin * calib.t_lin * calib.t_lin);
@@ -129,7 +109,7 @@ float compensate_pressure(uint32_t uncomp_press) {
   pd1 = calib.par_p2 * calib.t_lin;
   pd2 = calib.par_p3 * (calib.t_lin * calib.t_lin);
   pd3 = calib.par_p4 * (calib.t_lin * calib.t_lin * calib.t_lin);
-  float po2 = (float)uncomp_press * (calib.par_p1 + pd1 +pd2 + pd3);
+  float po2 = (float)uncomp_press * (calib.par_p1 + pd1 + pd2 + pd3);
 
   pd1 = (float)uncomp_press * (float)uncomp_press;
   pd2 = calib.par_p9 + calib.par_p10 * calib.t_lin;
@@ -171,9 +151,26 @@ float compensate_pressure(uint32_t uncomp_press) {
     if (!ok) return false;
 
     // being cast to signed integers
-    calib.par_t1 = to_16b(buffer[1], buffer[0]);
-    calib.par_t2 = to_16b(buffer[3], buffer[2]);
-    calib.par_t3 = (int8_t)buffer[4];
+    // calib.par_t1 = to_16b(buffer[1], buffer[0]);
+    // calib.par_t2 = to_16b(buffer[3], buffer[2]);
+    // calib.par_t3 = (int8_t)buffer[4];
+    // calib.par_p1 = (int16_t)to_16b(buffer[6], buffer[5]);
+    // calib.par_p2 = (int16_t)to_16b(buffer[8], buffer[7]);
+    // calib.par_p3 = (int8_t)buffer[9];
+    // calib.par_p4 = (int8_t)buffer[10];
+    // calib.par_p5 = to_16b(buffer[12], buffer[11]);
+    // calib.par_p6 = to_16b(buffer[14], buffer[13]);
+    // calib.par_p7 = (int8_t)buffer[15];
+    // calib.par_p8 = (int8_t)buffer[16];
+    // calib.par_p9 = (int16_t)to_16b(buffer[18], buffer[17]);
+    // calib.par_p10 = (int8_t)buffer[19];
+    // calib.par_p11 = (int8_t)buffer[20];
+
+
+    calib.par_t1 = (float)to_16b(buffer[1], buffer[0]) / powf(2,-8);
+    calib.par_t2 = (float)to_16b(buffer[3], buffer[2]) / powf(2,30);
+    calib.par_t3 = (float)buffer[4] / powf(2,48);
+
     calib.par_p1 = (int16_t)to_16b(buffer[6], buffer[5]);
     calib.par_p2 = (int16_t)to_16b(buffer[8], buffer[7]);
     calib.par_p3 = (int8_t)buffer[9];
@@ -186,10 +183,12 @@ float compensate_pressure(uint32_t uncomp_press) {
     calib.par_p10 = (int8_t)buffer[19];
     calib.par_p11 = (int8_t)buffer[20];
 
+    Serial.println("got calib data");
+
     return true;
   }
 
-  bool put_device_to_sleep() {
+  bool sleep() {
     // int8_t rslt;
     uint8_t reg_addr = BMP3_REG_PWR_CTRL;
 
@@ -201,7 +200,8 @@ float compensate_pressure(uint32_t uncomp_press) {
 
     // if (rslt == BMP3_OK) {
       /* Set the power mode */
-      op_mode_reg_val = op_mode_reg_val & (~(BMP3_OP_MODE_MSK));
+      // op_mode_reg_val = op_mode_reg_val & (~(BMP3_OP_MODE_MSK));
+      op_mode_reg_val = op_mode_reg_val & 0x03; // keep bits 0-1
 
       /* Write the power mode in the register */
       return writeRegister(BMP3_REG_PWR_CTRL, op_mode_reg_val);
@@ -211,86 +211,119 @@ float compensate_pressure(uint32_t uncomp_press) {
   }
 
   // int8_t bmp3_get_op_mode(uint8_t *op_mode) {} // value?
-  int8_t bmp3_set_op_mode(uint8_t curr_mode) {
+  // int8_t bmp3_set_op_mode(uint8_t curr_mode) {
+  //   // int8_t rslt;
+  //   // uint8_t last_set_mode;
+
+  //   /* Check for null pointer in the device structure */
+  //   // rslt = null_ptr_check(dev);
+
+  //     // uint8_t curr_mode = settings->op_mode;
+
+  //     // rslt = bmp3_get_op_mode(&last_set_mode /*, dev*/);
+  //     bool ok;
+
+  //     // get opmode
+  //   // uint8_t last_set_mode = readRegister(BMP3_REG_PWR_CTRL);
+
+  //   /* Assign the power mode in the device structure */
+  //   // last_set_mode = BMP3_GET_BITS(last_set_mode, BMP3_OP_MODE);
+
+  //     /* If the sensor is not in sleep mode put the device to sleep
+  //     * mode */
+  //     // if (last_set_mode != BMP3_MODE_SLEEP ) {
+  //       /* Device should be put to sleep before transiting to
+  //       * forced mode or normal mode */
+  //       ok = put_device_to_sleep();
+  //       delay(5);
+  //     // }
+
+  //     /* Set the power mode */
+  //     // if (rslt == BMP3_OK) {
+  //       if (curr_mode == BMP3_MODE_NORMAL) {
+  //         ok = set_normal_mode();
+  //       }
+  //       // else if (curr_mode == BMP3_MODE_FORCED) {
+  //       //   /* Set forced mode */
+  //       //   ok = write_power_mode();
+  //       // }
+  //     // }
+
+
+  //   return true;
+
+  // }
+
+  // bool set_normal_mode() {
+  //   // int8_t rslt;
+  //   // uint8_t conf_err_status;
+
+  //   // rslt = validate_normal_mode_settings(settings /*, dev*/);
+
+  //   /* If OSR and ODR settings are proper then write the power mode */
+  //   // if (rslt == BMP3_OK) {
+  //     bool ok = write_power_mode(BMP3_MODE_NORMAL);
+
+  //   //   /* check for configuration error */
+  //   //   // if (rslt == BMP3_OK) {
+  //   //     /* Read the configuration error status */
+  //   //     // ok = bmp3_get_regs(BMP3_REG_ERR, &conf_err_status, 1 /*, dev*/);
+  //   //     ok = readRegisters(BMP3_REG_ERR, &conf_err_status, 1);
+
+  //   //     /* Check if conf. error flag is set */
+  //   //     if (ok) {
+  //   //       if (conf_err_status & BMP3_ERR_CONF) {
+  //   //         /* OSR and ODR configuration is not proper */
+  //   //         rslt = BMP3_E_CONFIGURATION_ERR;
+  //   //       }
+  //   //     }
+  //   //   // }
+  //   // // }
+
+  //   return true;
+  // }
+
+  // inline SET_BITS(reg_data, bitname, data) {
+  //   return((reg_data & ~(bitname##_MSK)) | ((data << bitname##_POS) & bitname##_MSK))
+  // }
+
+  // constexpr uint8_t MODE_NORMAL = 0x03;
+  bool setPowerMode(uint8_t mode=MODE_NORMAL) {
     // int8_t rslt;
-    // uint8_t last_set_mode;
+    // uint8_t reg_addr = BMP3_REG_PWR_CTRL;
+    // uint8_t op_mode = settings->op_mode;
 
-    /* Check for null pointer in the device structure */
-    // rslt = null_ptr_check(dev);
+    /* Temporary variable to store the value read from op-mode register */
+    // uint8_t op_mode_reg_val;
 
-      // uint8_t curr_mode = settings->op_mode;
+    // /* Read the power mode register */
+    // // rslt = bmp3_get_regs(reg_addr, &op_mode_reg_val, 1 /*, dev*/);
+    // bool ok = readRegisters(BMP3_REG_PWR_CTRL, 1, &op_mode_reg_val);
+    // if (!ok) return false;
 
-      // rslt = bmp3_get_op_mode(&last_set_mode /*, dev*/);
+    // /* Set the power mode */
+    // if (ok) {
+    //   op_mode_reg_val = BMP3_SET_BITS(op_mode_reg_val, BMP3_OP_MODE, op_mode);
 
-      // get opmode
-    uint8_t last_set_mode = readRegister(BMP3_REG_PWR_CTRL);
+    //   /* Write the power mode in the register */
+    //   // rslt = bmp3_set_regs(&reg_addr, &op_mode_reg_val, 1 /*, dev*/);
+    //   ok = writeRegister(BMP3_REG_PWR_CTRL, op_mode_reg_val);
+    //   if (!ok) return false;
+    // }
+    bool ok;
 
-    /* Assign the power mode in the device structure */
-    op_mode = BMP3_GET_BITS(op_mode, BMP3_OP_MODE);
+    ok = sleep();
+    delay(5);
 
-      /* If the sensor is not in sleep mode put the device to sleep
-      * mode */
-      if (last_set_mode != BMP3_MODE_SLEEP ) {
-        /* Device should be put to sleep before transiting to
-        * forced mode or normal mode */
-        rslt = put_device_to_sleep();
+    constexpr uint8_t PRESS_EN = 0x01;
+    constexpr uint8_t TEMP_EN = 0x02;
 
-        /* Give some time for device to go into sleep mode */
-        // dev->delay_us(5000, dev->intf_ptr);
-        delay(5);
-      }
-
-      /* Set the power mode */
-      // if (rslt == BMP3_OK) {
-        if (curr_mode == BMP3_MODE_NORMAL) {
-          /* Set normal mode and validate necessary settings */
-          rslt = set_normal_mode();
-        } else if (curr_mode == BMP3_MODE_FORCED) {
-          /* Set forced mode */
-          rslt = write_power_mode();
-        }
-      // }
-
+    uint8_t val = (mode << 4) | TEMP_EN | PRESS_EN;
+    ok = writeRegister(BMP3_REG_PWR_CTRL, val);
+    if (!ok) return false;
 
     return true;
-
   }
-
-  bool set_normal_mode() {
-  int8_t rslt;
-  uint8_t conf_err_status;
-
-  rslt = validate_normal_mode_settings(settings /*, dev*/);
-
-  /* If OSR and ODR settings are proper then write the power mode */
-  if (rslt == BMP3_OK) {
-    rslt = write_power_mode(settings /*, dev*/);
-
-    /* check for configuration error */
-    if (rslt == BMP3_OK) {
-      /* Read the configuration error status */
-      rslt = bmp3_get_regs(BMP3_REG_ERR, &conf_err_status, 1 /*, dev*/);
-
-      /* Check if conf. error flag is set */
-      if (rslt == BMP3_OK) {
-        if (conf_err_status & BMP3_ERR_CONF) {
-          /* OSR and ODR configuration is not proper */
-          rslt = BMP3_E_CONFIGURATION_ERR;
-        }
-      }
-    }
-  }
-
-  return rslt;
-}
-
-
-
-
-  // int8_t bmp3_set_sensor_settings(
-  //   uint32_t desired_settings,
-  //   struct bmp3_settings *settings) {}
-  // int8_t bmp3_get_sensor_settings(struct bmp3_settings *settings) {}
 
   bool soft_reset() {
     bool ok;
@@ -302,21 +335,118 @@ float compensate_pressure(uint32_t uncomp_press) {
     if (cmd_rdy_status & BMP3_CMD_RDY) {
       // Write the soft reset command in the sensor
       ok = WriteRegister(BMP3_REG_CMD, BMP3_SOFT_RESET);
+      if (!ok) return false;
 
-      if (ok) {
         delay(2);
 
         // Read for command error status
         if (readRegister(BMP3_REG_ERR) & BMP3_REG_CMD) return false;
-      }
+
+        return true;
+
     }
+    return false;
+  }
+
+  bool setOverSampling(uint8_t posr, uint8_t tosr) {
+    uint8_t val = (tosr << 3) | posr;
+    return writeRegister(BMP3_REG_OSR, val);
+  }
+
+  bool setODR(uint8_t odr) {
+    return writeRegister(BMP3_REG_ODR, odr);
+  }
+
+  bool setIIR(uint8_t iir) {
+    constexpr uint8_t BMP3_REG_IIR_FILTER = 0x1F;
+    uint8_t val = iir << 1;
+    return writeRegister(BMP3_REG_IIR_FILTER, val);
+  }
+
+  bool setInterrupt(uint8_t drdy_en, uint8_t int_level) {
+    // int_level: 1 = active high
+    uint8_t val = (drdy_en << 6) | (int_level << 1);
+    return writeRegister(BMP3_REG_INT_CTRL, val);
+  }
+
+  bool bmp3_set_sensor_settings() {
+    // int8_t rslt = BMP3_OK;
+
+    bool ok;
+
+    ok = setPowerMode();
+    if (!ok) return false;
+
+    // constexpr uint8_t PRESS_EN = 0x01;
+    // constexpr uint8_t TEMP_EN = 0x02;
+    // constexpr uint8_t MODE_NORMAL = 0x03;
+
+    // if (settings != NULL) {
+
+      // if (are_settings_changed(BMP3_POWER_CNTL, desired_settings)) {
+        /* Set the power control settings */
+        // rslt = set_pwr_ctrl_settings(desired_settings, settings /*, dev*/);
+        // uint8_t val = (MODE_NORMAL << 4) | TEMP_EN | PRESS_EN;
+        // bool ok = writeRegister(BMP3_REG_PWR_CTRL, val);
+        // if (!ok) return false;
+      // }
+
+      // if (are_settings_changed(BMP3_ODR_FILTER, desired_settings)) {
+        /* Set the over sampling, ODR and filter settings */
+        // rslt = set_odr_filter_settings(desired_settings, settings /*, dev*/);
+        // uint8_t vals[4];
+        // ok = readRegisters(BMP3_REG_OSR, 4, vals);
+
+        uint8_t posr = BMP3_OVERSAMPLING_2X;
+        uint8_t tosr = BMP3_OVERSAMPLING_1X;
+        ok = setOverSampling(posr, tosr);
+      //   uint8_t val = (tosr << 3) | posr;
+      //   ok = writeRegister(BMP3_REG_OSR, val);
+      if (!ok) return false;
+
+        // val = BMP3_ODR_100_HZ;
+        // ok = writeRegister(BMP3_REG_ODR, val);
+        ok = setODR(BMP3_ODR_100_HZ);
+      if (!ok) return false;
+        // val[2] = 0; // no 0x1e reg
+
+        // constexpr uint8_t BMP3_REG_IIR_FILTER = 0x1F;
+        ok = setIIR(BMP3_IIR_FILTER_COEFF_1);
+      if (!ok) return false;
+        // val = BMP3_IIR_FILTER_COEFF_1 << 1;
+        // ok = writeRegister(BMP3_REG_IIR_FILTER, val);
+      // }
+
+      // if (are_settings_changed(BMP3_INT_CTRL, desired_settings)) {
+        /* Set the interrupt control settings */
+        // rslt = set_int_ctrl_settings(desired_settings, settings /*, dev*/);
+
+        // drdy enable = 1 << 6
+        // non-latch = 0
+        // active-high = 1 << 1
+        // pin push/pull = 0
+        // val = (1 << 6) | (1 << 1);
+        // ok = writeRegister(BMP3_REG_INT_CTRL, val);
+        ok = setInterrupt(1,1);
+      if (!ok) return false;
+      // }
+
+      // if (are_settings_changed(BMP3_ADV_SETT, desired_settings)) {
+        /* Set the advance settings */
+        // rslt = set_advance_settings(desired_settings, settings /*, dev*/);
+      // }
+    // } else {
+    //   rslt = BMP3_E_NULL_PTR;
+    // }
+
     return true;
   }
 
   struct bmp3_reg_calib_data {
-    uint16_t par_t1;
-    uint16_t par_t2;
-    int8_t par_t3;
+    float par_t1;
+    float par_t2;
+    float par_t3;
+
     int16_t par_p1;
     int16_t par_p2;
     int8_t par_p3;

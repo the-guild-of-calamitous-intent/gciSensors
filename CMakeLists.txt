@@ -98,6 +98,7 @@ if (UNIX)
             ${PROJECT_NAME} PUBLIC
             $<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/linux>
             $<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/src>
+            ${squaternion_SOURCE_DIR}/src
         )
     endif (APPLE)
 endif (UNIX)
