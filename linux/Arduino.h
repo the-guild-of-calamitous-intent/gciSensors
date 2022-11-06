@@ -11,8 +11,8 @@
 
 using std::string;
 using std::to_string;
-// using std::cout;
-// using std::endl;
+using std::cout;
+using std::endl;
 
 static void pinMode(uint8_t pin, uint8_t mode) {}
 static void digitalWrite(uint8_t pin, uint8_t val) {}

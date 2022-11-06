@@ -10,7 +10,7 @@
 // #include <cstddef>
 // #include <cstdint>
 
-#include "bosch/bmp3.h"
+#include "bosch/bmp3_defs.h"
 #include "../sensor.hpp"
 
 namespace BMP390 {
@@ -161,24 +161,28 @@ float compensate_pressure(uint32_t uncomp_press) {
   };
   #define BMP3_CONCAT_BYTES(msb, lsb) (((uint16_t)msb << 8) | (uint16_t)lsb)
   */
-  inline uint16_t CONCAT_BYTES(uint8_t msb, uint8_t lsb) {return ((uint16_t)msb << 8) | (uint16_t)lsb;}
+  // inline uint16_t CONCAT_BYTES(uint8_t msb, uint8_t lsb) {return ((uint16_t)msb << 8) | (uint16_t)lsb;}
+
+  inline uint16_t to_16b(uint8_t msb, uint8_t lsb) {return ((uint16_t)msb << 8) | (uint16_t)lsb;}
+  // inline uint32_t CONCAT_BYTES(uint8_t mmsb, uint8_t msb, uint8_t lsb) {return (uint32_t)mmsb << 8)| (uint32_t)msb << 8) | (uint32_t)lsb;}
 
   bool get_calib_data() {
     bool ok = ReadRegisters(BMP3_REG_CALIB_DATA,BMP3_LEN_CALIB_DATA,buffer);
     if (!ok) return false;
 
-    calib.par_t1 = CONCAT_BYTES(buffer[1], buffer[0]);
-    calib.par_t2 = CONCAT_BYTES(buffer[3], buffer[2]);
+    // being cast to signed integers
+    calib.par_t1 = to_16b(buffer[1], buffer[0]);
+    calib.par_t2 = to_16b(buffer[3], buffer[2]);
     calib.par_t3 = (int8_t)buffer[4];
-    calib.par_p1 = (int16_t)CONCAT_BYTES(buffer[6], buffer[5]);
-    calib.par_p2 = (int16_t)CONCAT_BYTES(buffer[8], buffer[7]);
+    calib.par_p1 = (int16_t)to_16b(buffer[6], buffer[5]);
+    calib.par_p2 = (int16_t)to_16b(buffer[8], buffer[7]);
     calib.par_p3 = (int8_t)buffer[9];
     calib.par_p4 = (int8_t)buffer[10];
-    calib.par_p5 = CONCAT_BYTES(buffer[12], buffer[11]);
-    calib.par_p6 = CONCAT_BYTES(buffer[14], buffer[13]);
+    calib.par_p5 = to_16b(buffer[12], buffer[11]);
+    calib.par_p6 = to_16b(buffer[14], buffer[13]);
     calib.par_p7 = (int8_t)buffer[15];
     calib.par_p8 = (int8_t)buffer[16];
-    calib.par_p9 = (int16_t)CONCAT_BYTES(buffer[18], buffer[17]);
+    calib.par_p9 = (int16_t)to_16b(buffer[18], buffer[17]);
     calib.par_p10 = (int8_t)buffer[19];
     calib.par_p11 = (int8_t)buffer[20];
 
@@ -240,10 +244,10 @@ float compensate_pressure(uint32_t uncomp_press) {
       // if (rslt == BMP3_OK) {
         if (curr_mode == BMP3_MODE_NORMAL) {
           /* Set normal mode and validate necessary settings */
-          rslt = set_normal_mode(settings /*, dev*/);
+          rslt = set_normal_mode();
         } else if (curr_mode == BMP3_MODE_FORCED) {
           /* Set forced mode */
-          rslt = write_power_mode(settings /*, dev*/);
+          rslt = write_power_mode();
         }
       // }
 
@@ -251,6 +255,38 @@ float compensate_pressure(uint32_t uncomp_press) {
     return true;
 
   }
+
+  bool set_normal_mode() {
+  int8_t rslt;
+  uint8_t conf_err_status;
+
+  rslt = validate_normal_mode_settings(settings /*, dev*/);
+
+  /* If OSR and ODR settings are proper then write the power mode */
+  if (rslt == BMP3_OK) {
+    rslt = write_power_mode(settings /*, dev*/);
+
+    /* check for configuration error */
+    if (rslt == BMP3_OK) {
+      /* Read the configuration error status */
+      rslt = bmp3_get_regs(BMP3_REG_ERR, &conf_err_status, 1 /*, dev*/);
+
+      /* Check if conf. error flag is set */
+      if (rslt == BMP3_OK) {
+        if (conf_err_status & BMP3_ERR_CONF) {
+          /* OSR and ODR configuration is not proper */
+          rslt = BMP3_E_CONFIGURATION_ERR;
+        }
+      }
+    }
+  }
+
+  return rslt;
+}
+
+
+
+
   // int8_t bmp3_set_sensor_settings(
   //   uint32_t desired_settings,
   //   struct bmp3_settings *settings) {}
