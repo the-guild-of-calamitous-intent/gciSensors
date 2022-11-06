@@ -11,6 +11,7 @@
 
 /*
 I don't like some of this ... need to clean it up!
+move to camel case and
 */
 class Sensor {
 public:
@@ -24,7 +25,7 @@ public:
   */
   bool Read(const uint8_t reg, const uint8_t bits, const uint8_t shift,
             uint8_t *const data) ;
-  bool readbits(const uint8_t reg, const uint8_t bits, const uint8_t shift,
+  bool readBits(const uint8_t reg, const uint8_t bits, const uint8_t shift,
             uint8_t *const data) {return Read(reg,bits,shift,data);} // FIXME
 
   /*
