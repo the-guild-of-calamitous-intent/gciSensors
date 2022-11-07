@@ -5,17 +5,12 @@
 \**************************************/
 #pragma once
 
-// #if defined(ARDUINO)
-// #include <Wire.h>
-// #include <Arduino.h>
-// #endif
-
 #include "../sensor.hpp"
 
 namespace LIS3MDL {
 
-constexpr uint8_t LIS3MDL_ADDR_PRIM = 0x1C;
-constexpr uint8_t LIS3MDL_ADDR_ALT = 0x1E;
+constexpr uint8_t ADDR_PRIM = 0x1C;
+constexpr uint8_t ADDR_ALT = 0x1E;
 
 enum Range : uint8_t {
   RANGE_4GS = 0b00,
@@ -42,7 +37,7 @@ default:
 */
 class gciLIS3MDL : public Sensor {
 public:
-  gciLIS3MDL(TwoWire *i2c, const uint8_t addr = LIS3MDL_ADDR_PRIM)
+  gciLIS3MDL(TwoWire *i2c, const uint8_t addr = ADDR_PRIM)
       : Sensor(i2c, addr) {}
 
   bool init();

@@ -9,6 +9,14 @@
 #include <Wire.h>
 #include <stdint.h> // int types
 
+
+inline uint32_t to_24b(uint8_t *b) {
+  return (uint32_t)b[0] | (uint32_t)b[1] << 8 | (uint32_t)b[2] << 16;
+}
+inline uint16_t to_16b(uint8_t msb, uint8_t lsb) {
+  return ((uint16_t)msb << 8) | (uint16_t)lsb;
+}
+
 /*
 I don't like some of this ... need to clean it up!
 move to camel case and
@@ -23,10 +31,8 @@ public:
   shift - how much to shift data by
   data - returned value pointer
   */
-  bool Read(const uint8_t reg, const uint8_t bits, const uint8_t shift,
-            uint8_t *const data) ;
   bool readBits(const uint8_t reg, const uint8_t bits, const uint8_t shift,
-            uint8_t *const data) {return Read(reg,bits,shift,data);} // FIXME
+            uint8_t *const data) ; // FIXME
 
   /*
   Given some data, this will:
@@ -40,11 +46,8 @@ public:
   bits - how many bits for mask
   shift - how much to shift data by
   */
-  // bool updateCtrlReg()
-  bool Write(const uint8_t reg, const uint8_t data, const uint8_t bits,
-             const uint8_t shift);
   bool writeBits(const uint8_t reg, const uint8_t data, const uint8_t bits,
-             const uint8_t shift) {return Write(reg,data,bits,shift);} // FIXME
+             const uint8_t shift);
 
   /*!
    * @details sets register and verifies it was correct
@@ -56,8 +59,8 @@ public:
    * @retval false fail
    * @retval true success
    */
-  bool WriteRegister(const uint8_t reg, const uint8_t data);
-  bool writeRegister(const uint8_t reg, const uint8_t data){return WriteRegister(reg, data);} // FIXME
+  // bool WriteRegister(const uint8_t reg, const uint8_t data);
+  bool writeRegister(const uint8_t reg, const uint8_t data); // FIXME
 
   /*!
    * @details Reads the number of bytes starting at address of register
@@ -70,16 +73,16 @@ public:
    * @retval false fail
    * @retval true success
    */
-  bool ReadRegisters(const uint8_t reg, const uint8_t count,
-                     uint8_t *const data);
+  // bool ReadRegisters(const uint8_t reg, const uint8_t count,
+  //                    uint8_t *const data);
   bool readRegisters(const uint8_t reg, const uint8_t count,
-                     uint8_t *const data) {return ReadRegisters(reg, count, data);}
+                     uint8_t *const data);
 
   /*
   Returns the register value and returns the entire register.
   */
   uint8_t readRegister(uint8_t reg);
-  bool readRegister(uint8_t reg, uint8_t* data) {return true;} // do this instead?
+  bool readRegister(uint8_t reg, uint8_t* data); // do this instead?
 
   // inline bool checkErr(int val) { return (val < 0) ? false : true; }
 

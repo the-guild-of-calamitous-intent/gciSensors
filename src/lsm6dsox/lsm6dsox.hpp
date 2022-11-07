@@ -6,8 +6,6 @@
 #pragma once
 
 #include "../sensor.hpp"
-// #include <Arduino.h>
-// #include <Wire.h>
 
 namespace LSM6DSOX {
 
@@ -63,15 +61,6 @@ struct sox_t {
   bool ok;
 };
 
-// struct vec3_t {
-//   float x,y,z;
-// };
-
-// struct sox2_t {
-//   vec3_t g, rps;
-//   float temp;
-//   bool ok;
-// };
 
 struct sensor_available_t {
   bool accel, gyro, temp; // sensor available?
@@ -92,14 +81,6 @@ public:
 
 private:
   float g_scale, a_scale;
-
-  inline int readRegisters(uint8_t address, uint8_t *data, size_t length) {
-    return Sensor::ReadRegisters(address, length, data);
-  }
-
-  inline int writeRegister(uint8_t address, uint8_t value) {
-    return Sensor::WriteRegister(address, value);
-  }
 
   union {
     int16_t s[3]; // signed shorts

@@ -34,11 +34,6 @@ constexpr float TEMP_SCALE = 1.0f / 256.0f;
 using namespace LSM6DSOX;
 
 bool gciLSM6DSOX::init() {
-  //     uint8_t wai = readRegister(WHO_AM_I_REG);
-  //   if (!(wai == WHO_AM_I /*|| wai == 0x69*/)) {
-  //     // end();
-  //     return 0;
-  //   }
 
   if (!(readRegister(WHO_AM_I_REG) == WHO_AM_I)) {
     return false;
@@ -60,11 +55,11 @@ bool gciLSM6DSOX::init() {
   //   writeRegister(CTRL7_G, 0x00);
 
   // Set the ODR config register
-  //   writeRegister(CTRL8_XL, 0x09); // ODR/4
+  // ok = writeRegister(CTRL8_XL, 0x09); // ODR/4
   ok = writeRegister(CTRL8_XL, 0x00); // ODR/2
   if (!ok) return false;
 
-  printf(">> init done ...");
+  // printf(">> init done ...");
 
   return true;
 }
@@ -117,18 +112,6 @@ sensor_available_t gciLSM6DSOX::sensorsAvailable() {
   return ret;
 }
 
-// void gciLSM6DSOX::end() {
-//   //   if (_spi != NULL) {
-//   //     _spi->end();
-//   //     digitalWrite(_csPin, LOW);
-//   //     pinMode(_csPin, INPUT);
-//   //   } else {
-//   writeRegister(CTRL2_G, 0x00);
-//   writeRegister(CTRL1_XL, 0x00);
-// //   _wire->end();
-//   //   }
-// }
-
 /*
 accel - g's
 gyro = rad/s
@@ -137,7 +120,7 @@ temp - C
 sox_t gciLSM6DSOX::read() {
   sox_t ret;
 
-  if (!readRegisters(OUTX_L_XL, data.b, sizeof(data.b))) {
+  if (!readRegisters(OUTX_L_XL, sizeof(data.b), data.b)) {
     ret.ok = false;
     return ret;
   }
@@ -146,7 +129,7 @@ sox_t gciLSM6DSOX::read() {
   ret.ay = data.s[1] * a_scale;
   ret.az = data.s[2] * a_scale;
 
-  if (!readRegisters(OUTX_L_G, data.b, sizeof(data.b))) {
+  if (!readRegisters(OUTX_L_G, sizeof(data.b), data.b)) {
     ret.ok = false;
     return ret;
   }
@@ -155,7 +138,7 @@ sox_t gciLSM6DSOX::read() {
   ret.gy = data.s[1] * g_scale;
   ret.gz = data.s[2] * g_scale;
 
-  if (readRegisters(OUT_TEMP_L, data.b, 2) != 1) {
+  if (readRegisters(OUT_TEMP_L, 2, data.b) != 1) {
     ret.ok = false;
     return ret;
   }

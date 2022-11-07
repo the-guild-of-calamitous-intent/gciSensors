@@ -165,7 +165,7 @@ pt_t gciBMP390::read() {
   pt_t ret;
   ret.ok = false;
 
-  bool ok = ReadRegisters(REG_DATA, LEN_P_T_DATA, buffer);
+  bool ok = readRegisters(REG_DATA, LEN_P_T_DATA, buffer);
   if (!ok)
     return ret;
 
@@ -214,7 +214,7 @@ float gciBMP390::compensate_pressure(const uint32_t uncomp_press) {
 }
 
 bool gciBMP390::get_calib_data() {
-  bool ok = ReadRegisters(REG_CALIB_DATA, LEN_CALIB_DATA, buffer);
+  bool ok = readRegisters(REG_CALIB_DATA, LEN_CALIB_DATA, buffer);
   if (!ok)
     return false;
 
@@ -305,7 +305,7 @@ bool gciBMP390::soft_reset() {
   // Device is ready to accept new command
   if (cmd_rdy_status & CMD_RDY) {
     // Write the soft reset command in the sensor
-    ok = WriteRegister(REG_CMD, SOFT_RESET);
+    ok = writeRegister(REG_CMD, SOFT_RESET);
     if (!ok)
       return false;
 

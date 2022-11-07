@@ -6,10 +6,10 @@ bits - how many bits for mask
 shift - how much to shift data by
 data - returned value pointer
 */
-bool Sensor::Read(const uint8_t reg, const uint8_t bits, const uint8_t shift,
+bool Sensor::readBits(const uint8_t reg, const uint8_t bits, const uint8_t shift,
                   uint8_t *const data) {
   uint8_t val;
-  if (!ReadRegisters(reg, 1, &val)) {
+  if (!readRegisters(reg, 1, &val)) {
     return false;
   }
   val >>= shift;
@@ -30,11 +30,10 @@ data - data that goes into register
 bits - how many bits for mask
 shift - how much to shift data by
 */
-// bool updateCtrlReg()
-bool Sensor::Write(const uint8_t reg, const uint8_t data, const uint8_t bits,
+bool Sensor::writeBits(const uint8_t reg, const uint8_t data, const uint8_t bits,
                    const uint8_t shift) {
   uint8_t val;
-  if (!ReadRegisters(reg, 1, &val)) {
+  if (!readRegisters(reg, 1, &val)) {
     return false;
   }
   uint8_t mask = (1 << (bits)) - 1;
@@ -42,7 +41,7 @@ bool Sensor::Write(const uint8_t reg, const uint8_t data, const uint8_t bits,
   mask <<= shift;
   val &= ~mask;
   val |= d << shift;
-  return WriteRegister(reg, val);
+  return writeRegister(reg, val);
 }
 
 /*!
@@ -55,7 +54,7 @@ bool Sensor::Write(const uint8_t reg, const uint8_t data, const uint8_t bits,
  * @retval false fail
  * @retval true success
  */
-bool Sensor::WriteRegister(const uint8_t reg, const uint8_t data) {
+bool Sensor::writeRegister(const uint8_t reg, const uint8_t data) {
 #ifdef __linux__
   i2c->set(addr);
   return i2c->write(reg, data);
@@ -67,7 +66,7 @@ bool Sensor::WriteRegister(const uint8_t reg, const uint8_t data) {
   i2c->endTransmission();
 
   delay(10);
-  ReadRegisters(reg, 1, &ret_val);
+  readRegisters(reg, 1, &ret_val);
   if (data == ret_val)
     return true;
   return false;
@@ -86,7 +85,7 @@ bool Sensor::WriteRegister(const uint8_t reg, const uint8_t data) {
  * @retval false fail
  * @retval true success
  */
-bool Sensor::ReadRegisters(const uint8_t reg, const uint8_t count,
+bool Sensor::readRegisters(const uint8_t reg, const uint8_t count,
                            uint8_t *const data) {
 #ifdef __linux__
   i2c->set(addr);
@@ -103,8 +102,8 @@ bool Sensor::ReadRegisters(const uint8_t reg, const uint8_t count,
     }
     return true;
   }
-  Serial.println("ReadRegisters::bad read: " + std::to_string(bytes_rx) +
-                 " expected: " + std::to_string(count));
+  // Serial.println("ReadRegisters::bad read: " + std::to_string(bytes_rx) +
+  //                " expected: " + std::to_string(count));
   return false;
 
 #endif
@@ -115,7 +114,11 @@ Returns the register value and returns the entire register.
 */
 uint8_t Sensor::readRegister(uint8_t reg) {
   uint8_t value;
-  if (ReadRegisters(reg, 1, &value) != 1)
-    return -1;
+  if (!readRegisters(reg, 1, &value))
+    return 0;
   return value;
+}
+
+bool Sensor::readRegister(uint8_t reg, uint8_t* value) {
+  return readRegisters(reg, 1, value);
 }

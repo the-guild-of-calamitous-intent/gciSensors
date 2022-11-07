@@ -8,7 +8,6 @@
 #pragma once
 
 #include "../sensor.hpp"
-// #include "bosch/bmp3_defs.h"
 
 namespace BMP390 {
 
@@ -48,7 +47,6 @@ constexpr uint8_t ODR_0_003_HZ = 0x10;
 constexpr uint8_t ODR_0_001_HZ = 0x11;
 
 constexpr uint8_t SOFT_RESET = 0xB6;
-
 constexpr uint8_t LEN_CALIB_DATA = 21;
 
 enum OsMode : uint8_t {
@@ -87,14 +85,9 @@ public:
   bool init();
 
   bool setOsMode(const OsMode mode);
-  // bool setFilterCoef(const FilterCoef val);
-
   bool setOverSampling(uint8_t posr, uint8_t tosr);
-
   bool setODR(uint8_t odr);
-
   bool setIIR(uint8_t iir);
-
   bool setInterrupt(uint8_t drdy_en, uint8_t int_level);
 
   pt_t read();
@@ -108,12 +101,12 @@ public:
 protected:
   uint8_t buffer[LEN_CALIB_DATA];
 
-  inline uint32_t to_24b(uint8_t *b) {
-    return (uint32_t)b[0] | (uint32_t)b[1] << 8 | (uint32_t)b[2] << 16;
-  }
-  inline uint16_t to_16b(uint8_t msb, uint8_t lsb) {
-    return ((uint16_t)msb << 8) | (uint16_t)lsb;
-  }
+  // inline uint32_t to_24b(uint8_t *b) {
+  //   return (uint32_t)b[0] | (uint32_t)b[1] << 8 | (uint32_t)b[2] << 16;
+  // }
+  // inline uint16_t to_16b(uint8_t msb, uint8_t lsb) {
+  //   return ((uint16_t)msb << 8) | (uint16_t)lsb;
+  // }
 
   float compensate_temperature(const uint32_t uncomp_temp); // datasheet pg 28
   float compensate_pressure(const uint32_t uncomp_press);   // datasheet pg 28
