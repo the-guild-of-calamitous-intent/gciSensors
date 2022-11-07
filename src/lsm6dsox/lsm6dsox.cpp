@@ -34,26 +34,27 @@ constexpr float TEMP_SCALE = 1.0f / 256.0f;
 using namespace LSM6DSOX;
 
 bool gciLSM6DSOX::init() {
-  uint8_t wai; // should get 108 or 0x6C
-  if ((wai = readRegister(WHO_AM_I_REG)) != WHO_AM_I) {
-    Serial.println("failed whoami: " + std::to_string(wai));
+  //     uint8_t wai = readRegister(WHO_AM_I_REG);
+  //   if (!(wai == WHO_AM_I /*|| wai == 0x69*/)) {
+  //     // end();
+  //     return 0;
+  //   }
+
+  if (!(readRegister(WHO_AM_I_REG) == WHO_AM_I)) {
     return false;
   }
-  // Serial.println(wai);
 
   // set the gyroscope control register to work at 104 Hz, 2000 dps and in
   // bypass mode
+  //   writeRegister(CTRL2_G, 0x4C);
   bool ok = setGyro(RATE_104_HZ, GYRO_RANGE_2000_DPS);
-  if (!ok) {
-    // printf("setGyro failed\n");
-    return false;
-  }
+  if (!ok) return false;
 
   // Set the Accelerometer control register to work at 104 Hz, 4 g,and in bypass
   // mode and enable ODR/4 low pass filter (check figure9 of LSM6DSOX's
   // datasheet)
   ok = setAccel(RATE_104_HZ, ACCEL_RANGE_4_G);
-  if (!ok) printf("setAccel failed\n");
+  if (!ok) return false;
 
   // set gyroscope power mode to high performance and bandwidth to 16 MHz
   //   writeRegister(CTRL7_G, 0x00);
@@ -61,7 +62,7 @@ bool gciLSM6DSOX::init() {
   // Set the ODR config register
   //   writeRegister(CTRL8_XL, 0x09); // ODR/4
   ok = writeRegister(CTRL8_XL, 0x00); // ODR/2
-  if (!ok) printf("writeRegister failed\n");
+  if (!ok) return false;
 
   printf(">> init done ...");
 

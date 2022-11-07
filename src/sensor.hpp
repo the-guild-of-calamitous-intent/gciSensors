@@ -7,7 +7,7 @@
 
 #include <Arduino.h>
 #include <Wire.h>
-#include <stdint.h>   // int types
+#include <stdint.h> // int types
 
 /*
 I don't like some of this ... need to clean it up!
@@ -79,7 +79,7 @@ public:
   Returns the register value and returns the entire register.
   */
   uint8_t readRegister(uint8_t reg);
-  bool readRegister(uint8_t reg, uint8_t* data) {} // do this instead?
+  bool readRegister(uint8_t reg, uint8_t* data) {return true;} // do this instead?
 
   // inline bool checkErr(int val) { return (val < 0) ? false : true; }
 

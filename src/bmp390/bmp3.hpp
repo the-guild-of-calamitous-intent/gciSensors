@@ -3,12 +3,53 @@
  * Copyright (c) 2022 Kevin Walchko
  * see LICENSE for full details
 \**************************************/
+// https://www.mide.com/air-pressure-at-altitude-calculator
+
 #pragma once
 
-#include "bosch/bmp3.h"
 #include "../sensor.hpp"
+// #include "bosch/bmp3_defs.h"
 
 namespace BMP390 {
+
+constexpr uint8_t OVERSAMPLING_1X = 0x00;
+constexpr uint8_t OVERSAMPLING_2X = 0x01;
+constexpr uint8_t OVERSAMPLING_4X = 0x02;
+constexpr uint8_t OVERSAMPLING_8X = 0x03;
+constexpr uint8_t OVERSAMPLING_16X = 0x04;
+constexpr uint8_t OVERSAMPLING_32X = 0x05;
+
+constexpr uint8_t IIR_FILTER_DISABLE = 0x00;
+constexpr uint8_t IIR_FILTER_COEFF_1 = 0x01;
+constexpr uint8_t IIR_FILTER_COEFF_3 = 0x02;
+constexpr uint8_t IIR_FILTER_COEFF_7 = 0x03;
+constexpr uint8_t IIR_FILTER_COEFF_15 = 0x04;
+constexpr uint8_t IIR_FILTER_COEFF_31 = 0x05;
+constexpr uint8_t IIR_FILTER_COEFF_63 = 0x06;
+constexpr uint8_t IIR_FILTER_COEFF_127 = 0x07;
+
+constexpr uint8_t ODR_200_HZ = 0x00;
+constexpr uint8_t ODR_100_HZ = 0x01;
+constexpr uint8_t ODR_50_HZ = 0x02;
+constexpr uint8_t ODR_25_HZ = 0x03;
+constexpr uint8_t ODR_12_5_HZ = 0x04;
+constexpr uint8_t ODR_6_25_HZ = 0x05;
+constexpr uint8_t ODR_3_1_HZ = 0x06;
+constexpr uint8_t ODR_1_5_HZ = 0x07;
+constexpr uint8_t ODR_0_78_HZ = 0x08;
+constexpr uint8_t ODR_0_39_HZ = 0x09;
+constexpr uint8_t ODR_0_2_HZ = 0x0A;
+constexpr uint8_t ODR_0_1_HZ = 0x0B;
+constexpr uint8_t ODR_0_05_HZ = 0x0C;
+constexpr uint8_t ODR_0_02_HZ = 0x0D;
+constexpr uint8_t ODR_0_01_HZ = 0x0E;
+constexpr uint8_t ODR_0_006_HZ = 0x0F;
+constexpr uint8_t ODR_0_003_HZ = 0x10;
+constexpr uint8_t ODR_0_001_HZ = 0x11;
+
+constexpr uint8_t SOFT_RESET = 0xB6;
+
+constexpr uint8_t LEN_CALIB_DATA = 21;
 
 enum OsMode : uint8_t {
   OS_MODE_PRES_1X_TEMP_1X,
@@ -20,15 +61,19 @@ enum OsMode : uint8_t {
 };
 
 enum FilterCoef : uint8_t {
-  FILTER_COEF_OFF = BMP3_IIR_FILTER_DISABLE,
-  FILTER_COEF_2 = BMP3_IIR_FILTER_COEFF_1,
-  FILTER_COEF_4 = BMP3_IIR_FILTER_COEFF_3,
-  FILTER_COEF_8 = BMP3_IIR_FILTER_COEFF_7,
-  FILTER_COEF_16 = BMP3_IIR_FILTER_COEFF_15,
-  FILTER_COEF_32 = BMP3_IIR_FILTER_COEFF_31,
-  FILTER_COEF_64 = BMP3_IIR_FILTER_COEFF_63,
-  FILTER_COEF_128 = BMP3_IIR_FILTER_COEFF_127,
+  FILTER_COEF_OFF = IIR_FILTER_DISABLE,
+  FILTER_COEF_2 = IIR_FILTER_COEFF_1,
+  FILTER_COEF_4 = IIR_FILTER_COEFF_3,
+  FILTER_COEF_8 = IIR_FILTER_COEFF_7,
+  FILTER_COEF_16 = IIR_FILTER_COEFF_15,
+  FILTER_COEF_32 = IIR_FILTER_COEFF_31,
+  FILTER_COEF_64 = IIR_FILTER_COEFF_63,
+  FILTER_COEF_128 = IIR_FILTER_COEFF_127,
 };
+
+constexpr uint8_t MODE_NORMAL = 0x03;
+constexpr uint8_t ADDR_I2C = 0x77;
+constexpr uint8_t ADDR_I2C_ALT = 0x76;
 
 struct pt_t {
   float press, temp;
@@ -37,46 +82,68 @@ struct pt_t {
 
 class gciBMP390 : public Sensor {
 public:
-  gciBMP390(TwoWire *i2c, const uint8_t addr = BMP3_ADDR_I2C_SEC);
+  gciBMP390(TwoWire *i2c, const uint8_t addr = ADDR_I2C);
 
   bool init();
 
   bool setOsMode(const OsMode mode);
-  bool setFilterCoef(const FilterCoef val);
+  // bool setFilterCoef(const FilterCoef val);
+
+  bool setOverSampling(uint8_t posr, uint8_t tosr);
+
+  bool setODR(uint8_t odr);
+
+  bool setIIR(uint8_t iir);
+
+  bool setInterrupt(uint8_t drdy_en, uint8_t int_level);
 
   pt_t read();
 
-  float altitude(const float p) {
-    // Probably best not to run here ... very computational.
-    // pre compute some of this?
-    // call atmospalt() ... like matlab?
-    // same as mean sea level (MSL) altitude
-    // Altitude from pressure:
-    // https://www.mide.com/air-pressure-at-altitude-calculator
-    // const float Tb = 15; // temperature at sea level [C] - doesn't work
-    // const float Lb = -0.0098; // lapse rate [C/m] - doesn't work ... pow?
-    constexpr float Tb = 288.15f;          // temperature at sea level [K]
-    constexpr float Lb = -0.0065f;         // lapse rate [K/m]
-    constexpr float Pb = 101325.0f;        // pressure at sea level [Pa]
-    constexpr float R = 8.31446261815324f; // universal gas const [Nm/(mol K)]
-    constexpr float M = 0.0289644f;        // molar mass of Earth's air [kg/mol]
-    constexpr float g0 = 9.80665f;         // gravitational const [m/s^2]
+  float altitude(const float p);
 
-    constexpr float exp = -R * Lb / (g0 * M);
-    constexpr float scale = Tb / Lb;
-    constexpr float inv_Pb = 1.0f / Pb;
-
-    return scale * (std::pow(p * inv_Pb, exp) - 1.0);
-  }
-
-  inline bool reset() { return (bmp3_soft_reset() == BMP3_OK); }
-  inline int8_t get_error_code() const { return err; }
+  inline bool reset() { return soft_reset(); }
 
   bool found;
 
 protected:
-  int8_t err;
-  bmp3_settings req_settings, settings;
+  uint8_t buffer[LEN_CALIB_DATA];
+
+  inline uint32_t to_24b(uint8_t *b) {
+    return (uint32_t)b[0] | (uint32_t)b[1] << 8 | (uint32_t)b[2] << 16;
+  }
+  inline uint16_t to_16b(uint8_t msb, uint8_t lsb) {
+    return ((uint16_t)msb << 8) | (uint16_t)lsb;
+  }
+
+  float compensate_temperature(const uint32_t uncomp_temp); // datasheet pg 28
+  float compensate_pressure(const uint32_t uncomp_press);   // datasheet pg 28
+  bool get_calib_data();
+
+  bool sleep();
+
+  bool setPowerMode(uint8_t mode = MODE_NORMAL);
+
+  bool soft_reset();
+
+  struct bmp3_reg_calib_data {
+    float par_t1;
+    float par_t2;
+    float par_t3;
+
+    float par_p1;
+    float par_p2;
+    float par_p3;
+    float par_p4;
+    float par_p5;
+    float par_p6;
+    float par_p7;
+    float par_p8;
+    float par_p9;
+    float par_p10;
+    float par_p11;
+
+    float t_lin; // was int64_t??
+  } calib;
 };
 
-} // namespace gci
+} // namespace BMP390

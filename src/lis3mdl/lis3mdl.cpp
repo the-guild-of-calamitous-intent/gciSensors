@@ -80,9 +80,11 @@ bool gciLIS3MDL::setDataRate(const Odr odr) {
     return false;
   }
 
-  if (!ok) return false;
+  if (!ok)
+    return false;
 
-  if (!Write(REG_CTRL_REG1, odr, 4, 1)) return false;
+  if (!Write(REG_CTRL_REG1, odr, 4, 1))
+    return false;
 
   return true;
 }
@@ -92,6 +94,10 @@ bool gciLIS3MDL::reboot() { return Write(REG_CTRL_REG1, 0x01, 1, 3); }
 bool gciLIS3MDL::reset() { return Write(REG_CTRL_REG1, 0x01, 1, 2); }
 
 bool gciLIS3MDL::setRange(const Range range) {
+  if (!Write(REG_CTRL_REG2, range, 2, 5)) {
+    return false;
+  }
+
   switch (range) {
   case RANGE_4GS:
     scale = 1.0f / 6842.0f * 100.0f;
@@ -106,12 +112,9 @@ bool gciLIS3MDL::setRange(const Range range) {
     break;
 
   case RANGE_16GS:
-    scale = 1.0f / 1711.0f * 100.0f;
+    scale = 1.0 / 1711.0f * 100.0f;
     break;
   }
-
-  if (!Write(REG_CTRL_REG2, range, 2, 5)) return false;
-
   return true;
 }
 

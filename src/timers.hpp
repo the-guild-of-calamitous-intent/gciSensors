@@ -5,13 +5,12 @@
 \**************************************/
 #pragma once
 
-
 /*
 Calculates the time change since it was last called in seconds.
 */
 class DT {
 public:
-  DT(): last(millis()) {}
+  DT() : last(millis()) {}
 
   void touch() { last = millis(); }
 
@@ -26,26 +25,25 @@ protected:
   uint32_t last;
 };
 
-
 /*
 Returns true after a set amount of time (in msec) has ellapsed.
 
 Don't like the name ... Timer?
 */
 class Alarm {
-  public:
-  Alarm(const uint32_t delaytime): epoch(millis()), dt(delaytime) {}
+public:
+  Alarm(const uint32_t delaytime) : epoch(millis()), dt(delaytime) {}
 
-  bool check(){
+  bool check() {
     uint32_t now = millis();
-    if (now > epoch){
+    if (now > epoch) {
       epoch = now + dt;
       return true;
     }
     return false;
   }
 
-  protected:
+protected:
   const uint32_t dt;
   uint32_t epoch;
 };

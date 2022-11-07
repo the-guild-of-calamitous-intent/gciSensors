@@ -5,6 +5,11 @@
 \**************************************/
 #pragma once
 
+// #if defined(ARDUINO)
+// #include <Wire.h>
+// #include <Arduino.h>
+// #endif
+
 #include "../sensor.hpp"
 
 namespace LIS3MDL {
@@ -12,14 +17,14 @@ namespace LIS3MDL {
 constexpr uint8_t LIS3MDL_ADDR_PRIM = 0x1C;
 constexpr uint8_t LIS3MDL_ADDR_ALT = 0x1E;
 
-enum Range: uint8_t {
+enum Range : uint8_t {
   RANGE_4GS = 0b00,
   RANGE_8GS = 0b01,
   RANGE_12GS = 0b10,
   RANGE_16GS = 0b11
 };
 
-enum Odr: uint8_t {
+enum Odr : uint8_t {
   ODR_155HZ = 0b0001,
   ODR_300HZ = 0b0011,
   ODR_560HZ = 0b0101,
@@ -35,10 +40,10 @@ struct mag_t {
 default:
 -
 */
-class gciLIS3MDL: public Sensor {
+class gciLIS3MDL : public Sensor {
 public:
-  gciLIS3MDL(TwoWire *i2c, const uint8_t addr = LIS3MDL_ADDR_PRIM):
-      Sensor(i2c, addr) {}
+  gciLIS3MDL(TwoWire *i2c, const uint8_t addr = LIS3MDL_ADDR_PRIM)
+      : Sensor(i2c, addr) {}
 
   bool init();
   bool reboot(); // reboot memory content
@@ -50,7 +55,7 @@ public:
   bool setRange(const Range range);
 
 protected:
-  enum PerfMode: uint8_t {
+  enum PerfMode : uint8_t {
     PERF_MODE_LOW_POWER = 0b00,
     PERF_MODE_MEDIUM_POWER = 0b01,
     PERF_MODE_HIGH = 0b10,
@@ -59,6 +64,7 @@ protected:
 
   bool setPerformanceMode(const PerfMode perf_mode);
   bool setBdu(bool en); // block mode - enabled: don't update until MSB/LSB read
+                        // previously
   bool enableTemp();    // why? not dependant on temp changes
 
   union {
@@ -68,4 +74,4 @@ protected:
   float scale;
 };
 
-} // namespace gci
+} // namespace LIS3MDL

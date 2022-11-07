@@ -15,7 +15,10 @@ void setup() {
 
   Serial.println("bmp390 init start");
 
-  if (!bmp.init()) delay(500);
+  while (!bmp.init()) {
+    delay(500);
+    Serial.println("something wrong ...");
+  }
 
   Serial.println("setup done ...");
 }
@@ -26,8 +29,9 @@ void loop() {
 
   if (pt.ok) {
     Serial.print(pt.press);
-    Serial.print("\t");
-    Serial.println(pt.temp);
+    Serial.print(" Pa\t");
+    Serial.print(pt.temp);
+    Serial.println(" C");
   }
   else Serial.println("crap");
 

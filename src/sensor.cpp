@@ -1,6 +1,5 @@
 #include "sensor.hpp"
 
-
 /*
 reg - the register we want to change
 bits - how many bits for mask
@@ -8,7 +7,7 @@ shift - how much to shift data by
 data - returned value pointer
 */
 bool Sensor::Read(const uint8_t reg, const uint8_t bits, const uint8_t shift,
-          uint8_t *const data) {
+                  uint8_t *const data) {
   uint8_t val;
   if (!ReadRegisters(reg, 1, &val)) {
     return false;
@@ -33,7 +32,7 @@ shift - how much to shift data by
 */
 // bool updateCtrlReg()
 bool Sensor::Write(const uint8_t reg, const uint8_t data, const uint8_t bits,
-            const uint8_t shift) {
+                   const uint8_t shift) {
   uint8_t val;
   if (!ReadRegisters(reg, 1, &val)) {
     return false;
@@ -47,19 +46,19 @@ bool Sensor::Write(const uint8_t reg, const uint8_t data, const uint8_t bits,
 }
 
 /*!
-  * @details sets register and verifies it was correct
-  *
-  * @param[in] reg : starting register adress
-  * @param[in] data : returned data pointer
-  *
-  * @return true (success) or false (fail)
-  * @retval false fail
-  * @retval true success
-  */
+ * @details sets register and verifies it was correct
+ *
+ * @param[in] reg : starting register adress
+ * @param[in] data : returned data pointer
+ *
+ * @return true (success) or false (fail)
+ * @retval false fail
+ * @retval true success
+ */
 bool Sensor::WriteRegister(const uint8_t reg, const uint8_t data) {
 #ifdef __linux__
   i2c->set(addr);
-  return i2c->write(reg,data);
+  return i2c->write(reg, data);
 #else
   uint8_t ret_val;
   i2c->beginTransmission(addr);
@@ -69,28 +68,29 @@ bool Sensor::WriteRegister(const uint8_t reg, const uint8_t data) {
 
   delay(10);
   ReadRegisters(reg, 1, &ret_val);
-  if (data == ret_val) return true;
+  if (data == ret_val)
+    return true;
   return false;
 
 #endif
 }
 
 /*!
-  * @details Reads the number of bytes starting at address of register
-  *
-  * @param[in] reg : starting register adress
-  * @param[in] count : number of bytes to read
-  * @param[in] data : returned data pointer
-  *
-  * @return true (success) or false (fail)
-  * @retval false fail
-  * @retval true success
-  */
+ * @details Reads the number of bytes starting at address of register
+ *
+ * @param[in] reg : starting register adress
+ * @param[in] count : number of bytes to read
+ * @param[in] data : returned data pointer
+ *
+ * @return true (success) or false (fail)
+ * @retval false fail
+ * @retval true success
+ */
 bool Sensor::ReadRegisters(const uint8_t reg, const uint8_t count,
-                    uint8_t *const data) {
+                           uint8_t *const data) {
 #ifdef __linux__
   i2c->set(addr);
-  return i2c->read(reg,count,data);
+  return i2c->read(reg, count, data);
 #else
   i2c->beginTransmission(addr);
   i2c->write(reg);
@@ -103,7 +103,8 @@ bool Sensor::ReadRegisters(const uint8_t reg, const uint8_t count,
     }
     return true;
   }
-  Serial.println("ReadRegisters::bad read: " + std::to_string(bytes_rx) + " expected: " + std::to_string(count));
+  Serial.println("ReadRegisters::bad read: " + std::to_string(bytes_rx) +
+                 " expected: " + std::to_string(count));
   return false;
 
 #endif
