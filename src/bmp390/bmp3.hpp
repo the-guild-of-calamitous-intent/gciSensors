@@ -3,12 +3,9 @@
  * Copyright (c) 2022 Kevin Walchko
  * see LICENSE for full details
 \**************************************/
-#pragma once
+// https://www.mide.com/air-pressure-at-altitude-calculator
 
-// #include <Wire.h>
-// #include <Arduino.h>
-// #include <cstddef>
-// #include <cstdint>
+#pragma once
 
 #include "bosch/bmp3_defs.h"
 #include "../sensor.hpp"
@@ -50,7 +47,15 @@ public:
   bool init();
 
   bool setOsMode(const OsMode mode);
-  bool setFilterCoef(const FilterCoef val);
+  // bool setFilterCoef(const FilterCoef val);
+
+  bool setOverSampling(uint8_t posr, uint8_t tosr);
+
+  bool setODR(uint8_t odr);
+
+  bool setIIR(uint8_t iir);
+
+  bool setInterrupt(uint8_t drdy_en, uint8_t int_level);
 
   pt_t read();
 
@@ -74,16 +79,14 @@ public:
     constexpr float scale = Tb / Lb;
     constexpr float inv_Pb = 1.0f / Pb;
 
-    return scale * (std::pow(p * inv_Pb, exp) - 1.0);
+    return scale * (pow(p * inv_Pb, exp) - 1.0);
   }
 
   inline bool reset() { return soft_reset(); }
-  // inline int8_t get_error_code() const { return err_; }
 
   bool found;
 
 protected:
-  // int8_t err_;
   uint8_t buffer[BMP3_LEN_CALIB_DATA];
 
 
@@ -92,56 +95,33 @@ protected:
   }
 
   // datasheet pg 28
-float compensate_temperature(const uint32_t uncomp_temp) {
-  float pd1 = (float)uncomp_temp - calib.par_t1;
-  float pd2 = pd1 * calib.par_t2;
-  calib.t_lin = pd2 + (pd1 * pd1) * calib.par_t3;
-  return calib.t_lin;
-}
+  float compensate_temperature(const uint32_t uncomp_temp) {
+    double pd1 = (double)uncomp_temp - calib.par_t1;
+    double pd2 = pd1 * calib.par_t2;
+    calib.t_lin = pd2 + (pd1 * pd1) * calib.par_t3;
+    return (float)calib.t_lin;
+  }
 
-// datasheet pg 28
-float compensate_pressure(const uint32_t uncomp_press) {
-  float pd1 = calib.par_p6 * calib.t_lin;
-  float pd2 = calib.par_p7 * (calib.t_lin * calib.t_lin);
-  float pd3 = calib.par_p8 * (calib.t_lin * calib.t_lin * calib.t_lin);
-  float po1 = calib.par_p5 + pd1 + pd2 + pd3;
+  // datasheet pg 28
+  float compensate_pressure(const uint32_t uncomp_press) {
+    float pd1 = calib.par_p6 * calib.t_lin;
+    float pd2 = calib.par_p7 * (calib.t_lin * calib.t_lin);
+    float pd3 = calib.par_p8 * (calib.t_lin * calib.t_lin * calib.t_lin);
+    float po1 = calib.par_p5 + pd1 + pd2 + pd3;
 
-  pd1 = calib.par_p2 * calib.t_lin;
-  pd2 = calib.par_p3 * (calib.t_lin * calib.t_lin);
-  pd3 = calib.par_p4 * (calib.t_lin * calib.t_lin * calib.t_lin);
-  float po2 = (float)uncomp_press * (calib.par_p1 + pd1 + pd2 + pd3);
+    pd1 = calib.par_p2 * calib.t_lin;
+    pd2 = calib.par_p3 * (calib.t_lin * calib.t_lin);
+    pd3 = calib.par_p4 * (calib.t_lin * calib.t_lin * calib.t_lin);
+    float po2 = (float)uncomp_press * (calib.par_p1 + pd1 + pd2 + pd3);
 
-  pd1 = (float)uncomp_press * (float)uncomp_press;
-  pd2 = calib.par_p9 + calib.par_p10 * calib.t_lin;
-  pd3 = pd1*pd2;
-  float pd4 = pd3 +((float)uncomp_press * (float)uncomp_press) * calib.par_p11;
-  float comp_press = po1 + po2 + pd4;
+    pd1 = (float)uncomp_press * (float)uncomp_press;
+    pd2 = calib.par_p9 + calib.par_p10 * calib.t_lin;
+    pd3 = pd1*pd2;
+    float pd4 = pd3 +((float)uncomp_press * (float)uncomp_press * (float)uncomp_press) * calib.par_p11;
+    float comp_press = po1 + po2 + pd4;
 
-  return comp_press;
-}
-  // void parse_calib_data(const uint8_t *reg_data) {}
-
-  /**
-  struct bmp3_reg_calib_data {
-    uint16_t par_t1;
-    uint16_t par_t2;
-    int8_t par_t3;
-    int16_t par_p1;
-    int16_t par_p2;
-    int8_t par_p3;
-    int8_t par_p4;
-    uint16_t par_p5;
-    uint16_t par_p6;
-    int8_t par_p7;
-    int8_t par_p8;
-    int16_t par_p9;
-    int8_t par_p10;
-    int8_t par_p11;
-    int64_t t_lin;
-  };
-  #define BMP3_CONCAT_BYTES(msb, lsb) (((uint16_t)msb << 8) | (uint16_t)lsb)
-  */
-  // inline uint16_t CONCAT_BYTES(uint8_t msb, uint8_t lsb) {return ((uint16_t)msb << 8) | (uint16_t)lsb;}
+    return comp_press;
+  }
 
   inline uint16_t to_16b(uint8_t msb, uint8_t lsb) {return ((uint16_t)msb << 8) | (uint16_t)lsb;}
   // inline uint32_t CONCAT_BYTES(uint8_t mmsb, uint8_t msb, uint8_t lsb) {return (uint32_t)mmsb << 8)| (uint32_t)msb << 8) | (uint32_t)lsb;}
@@ -171,145 +151,46 @@ float compensate_pressure(const uint32_t uncomp_press) {
     calib.par_t2 = (float)to_16b(buffer[3], buffer[2]) / powf(2,30);
     calib.par_t3 = (float)buffer[4] / powf(2,48);
 
-    calib.par_p1 = (int16_t)to_16b(buffer[6], buffer[5]);
-    calib.par_p2 = (int16_t)to_16b(buffer[8], buffer[7]);
-    calib.par_p3 = (int8_t)buffer[9];
-    calib.par_p4 = (int8_t)buffer[10];
-    calib.par_p5 = to_16b(buffer[12], buffer[11]);
-    calib.par_p6 = to_16b(buffer[14], buffer[13]);
-    calib.par_p7 = (int8_t)buffer[15];
-    calib.par_p8 = (int8_t)buffer[16];
-    calib.par_p9 = (int16_t)to_16b(buffer[18], buffer[17]);
-    calib.par_p10 = (int8_t)buffer[19];
-    calib.par_p11 = (int8_t)buffer[20];
+    calib.par_p1 = ((float)to_16b(buffer[6], buffer[5]) - powf(2,14)) / powf(2,20);
+    calib.par_p2 = ((float)to_16b(buffer[8], buffer[7]) - powf(2,14)) / powf(2,29);
+    calib.par_p3 = (float)buffer[9] / powf(2,32);
+    calib.par_p4 = (float)buffer[10] / powf(2,37);
+    calib.par_p5 = (float)to_16b(buffer[12], buffer[11]) / powf(2,-3);
+    calib.par_p6 = (float)to_16b(buffer[14], buffer[13]) / powf(2,6);
+    calib.par_p7 = (float)buffer[15] / powf(2,8);
+    calib.par_p8 = (float)buffer[16] / powf(2,15);
+    calib.par_p9 = (float)to_16b(buffer[18], buffer[17]) / powf(2,48);
+    calib.par_p10 = (float)buffer[19] / powf(2,48);
+    calib.par_p11 = (float)buffer[20] / powf(2,65);
 
-    Serial.println("got calib data");
+    // calib.par_t1 = (double)to_16b(buffer[1], buffer[0]) / pow(2,-8);
+    // calib.par_t2 = (double)to_16b(buffer[3], buffer[2]) / pow(2,30);
+    // calib.par_t3 = (double)buffer[4] / pow(2,48);
+
+    // calib.par_p1 = ((float)to_16b(buffer[6], buffer[5]) - pow(2,14)) / pow(2,20);
+    // calib.par_p2 = ((float)to_16b(buffer[8], buffer[7]) - pow(2,14)) / pow(2,29);
+    // calib.par_p3 = (float)buffer[9] / pow(2,32);
+    // calib.par_p4 = (float)buffer[10] / pow(2,37);
+    // calib.par_p5 = (float)to_16b(buffer[12], buffer[11]) / pow(2,-3);
+    // calib.par_p6 = (float)to_16b(buffer[14], buffer[13]) / pow(2,6);
+    // calib.par_p7 = (float)buffer[15] / pow(2,8);
+    // calib.par_p8 = (float)buffer[16] / pow(2,15);
+    // calib.par_p9 = (float)to_16b(buffer[18], buffer[17]) / pow(2,48);
+    // calib.par_p10 = (float)buffer[19] / pow(2,48);
+    // calib.par_p11 = (float)buffer[20] / pow(2,65);
+
+    // Serial.println("got calib data");
 
     return true;
   }
 
   bool sleep() {
-    // int8_t rslt;
-    uint8_t reg_addr = BMP3_REG_PWR_CTRL;
-
-    /* Temporary variable to store the value read from op-mode register */
-    uint8_t op_mode_reg_val;
-
-    // rslt = bmp3_get_regs(BMP3_REG_PWR_CTRL, &op_mode_reg_val, 1 /*, dev*/);
-    op_mode_reg_val = readRegister(BMP3_REG_PWR_CTRL);
-
-    // if (rslt == BMP3_OK) {
-      /* Set the power mode */
-      // op_mode_reg_val = op_mode_reg_val & (~(BMP3_OP_MODE_MSK));
-      op_mode_reg_val = op_mode_reg_val & 0x03; // keep bits 0-1
-
-      /* Write the power mode in the register */
-      return writeRegister(BMP3_REG_PWR_CTRL, op_mode_reg_val);
-    // }
-
-    // return true;
+    uint8_t op_mode = readRegister(BMP3_REG_PWR_CTRL);
+    op_mode = op_mode & 0x03; // keep bits 0-1, temp/press enable
+    return writeRegister(BMP3_REG_PWR_CTRL, op_mode);
   }
 
-  // int8_t bmp3_get_op_mode(uint8_t *op_mode) {} // value?
-  // int8_t bmp3_set_op_mode(uint8_t curr_mode) {
-  //   // int8_t rslt;
-  //   // uint8_t last_set_mode;
-
-  //   /* Check for null pointer in the device structure */
-  //   // rslt = null_ptr_check(dev);
-
-  //     // uint8_t curr_mode = settings->op_mode;
-
-  //     // rslt = bmp3_get_op_mode(&last_set_mode /*, dev*/);
-  //     bool ok;
-
-  //     // get opmode
-  //   // uint8_t last_set_mode = readRegister(BMP3_REG_PWR_CTRL);
-
-  //   /* Assign the power mode in the device structure */
-  //   // last_set_mode = BMP3_GET_BITS(last_set_mode, BMP3_OP_MODE);
-
-  //     /* If the sensor is not in sleep mode put the device to sleep
-  //     * mode */
-  //     // if (last_set_mode != BMP3_MODE_SLEEP ) {
-  //       /* Device should be put to sleep before transiting to
-  //       * forced mode or normal mode */
-  //       ok = put_device_to_sleep();
-  //       delay(5);
-  //     // }
-
-  //     /* Set the power mode */
-  //     // if (rslt == BMP3_OK) {
-  //       if (curr_mode == BMP3_MODE_NORMAL) {
-  //         ok = set_normal_mode();
-  //       }
-  //       // else if (curr_mode == BMP3_MODE_FORCED) {
-  //       //   /* Set forced mode */
-  //       //   ok = write_power_mode();
-  //       // }
-  //     // }
-
-
-  //   return true;
-
-  // }
-
-  // bool set_normal_mode() {
-  //   // int8_t rslt;
-  //   // uint8_t conf_err_status;
-
-  //   // rslt = validate_normal_mode_settings(settings /*, dev*/);
-
-  //   /* If OSR and ODR settings are proper then write the power mode */
-  //   // if (rslt == BMP3_OK) {
-  //     bool ok = write_power_mode(BMP3_MODE_NORMAL);
-
-  //   //   /* check for configuration error */
-  //   //   // if (rslt == BMP3_OK) {
-  //   //     /* Read the configuration error status */
-  //   //     // ok = bmp3_get_regs(BMP3_REG_ERR, &conf_err_status, 1 /*, dev*/);
-  //   //     ok = readRegisters(BMP3_REG_ERR, &conf_err_status, 1);
-
-  //   //     /* Check if conf. error flag is set */
-  //   //     if (ok) {
-  //   //       if (conf_err_status & BMP3_ERR_CONF) {
-  //   //         /* OSR and ODR configuration is not proper */
-  //   //         rslt = BMP3_E_CONFIGURATION_ERR;
-  //   //       }
-  //   //     }
-  //   //   // }
-  //   // // }
-
-  //   return true;
-  // }
-
-  // inline SET_BITS(reg_data, bitname, data) {
-  //   return((reg_data & ~(bitname##_MSK)) | ((data << bitname##_POS) & bitname##_MSK))
-  // }
-
-  // constexpr uint8_t MODE_NORMAL = 0x03;
   bool setPowerMode(uint8_t mode=MODE_NORMAL) {
-    // int8_t rslt;
-    // uint8_t reg_addr = BMP3_REG_PWR_CTRL;
-    // uint8_t op_mode = settings->op_mode;
-
-    /* Temporary variable to store the value read from op-mode register */
-    // uint8_t op_mode_reg_val;
-
-    // /* Read the power mode register */
-    // // rslt = bmp3_get_regs(reg_addr, &op_mode_reg_val, 1 /*, dev*/);
-    // bool ok = readRegisters(BMP3_REG_PWR_CTRL, 1, &op_mode_reg_val);
-    // if (!ok) return false;
-
-    // /* Set the power mode */
-    // if (ok) {
-    //   op_mode_reg_val = BMP3_SET_BITS(op_mode_reg_val, BMP3_OP_MODE, op_mode);
-
-    //   /* Write the power mode in the register */
-    //   // rslt = bmp3_set_regs(&reg_addr, &op_mode_reg_val, 1 /*, dev*/);
-    //   ok = writeRegister(BMP3_REG_PWR_CTRL, op_mode_reg_val);
-    //   if (!ok) return false;
-    // }
     bool ok;
 
     ok = sleep();
@@ -348,116 +229,57 @@ float compensate_pressure(const uint32_t uncomp_press) {
     return false;
   }
 
-  bool setOverSampling(uint8_t posr, uint8_t tosr) {
-    uint8_t val = (tosr << 3) | posr;
-    return writeRegister(BMP3_REG_OSR, val);
-  }
+  // bool bmp3_set_sensor_settings() {
+  //   bool ok;
 
-  bool setODR(uint8_t odr) {
-    return writeRegister(BMP3_REG_ODR, odr);
-  }
+  //   ok = setPowerMode();
+  //   if (!ok) return false;
 
-  bool setIIR(uint8_t iir) {
-    constexpr uint8_t BMP3_REG_IIR_FILTER = 0x1F;
-    uint8_t val = iir << 1;
-    return writeRegister(BMP3_REG_IIR_FILTER, val);
-  }
 
-  bool setInterrupt(uint8_t drdy_en, uint8_t int_level) {
-    // int_level: 1 = active high
-    uint8_t val = (drdy_en << 6) | (int_level << 1);
-    return writeRegister(BMP3_REG_INT_CTRL, val);
-  }
+  //       uint8_t posr = BMP3_OVERSAMPLING_2X;
+  //       uint8_t tosr = BMP3_OVERSAMPLING_1X;
+  //       ok = setOverSampling(posr, tosr);
+  //     if (!ok) return false;
 
-  bool bmp3_set_sensor_settings() {
-    // int8_t rslt = BMP3_OK;
+  //       // val = BMP3_ODR_100_HZ;
+  //       // ok = writeRegister(BMP3_REG_ODR, val);
+  //       ok = setODR(BMP3_ODR_100_HZ);
+  //     if (!ok) return false;
+  //       // val[2] = 0; // no 0x1e reg
 
-    bool ok;
+  //       // constexpr uint8_t BMP3_REG_IIR_FILTER = 0x1F;
+  //       ok = setIIR(BMP3_IIR_FILTER_COEFF_1);
+  //     if (!ok) return false;
 
-    ok = setPowerMode();
-    if (!ok) return false;
+  //       // drdy enable = 1 << 6
+  //       // non-latch = 0
+  //       // active-high = 1 << 1
+  //       // pin push/pull = 0
+  //       // val = (1 << 6) | (1 << 1);
+  //       // ok = writeRegister(BMP3_REG_INT_CTRL, val);
+  //       ok = setInterrupt(1,1);
+  //     if (!ok) return false;
 
-    // constexpr uint8_t PRESS_EN = 0x01;
-    // constexpr uint8_t TEMP_EN = 0x02;
-    // constexpr uint8_t MODE_NORMAL = 0x03;
-
-    // if (settings != NULL) {
-
-      // if (are_settings_changed(BMP3_POWER_CNTL, desired_settings)) {
-        /* Set the power control settings */
-        // rslt = set_pwr_ctrl_settings(desired_settings, settings /*, dev*/);
-        // uint8_t val = (MODE_NORMAL << 4) | TEMP_EN | PRESS_EN;
-        // bool ok = writeRegister(BMP3_REG_PWR_CTRL, val);
-        // if (!ok) return false;
-      // }
-
-      // if (are_settings_changed(BMP3_ODR_FILTER, desired_settings)) {
-        /* Set the over sampling, ODR and filter settings */
-        // rslt = set_odr_filter_settings(desired_settings, settings /*, dev*/);
-        // uint8_t vals[4];
-        // ok = readRegisters(BMP3_REG_OSR, 4, vals);
-
-        uint8_t posr = BMP3_OVERSAMPLING_2X;
-        uint8_t tosr = BMP3_OVERSAMPLING_1X;
-        ok = setOverSampling(posr, tosr);
-      //   uint8_t val = (tosr << 3) | posr;
-      //   ok = writeRegister(BMP3_REG_OSR, val);
-      if (!ok) return false;
-
-        // val = BMP3_ODR_100_HZ;
-        // ok = writeRegister(BMP3_REG_ODR, val);
-        ok = setODR(BMP3_ODR_100_HZ);
-      if (!ok) return false;
-        // val[2] = 0; // no 0x1e reg
-
-        // constexpr uint8_t BMP3_REG_IIR_FILTER = 0x1F;
-        ok = setIIR(BMP3_IIR_FILTER_COEFF_1);
-      if (!ok) return false;
-        // val = BMP3_IIR_FILTER_COEFF_1 << 1;
-        // ok = writeRegister(BMP3_REG_IIR_FILTER, val);
-      // }
-
-      // if (are_settings_changed(BMP3_INT_CTRL, desired_settings)) {
-        /* Set the interrupt control settings */
-        // rslt = set_int_ctrl_settings(desired_settings, settings /*, dev*/);
-
-        // drdy enable = 1 << 6
-        // non-latch = 0
-        // active-high = 1 << 1
-        // pin push/pull = 0
-        // val = (1 << 6) | (1 << 1);
-        // ok = writeRegister(BMP3_REG_INT_CTRL, val);
-        ok = setInterrupt(1,1);
-      if (!ok) return false;
-      // }
-
-      // if (are_settings_changed(BMP3_ADV_SETT, desired_settings)) {
-        /* Set the advance settings */
-        // rslt = set_advance_settings(desired_settings, settings /*, dev*/);
-      // }
-    // } else {
-    //   rslt = BMP3_E_NULL_PTR;
-    // }
-
-    return true;
-  }
+  //   return true;
+  // }
 
   struct bmp3_reg_calib_data {
     float par_t1;
     float par_t2;
     float par_t3;
 
-    int16_t par_p1;
-    int16_t par_p2;
-    int8_t par_p3;
-    int8_t par_p4;
-    uint16_t par_p5;
-    uint16_t par_p6;
-    int8_t par_p7;
-    int8_t par_p8;
-    int16_t par_p9;
-    int8_t par_p10;
-    int8_t par_p11;
+    float par_p1;
+    float par_p2;
+    float par_p3;
+    float par_p4;
+    float par_p5;
+    float par_p6;
+    float par_p7;
+    float par_p8;
+    float par_p9;
+    float par_p10;
+    float par_p11;
+
     float t_lin; // was int64_t??
   } calib;
 

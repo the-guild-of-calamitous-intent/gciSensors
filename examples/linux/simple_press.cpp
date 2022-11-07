@@ -29,8 +29,9 @@ void loop() {
 
   if (pt.ok) {
     Serial.print(pt.press);
-    Serial.print("\t");
-    Serial.println(pt.temp);
+    Serial.print(" Pa\t");
+    Serial.print(pt.temp);
+    Serial.println(" C");
   }
   else Serial.println("crap");
 
