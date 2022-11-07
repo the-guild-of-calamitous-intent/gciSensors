@@ -11,6 +11,7 @@
 
 /*
 I don't like some of this ... need to clean it up!
+move to camel case and
 */
 class Sensor {
 public:
@@ -23,11 +24,9 @@ public:
   data - returned value pointer
   */
   bool Read(const uint8_t reg, const uint8_t bits, const uint8_t shift,
-            uint8_t *const data);
-  bool readbits(const uint8_t reg, const uint8_t bits, const uint8_t shift,
-                uint8_t *const data) {
-    return Read(reg, bits, shift, data);
-  } // FIXME
+            uint8_t *const data) ;
+  bool readBits(const uint8_t reg, const uint8_t bits, const uint8_t shift,
+            uint8_t *const data) {return Read(reg,bits,shift,data);} // FIXME
 
   /*
   Given some data, this will:
@@ -45,9 +44,7 @@ public:
   bool Write(const uint8_t reg, const uint8_t data, const uint8_t bits,
              const uint8_t shift);
   bool writeBits(const uint8_t reg, const uint8_t data, const uint8_t bits,
-                 const uint8_t shift) {
-    return Write(reg, data, bits, shift);
-  } // FIXME
+             const uint8_t shift) {return Write(reg,data,bits,shift);} // FIXME
 
   /*!
    * @details sets register and verifies it was correct
@@ -60,9 +57,7 @@ public:
    * @retval true success
    */
   bool WriteRegister(const uint8_t reg, const uint8_t data);
-  bool writeRegister(const uint8_t reg, const uint8_t data) {
-    return WriteRegister(reg, data);
-  } // FIXME
+  bool writeRegister(const uint8_t reg, const uint8_t data){return WriteRegister(reg, data);} // FIXME
 
   /*!
    * @details Reads the number of bytes starting at address of register
@@ -78,14 +73,13 @@ public:
   bool ReadRegisters(const uint8_t reg, const uint8_t count,
                      uint8_t *const data);
   bool readRegisters(const uint8_t reg, const uint8_t count,
-                     uint8_t *const data) {
-    return ReadRegisters(reg, count, data);
-  }
+                     uint8_t *const data) {return ReadRegisters(reg, count, data);}
 
   /*
   Returns the register value and returns the entire register.
   */
   uint8_t readRegister(uint8_t reg);
+  bool readRegister(uint8_t reg, uint8_t* data) {return true;} // do this instead?
 
   // inline bool checkErr(int val) { return (val < 0) ? false : true; }
 

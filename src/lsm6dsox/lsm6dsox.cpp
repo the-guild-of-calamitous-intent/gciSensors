@@ -1,39 +1,39 @@
 #include "lsm6dsox.hpp"
 #include "../units.hpp"
 
-constexpr int WHO_AM_I_REG = 0X0F;
-constexpr int WHO_AM_I = 0X6C;
-constexpr int CTRL1_XL = 0X10; // Accel settings
-constexpr int CTRL2_G = 0X11;  // Gyro settings hz and dps
+constexpr uint8_t WHO_AM_I_REG = 0x0F;
+constexpr uint8_t WHO_AM_I = 0x6C;
+constexpr uint8_t CTRL1_XL = 0x10; // Accel settings
+constexpr uint8_t CTRL2_G = 0x11;  // Gyro settings hz and dps
 
-constexpr int STATUS_REG = 0X1E;
+constexpr uint8_t STATUS_REG = 0x1E;
 
-constexpr int CTRL6_C = 0X15;  // Accel perf mode and Gyro LPF
-constexpr int CTRL7_G = 0X16;  // Gyro filtering
-constexpr int CTRL8_XL = 0X17; // Accel filtering
+constexpr uint8_t CTRL6_C = 0x15;  // Accel perf mode and Gyro LPF
+constexpr uint8_t CTRL7_G = 0x16;  // Gyro filtering
+constexpr uint8_t CTRL8_XL = 0x17; // Accel filtering
 
-constexpr int OUT_TEMP_L = 0X20;
-constexpr int OUT_TEMP_H = 0X21;
+constexpr uint8_t OUT_TEMP_L = 0x20;
+constexpr uint8_t OUT_TEMP_H = 0x21;
 
-constexpr int OUTX_L_G = 0X22;
-constexpr int OUTX_H_G = 0X23;
-constexpr int OUTY_L_G = 0X24;
-constexpr int OUTY_H_G = 0X25;
-constexpr int OUTZ_L_G = 0X26;
-constexpr int OUTZ_H_G = 0X27;
+constexpr uint8_t OUTX_L_G = 0x22;
+constexpr uint8_t OUTX_H_G = 0x23;
+constexpr uint8_t OUTY_L_G = 0x24;
+constexpr uint8_t OUTY_H_G = 0x25;
+constexpr uint8_t OUTZ_L_G = 0x26;
+constexpr uint8_t OUTZ_H_G = 0x27;
 
-constexpr int OUTX_L_XL = 0X28;
-constexpr int OUTX_H_XL = 0X29;
-constexpr int OUTY_L_XL = 0X2A;
-constexpr int OUTY_H_XL = 0X2B;
-constexpr int OUTZ_L_XL = 0X2C;
-constexpr int OUTZ_H_XL = 0X2D;
+constexpr uint8_t OUTX_L_XL = 0x28;
+constexpr uint8_t OUTX_H_XL = 0x29;
+constexpr uint8_t OUTY_L_XL = 0x2A;
+constexpr uint8_t OUTY_H_XL = 0x2B;
+constexpr uint8_t OUTZ_L_XL = 0x2C;
+constexpr uint8_t OUTZ_H_XL = 0x2D;
 
 constexpr float TEMP_SCALE = 1.0f / 256.0f;
 
 using namespace LSM6DSOX;
 
-int gciLSM6DSOX::init() {
+bool gciLSM6DSOX::init() {
   //     uint8_t wai = readRegister(WHO_AM_I_REG);
   //   if (!(wai == WHO_AM_I /*|| wai == 0x69*/)) {
   //     // end();
@@ -41,34 +41,38 @@ int gciLSM6DSOX::init() {
   //   }
 
   if (!(readRegister(WHO_AM_I_REG) == WHO_AM_I)) {
-    return 0;
+    return false;
   }
 
   // set the gyroscope control register to work at 104 Hz, 2000 dps and in
   // bypass mode
   //   writeRegister(CTRL2_G, 0x4C);
-  setGyro(RATE_104_HZ, GYRO_RANGE_2000_DPS);
+  bool ok = setGyro(RATE_104_HZ, GYRO_RANGE_2000_DPS);
+  if (!ok) return false;
 
   // Set the Accelerometer control register to work at 104 Hz, 4 g,and in bypass
   // mode and enable ODR/4 low pass filter (check figure9 of LSM6DSOX's
   // datasheet)
-  //   writeRegister(CTRL1_XL, 0x4A);
-  setAccel(RATE_104_HZ, ACCEL_RANGE_4_G);
+  ok = setAccel(RATE_104_HZ, ACCEL_RANGE_4_G);
+  if (!ok) return false;
 
   // set gyroscope power mode to high performance and bandwidth to 16 MHz
   //   writeRegister(CTRL7_G, 0x00);
 
   // Set the ODR config register
   //   writeRegister(CTRL8_XL, 0x09); // ODR/4
-  writeRegister(CTRL8_XL, 0x00); // ODR/2
+  ok = writeRegister(CTRL8_XL, 0x00); // ODR/2
+  if (!ok) return false;
 
-  return 1;
+  printf(">> init done ...");
+
+  return true;
 }
 
 /*
 scale factor in rad/s
 */
-int gciLSM6DSOX::setGyro(uint8_t odr, uint8_t dps) {
+bool gciLSM6DSOX::setGyro(uint8_t odr, uint8_t dps) {
   if (dps == GYRO_RANGE_125_DPS)
     g_scale = 125.0f / 32768.0f * Units::deg2rad;
   else if (dps == GYRO_RANGE_250_DPS)
@@ -87,7 +91,7 @@ int gciLSM6DSOX::setGyro(uint8_t odr, uint8_t dps) {
 /*
 scale factor in g's
 */
-int gciLSM6DSOX::setAccel(uint8_t odr, uint8_t range) {
+bool gciLSM6DSOX::setAccel(uint8_t odr, uint8_t range) {
 
   if (range == ACCEL_RANGE_2_G)
     a_scale = 2.0 / 32768.0f;
