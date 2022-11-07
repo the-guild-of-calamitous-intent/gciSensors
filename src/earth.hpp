@@ -5,18 +5,18 @@
 \**************************************/
 #pragma once
 
-#include <math.h>
-#include <algorithm>  // std::min
 #include "units.hpp"
+#include <algorithm> // std::min
+#include <math.h>
 
 namespace Earth {
 
 constexpr float INV_FLATTENING = 298.257223563f;
 constexpr float FLATTENING = 1.0f / INV_FLATTENING;
-constexpr float SEMI_MAJOR_AXIS_M = 6378137.0f; // m
+constexpr float SEMI_MAJOR_AXIS_M = 6378137.0f;                   // m
 constexpr float SEMI_MAJOR_AXIS_KM = SEMI_MAJOR_AXIS_M / 1000.0f; // Km
-constexpr float STD_PRESSURE_PA = 101325.0f;	// Pa
-constexpr float SPIN_RATE_RPS = 7.2921150e-5f; // rad / sec
+constexpr float STD_PRESSURE_PA = 101325.0f;                      // Pa
+constexpr float SPIN_RATE_RPS = 7.2921150e-5f;                    // rad / sec
 constexpr float G0 = 9.7803253359; // Gravity [m/sec^2]
 
 using std::min;
@@ -72,7 +72,8 @@ struct WGS84_t {
     const float R = SEMI_MAJOR_AXIS_M;
     const float dlat = (b.lat - a.lat) * Units::deg2rad;
     const float dlon = (b.lon - a.lon) * Units::deg2rad;
-    const float m = pow(sin(dlat*0.5),2) + cos(alat) * cos(blat) * pow(sin(dlon*0.5),2);
+    const float m = pow(sin(dlat * 0.5), 2) +
+                    cos(alat) * cos(blat) * pow(sin(dlon * 0.5), 2);
     return R * 2.0f * asin(min(1.0f, sqrt(m)));
   }
 
@@ -84,8 +85,8 @@ struct WGS84_t {
     const float a = SEMI_MAJOR_AXIS_M;
     const float b = a - a * FLATTENING;
     lat *= Units::deg2rad;
-    const float num = pow(a* a * cos(lat),2) + pow(b*b * sin(lat),2);
-    const float den = pow(a * cos(lat),2) + pow(b * sin(lat),2);
+    const float num = pow(a * a * cos(lat), 2) + pow(b * b * sin(lat), 2);
+    const float den = pow(a * cos(lat), 2) + pow(b * sin(lat), 2);
     return sqrtf(num / den);
   }
 
@@ -101,7 +102,8 @@ struct WGS84_t {
   */
   float gravity(float lat) {
     lat *= Units::deg2rad;
-    return G0*(1.0f + 0.0053024f*pow(sin(lat),2) - 0.0000058*pow(sin(2*lat),2));
+    return G0 * (1.0f + 0.0053024f * pow(sin(lat), 2) -
+                 0.0000058 * pow(sin(2 * lat), 2));
   }
 };
 
@@ -111,6 +113,5 @@ Not sure this is really useful.
 struct WMM_t {
   float dummy;
 };
-
 
 } // namespace Earth

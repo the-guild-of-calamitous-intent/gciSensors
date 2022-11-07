@@ -19,29 +19,28 @@ https://ahrs.readthedocs.io/en/latest/filters/complementary.html
 https://en.wikipedia.org/wiki/Low-pass_filter
 */
 class LowPass {
-  public:
-  LowPass(float cut): cutoff(cut), val(0.0f) {}
+public:
+  LowPass(float cut) : cutoff(cut), val(0.0f) {}
 
   float update(float in) {
     float b = 2.0f * static_cast<float>(M_PI) * cutoff * dt.now();
     float a = b / (1.0f + b);
-    val = val + a *(in - val);
+    val = val + a * (in - val);
     return val;
   }
 
-  protected:
+protected:
   float cutoff;
   float val; // current value
   DT dt;
 };
 
-
 /*
 http://en.wikipedia.org/wiki/High-pass_filter
 */
 class HighPass {
-  public:
-  HighPass(float cut): cutoff(cut), val(0.0f), last(0.0f) {}
+public:
+  HighPass(float cut) : cutoff(cut), val(0.0f), last(0.0f) {}
 
   float update(const float in) {
     float b = 2.0f * static_cast<float>(M_PI) * cutoff * dt.now();
@@ -51,40 +50,39 @@ class HighPass {
     return val;
   }
 
-  protected:
+protected:
   float cutoff;
   float val;  // current value
   float last; // previous value
   DT dt;
 };
 
-
-
 struct rpy_t {
   float r, p, y;
 };
 
-
 #if 1
 #include "squaternion.hpp"
 /*!
-*/
+ */
 class QCF {
-  public:
-  QCF(float a=0.02f): alpha(a) {}
+public:
+  QCF(float a = 0.02f) : alpha(a) {}
 
-  Quaternion update(float ax, float ay, float az, float wx, float wy, float wz, float dt) {
-    qw = q + 0.5 * dt * Quaternion(0.0f, wx,wy,wz);
-    float an = 1.0f / sqrtf(ax*ax + ay*ay + az*az);
+  Quaternion update(float ax, float ay, float az, float wx, float wy, float wz,
+                    float dt) {
+    qw = q + 0.5 * dt * Quaternion(0.0f, wx, wy, wz);
+    float an = 1.0f / sqrtf(ax * ax + ay * ay + az * az);
 
-    if (isinf(an)) return q;
+    if (isinf(an))
+      return q;
 
     ax *= an;
     ay *= an;
     az *= an;
 
     float roll = atan2(ay, az);
-    float pitch = atan2(-ax, sqrtf(ay*ay + az*az));
+    float pitch = atan2(-ax, sqrtf(ay * ay + az * az));
     float yaw = 0.0f;
 
     qam = Quaternion::from_euler(roll, pitch, yaw);
@@ -95,14 +93,13 @@ class QCF {
 
   Quaternion q; // current state estimate
 
-  protected:
+protected:
   float alpha;    // ratio between the two quaternion estimates
   Quaternion qw;  // quaternion from gyros
   Quaternion qam; // quaternion from accels
 };
 
 #endif
-
 
 ////////////////////////////////////////////////////////////
 

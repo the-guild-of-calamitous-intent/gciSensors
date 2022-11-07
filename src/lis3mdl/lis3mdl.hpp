@@ -74,4 +74,4 @@ protected:
   float scale;
 };
 
-} // namespace gci
+} // namespace LIS3MDL
