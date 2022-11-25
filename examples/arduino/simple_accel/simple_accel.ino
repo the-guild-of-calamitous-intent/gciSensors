@@ -1,6 +1,6 @@
 #include <gciSensors.hpp>
 
-using namespace gci;
+using namespace LSM6DSOX;
 
 // gciLSM6DSOX IMU(&Wire, LSM6DSOX_ADDRESS); // if not using default address
 gciLSM6DSOX IMU(&Wire);
@@ -9,12 +9,12 @@ enum data_type {
   ACCEL,
   GYRO,
   TEMP,
-  COMPFILTER,
+  // COMPFILTER,
   AGT
 };
 
 
-ComplementaryFilter rpycf;
+// ComplementaryFilter rpycf;
 
 void setup() {
   Serial.begin(1000000);
@@ -47,15 +47,15 @@ void loop() {
   else if (val == TEMP) {
     Serial.println(s.temp);
   }
-  else if (val == COMPFILTER) {
-    rpy_t rpy = rpycf.update(s);
+  // else if (val == COMPFILTER) {
+  //   rpy_t rpy = rpycf.update(s);
 
-    Serial.print(rpy.r);
-    Serial.print('\t');
-    Serial.print(rpy.p);
-    Serial.print('\t');
-    Serial.println(rpy.y);
-  }
+  //   Serial.print(rpy.r);
+  //   Serial.print('\t');
+  //   Serial.print(rpy.p);
+  //   Serial.print('\t');
+  //   Serial.println(rpy.y);
+  // }
   else if (val == AGT) {
     Serial.print(s.ax,6);
     Serial.print('\t');
