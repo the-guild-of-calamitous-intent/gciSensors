@@ -30,9 +30,16 @@ struct SerialPort {
   void print(float a, int v=0) {}
   void println(float a, int v=0) {}
   void println(string a) {}
+  void setTimeout(int) {}
+  int available() { return 1; }
+  int read() { return 60; }
+  int write(uint8_t*,int sz) { return sz; }
+  int write(uint8_t) { return 1; }
 
   // this isn't real, so always return "true"
   inline explicit operator bool() const noexcept {return true;}
 };
 
 extern SerialPort Serial;
+extern SerialPort Serial1;
+extern SerialPort Serial2;
