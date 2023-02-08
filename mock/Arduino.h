@@ -38,3 +38,5 @@ struct SerialPort {
 };
 
 extern SerialPort Serial;
+extern SerialPort Serial1;
+extern SerialPort Serial2;
