@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <string>
+#include <algorithm>
 
 // using namespace std;
 using std::string;
@@ -22,6 +23,7 @@ static uint32_t millis(void) {return 0;}
 static uint32_t micros(void) {return 0;}
 static void delay(uint32_t ms) {}
 static void delayMicroseconds(uint32_t us) {}
+static int constrain(int x, int a, int b) { return std::min(b, std::max(x,a)); }
 
 
 struct Stream {
