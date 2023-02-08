@@ -30,6 +30,7 @@ struct SerialPort {
   void print(float a, int v=0) {}
   void println(float a, int v=0) {}
   void println(string a) {}
+  void setTimeout(int) {}
   int available() { return 1; }
   int read() { return 60; }
   int write(uint8_t*,int sz) { return sz; }
