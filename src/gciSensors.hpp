@@ -10,6 +10,9 @@
 #include "lis3mdl/lis3mdl.hpp"
 #include "lsm6dsox/lsm6dsox.hpp"
 
+// range driver
+#include "tfmini/tfmini.h"
+
 // filters
 #include "filters.hpp"
 

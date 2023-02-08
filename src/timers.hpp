@@ -32,7 +32,18 @@ Don't like the name ... Timer?
 */
 class Alarm {
 public:
-  Alarm(const uint32_t delaytime) : epoch(millis()), dt(delaytime) {}
+  Alarm() : enabled(false), epoch(0), dt(0) {}
+
+  void enable(const uint32_t delaytime) {
+    if (enabled) return;
+    dt = delaytime;
+    epoch = millis();
+    enabled = true;
+  }
+
+  void disable() {
+    enabled = false;
+  }
 
   bool check() {
     uint32_t now = millis();
@@ -44,6 +55,7 @@ public:
   }
 
 protected:
-  const uint32_t dt;
+  uint32_t dt;
   uint32_t epoch;
+  bool enabled;
 };

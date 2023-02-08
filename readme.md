@@ -12,6 +12,7 @@ and enable high data rate.
 - [x] LIS3MDL Magnetometer
 - [x] BMP390 Barometer
 - [ ] DPS310 Barometer
+- [x] TFmini LIDAR
 
 ## Filters (`filters.hpp`)
 
@@ -28,6 +29,11 @@ and enable high data rate.
 - KF code, look at: /Users/kevin/tmp/inertial-navigation
 - Eigen KF code at: /Users/kevin/tmp/kf-eigen
     - Probably not good for uC
+
+## Todo
+
+- [ ] convert `Alarm` from reading `millis()` to using HW timer
+- [ ] should `timer.hpp`, `earth.hpp`, or `units.hpp` be in this library? maybe move to `gecko2` (or what ever)
 
 # MIT License
 
