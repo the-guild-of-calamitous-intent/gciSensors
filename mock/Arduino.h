@@ -24,7 +24,7 @@ static void delay(uint32_t ms) {}
 static void delayMicroseconds(uint32_t us) {}
 
 
-struct SerialPort {
+struct Stream {
   void begin(int r) {}
   void print(string a) {}
   void print(float a, int v=0) {}
@@ -38,6 +38,9 @@ struct SerialPort {
 
   // this isn't real, so always return "true"
   inline explicit operator bool() const noexcept {return true;}
+};
+
+struct SerialPort: Stream {
 };
 
 extern SerialPort Serial;
