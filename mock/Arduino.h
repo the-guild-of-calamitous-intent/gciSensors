@@ -32,6 +32,8 @@ struct SerialPort {
   void println(string a) {}
   int available() { return 1; }
   int read() { return 60; }
+  int write(uint8_t*,int sz) { return sz; }
+  int write(uint8_t) { return 1; }
 
   // this isn't real, so always return "true"
   inline explicit operator bool() const noexcept {return true;}
