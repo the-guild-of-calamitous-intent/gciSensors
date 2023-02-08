@@ -34,8 +34,8 @@ SOFTWARE.
 //   int available() { return 0; }
 //   uint8_t read() { return 0; }
 // };
-#include <serialcomm/serial.hpp>
-typedef Serial Stream;
+// #include <serialcomm/serial.hpp>
+// typedef Serial Stream;
 #endif
 
 
