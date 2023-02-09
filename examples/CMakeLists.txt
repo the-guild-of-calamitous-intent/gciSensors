@@ -9,21 +9,16 @@ foreach(MAINS ${apps})
     message(STATUS ">> ${MAINS} as ${APP}")
     add_executable(${APP} ${MAINS})
 
-    if (APPLE)
     target_include_directories(${APP}
         PRIVATE
-            ${CMAKE_SOURCE_DIR}/mock
+            ${CMAKE_SOURCE_DIR}/src
+            ${gcimock_SOURCE_DIR}/src
+            ${squaternion_SOURCE_DIR}/src
     )
-    else()
-    target_include_directories(${APP}
-        PRIVATE
-            ${CMAKE_SOURCE_DIR}/linux
-    )
-    endif()
 
     target_link_libraries(${APP}
         PRIVATE
             ${PROJECT_NAME}
-            # wirelib
+            gcimock
     )
 endforeach()

@@ -1,5 +1,6 @@
 
 #include "bmp3.hpp"
+#include <math.h>
 
 using namespace BMP390;
 

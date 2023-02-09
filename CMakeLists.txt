@@ -42,18 +42,30 @@ include(${CPM_DOWNLOAD_LOCATION})
 CPMAddPackage(
     NAME squaternion
     VERSION 2022.08.20
-    # TAG latest
     GITHUB_REPOSITORY MomsFriendlyRobotCompany/squaternion.cpp
     OPTIONS
         "EXAMPLES OFF"
 )
+
+# gciMock -----------------
+FetchContent_Declare(gciMock
+  GIT_REPOSITORY "git@github.com:the-guild-of-calamitous-intent/gciMock.git"
+  GIT_TAG "origin/main"
+  SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/gcimock"
+)
+set(EXAMPLES OFF CACHE INTERNAL "Dont build examples")
+FetchContent_MakeAvailable(gciMock)
+if(gcimock_POPULATED)
+    message(STATUS "=> Found gciMock")
+else()
+    message(STATUS "*** Didn't find gciMock")
+endif()
 
 # set(CMAKE_CXX_COMPILER -Wunused ) doesn't work
 
 # Add the library target
 add_library(${PROJECT_NAME}
     src/bmp390/bmp3.cpp
-    # src/bmp390/bosch/bmp3imp.cpp
     src/lis3mdl/lis3mdl.cpp
     src/lsm6dsox/lsm6dsox.cpp
     src/sensor.cpp
@@ -65,13 +77,13 @@ add_library(${PROJECT_NAME}
 #     $<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/src>
 # )
 
-target_link_libraries(${PROJECT_NAME}
-    PRIVATE
-        wirelib
-        # ${squaternion_SOURCE_DIR}
-        # $<$<PLATFORM_ID:Linux>:wirelib>
-)
-add_dependencies(${PROJECT_NAME} squaternion)
+# target_link_libraries(${PROJECT_NAME}
+#     PRIVATE
+#         wirelib
+#         # ${squaternion_SOURCE_DIR}
+#         # $<$<PLATFORM_ID:Linux>:wirelib>
+# )
+# add_dependencies(${PROJECT_NAME} squaternion)
 
 # target_include_directories(
 #     ${PROJECT_NAME} PUBLIC
@@ -80,35 +92,53 @@ add_dependencies(${PROJECT_NAME} squaternion)
 #     $<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/src>
 # )
 
-if (UNIX)
-    if (APPLE)
-        message(STATUS "Detected APPLE, using mock i2c")
-        message(STATUS ">> ${squaternion_SOURCE_DIR}")
-        add_subdirectory(mock)
-        target_include_directories(
-            ${PROJECT_NAME} PUBLIC
-            $<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/mock>
-            $<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/src>
-            ${squaternion_SOURCE_DIR}/src
-        )
-    else ()
-        message(STATUS "Detected LINUX, using linux i2c")
-        add_subdirectory(linux)
-        target_include_directories(
-            ${PROJECT_NAME} PUBLIC
-            $<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/linux>
-            $<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/src>
-            ${squaternion_SOURCE_DIR}/src
-        )
-    endif (APPLE)
-endif (UNIX)
+# if (UNIX)
+#     if (APPLE)
+#         message(STATUS "Detected APPLE, using mock i2c")
+#         message(STATUS ">> ${gciMock_SOURCE_DIR}/src")
+#         message(STATUS ">> ${gcimock_SOURCE_DIR}/src")
+#         # add_subdirectory(mock)
+#         target_include_directories(
+#             ${PROJECT_NAME} PUBLIC
+#             # $<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/mock>
+#             $<BUILD_INTERFACE: ${gcimock_SOURCE_DIR}/src>
+#             ${squaternion_SOURCE_DIR}/src
+#         )
+#     else ()
+#         message(STATUS "Detected LINUX, using linux i2c")
+#         # add_subdirectory(linux)
+#         target_include_directories(
+#             ${PROJECT_NAME} PUBLIC
+#             # $<BUILD_INTERFACE: ${CMAKE_CURRENT_SOURCE_DIR}/linux>
+#             $<BUILD_INTERFACE: ${serialcomm_SOURCE_DIR}/src>
+#             ${squaternion_SOURCE_DIR}/src
+#         )
+#     endif (APPLE)
+# endif (UNIX)
 
-# add_subdirectory(examples)
+if (UNIX OR APPLE OR linux)
+    message(STATUS "Using mock i2c ${gcimock_BINARY_DIR}")
+    target_link_directories(${PROJECT_NAME}
+        PUBLIC
+            ${gcimock_BINARY_DIR}
+            ${squaternion_BINARY_DIR}
+    )
+    target_include_directories(${PROJECT_NAME}
+        PUBLIC
+            ${gcimock_SOURCE_DIR}/src
+            ${squaternion_SOURCE_DIR}/src
+    )
+    # target_link_libraries(${PROJECT_NAME}
+    #     PRIVATE
+    #         gciMock
+    #         squaternion
+    # )
+endif()
 
 # Examples ====================================================================
-option(EXAMPLES "Examples" ON)
-message(STATUS "Building examples is ${EXAMPLES}")
-if (EXAMPLES)
+option(BUILD_SENSOR_EXAMPLES "Examples" ON)
+message(STATUS "Building examples is ${BUILD_SENSOR_EXAMPLES}")
+if (BUILD_SENSOR_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
