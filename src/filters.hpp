@@ -61,7 +61,7 @@ struct rpy_t {
   float r, p, y;
 };
 
-#if 1
+#if 0
 #include "squaternion.hpp"
 /*!
  */

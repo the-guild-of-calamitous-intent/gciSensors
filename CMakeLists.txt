@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.14)
 
 PROJECT(cgiSensors
-    VERSION "0.1.0"
+    VERSION "2023.02.10"
     LANGUAGES CXX C
 )
 
@@ -25,27 +25,29 @@ message(STATUS " ${OSN}: ${OS_VERSION}")
 message(STATUS " ${PROC}")
 message(STATUS "-------------------------------------")
 
-# CPM =========================================================================
-set(CPM_DOWNLOAD_LOCATION "${CMAKE_BINARY_DIR}/cmake/CPM.cmake")
-set(CPM_VERSION v0.35.1)
-if(NOT (EXISTS ${CPM_DOWNLOAD_LOCATION}))
-    message(STATUS "Downloading CPM.cmake")
-    file(DOWNLOAD
-        https://github.com/cpm-cmake/CPM.cmake/releases/download/${CPM_VERSION}/CPM.cmake
-        ${CPM_DOWNLOAD_LOCATION}
-    )
-else()
-    message(STATUS "CPM ${CPM_VERSION} ready")
-endif()
-include(${CPM_DOWNLOAD_LOCATION})
+# # CPM =========================================================================
+# set(CPM_DOWNLOAD_LOCATION "${CMAKE_BINARY_DIR}/cmake/CPM.cmake")
+# set(CPM_VERSION v0.35.1)
+# if(NOT (EXISTS ${CPM_DOWNLOAD_LOCATION}))
+#     message(STATUS "Downloading CPM.cmake")
+#     file(DOWNLOAD
+#         https://github.com/cpm-cmake/CPM.cmake/releases/download/${CPM_VERSION}/CPM.cmake
+#         ${CPM_DOWNLOAD_LOCATION}
+#     )
+# else()
+#     message(STATUS "CPM ${CPM_VERSION} ready")
+# endif()
+# include(${CPM_DOWNLOAD_LOCATION})
 
-CPMAddPackage(
-    NAME squaternion
-    VERSION 2022.08.20
-    GITHUB_REPOSITORY MomsFriendlyRobotCompany/squaternion.cpp
-    OPTIONS
-        "EXAMPLES OFF"
-)
+# CPMAddPackage(
+#     NAME squaternion
+#     VERSION 2022.08.20
+#     GITHUB_REPOSITORY MomsFriendlyRobotCompany/squaternion.cpp
+#     OPTIONS
+#         "EXAMPLES OFF"
+# )
+
+include(FetchContent)
 
 # gciMock -----------------
 FetchContent_Declare(gciMock
@@ -121,12 +123,12 @@ if (UNIX OR APPLE OR linux)
     target_link_directories(${PROJECT_NAME}
         PUBLIC
             ${gcimock_BINARY_DIR}
-            ${squaternion_BINARY_DIR}
+            # ${squaternion_BINARY_DIR}
     )
     target_include_directories(${PROJECT_NAME}
         PUBLIC
             ${gcimock_SOURCE_DIR}/src
-            ${squaternion_SOURCE_DIR}/src
+            # ${squaternion_SOURCE_DIR}/src
     )
     # target_link_libraries(${PROJECT_NAME}
     #     PRIVATE
