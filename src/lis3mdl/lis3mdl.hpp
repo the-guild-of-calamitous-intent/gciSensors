@@ -35,10 +35,10 @@ struct mag_t {
 default:
 -
 */
-class gciLIS3MDL : public Sensor {
+class gciLIS3MDL : public SensorI2C {
 public:
   gciLIS3MDL(TwoWire *i2c, const uint8_t addr = ADDR_PRIM)
-      : Sensor(i2c, addr) {}
+      : SensorI2C(i2c, addr) {}
 
   bool init();
   bool reboot(); // reboot memory content

@@ -20,7 +20,7 @@ constexpr uint8_t WHO_AM_I = 0x60;
 constexpr uint8_t LEN_P_T_DATA = 0x21;
 constexpr uint8_t CMD_RDY = 0x10;
 
-gciBMP390::gciBMP390(TwoWire *i2c, const uint8_t addr) : Sensor(i2c, addr) {
+gciBMP390::gciBMP390(TwoWire *i2c, const uint8_t addr) : SensorI2C(i2c, addr) {
   found = false;
 }
 

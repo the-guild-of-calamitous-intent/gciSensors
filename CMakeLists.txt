@@ -49,6 +49,22 @@ message(STATUS "-------------------------------------")
 
 include(FetchContent)
 
+if (linux)
+    # serialcomm -----------------
+    FetchContent_Declare(serialcomm
+    GIT_REPOSITORY "https://github.com/gecko-robotics/serialcomm.git"
+    GIT_TAG "origin/main"
+    SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/serialcomm"
+    )
+    set(EXAMPLES OFF CACHE INTERNAL "Dont build examples")
+    FetchContent_MakeAvailable(serialcomm)
+    if(serialcomm_POPULATED)
+        message(STATUS "=> Found serialcomm")
+    else()
+        message(STATUS "*** Didn't find serialcomm")
+    endif()
+endif(linux)
+
 # gciMock -----------------
 FetchContent_Declare(gciMock
   GIT_REPOSITORY "git@github.com:the-guild-of-calamitous-intent/gciMock.git"

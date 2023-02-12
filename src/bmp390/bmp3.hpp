@@ -78,7 +78,7 @@ struct pt_t {
   bool ok;
 };
 
-class gciBMP390 : public Sensor {
+class gciBMP390 : public SensorI2C {
 public:
   gciBMP390(TwoWire *i2c, const uint8_t addr = ADDR_I2C);
 

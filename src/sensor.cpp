@@ -6,7 +6,7 @@ bits - how many bits for mask
 shift - how much to shift data by
 data - returned value pointer
 */
-bool Sensor::readBits(const uint8_t reg, const uint8_t bits, const uint8_t shift,
+bool SensorI2C::readBits(const uint8_t reg, const uint8_t bits, const uint8_t shift,
                   uint8_t *const data) {
   uint8_t val;
   if (!readRegisters(reg, 1, &val)) {
@@ -30,7 +30,7 @@ data - data that goes into register
 bits - how many bits for mask
 shift - how much to shift data by
 */
-bool Sensor::writeBits(const uint8_t reg, const uint8_t data, const uint8_t bits,
+bool SensorI2C::writeBits(const uint8_t reg, const uint8_t data, const uint8_t bits,
                    const uint8_t shift) {
   uint8_t val;
   if (!readRegisters(reg, 1, &val)) {
@@ -54,7 +54,7 @@ bool Sensor::writeBits(const uint8_t reg, const uint8_t data, const uint8_t bits
  * @retval false fail
  * @retval true success
  */
-bool Sensor::writeRegister(const uint8_t reg, const uint8_t data) {
+bool SensorI2C::writeRegister(const uint8_t reg, const uint8_t data) {
 #ifdef __linux__
   i2c->set(addr);
   return i2c->write(reg, data);
@@ -85,7 +85,7 @@ bool Sensor::writeRegister(const uint8_t reg, const uint8_t data) {
  * @retval false fail
  * @retval true success
  */
-bool Sensor::readRegisters(const uint8_t reg, const uint8_t count,
+bool SensorI2C::readRegisters(const uint8_t reg, const uint8_t count,
                            uint8_t *const data) {
 #ifdef __linux__
   i2c->set(addr);
@@ -112,13 +112,13 @@ bool Sensor::readRegisters(const uint8_t reg, const uint8_t count,
 /*
 Returns the register value and returns the entire register.
 */
-uint8_t Sensor::readRegister(uint8_t reg) {
+uint8_t SensorI2C::readRegister(uint8_t reg) {
   uint8_t value;
   if (!readRegisters(reg, 1, &value))
     return 0;
   return value;
 }
 
-bool Sensor::readRegister(uint8_t reg, uint8_t* value) {
+bool SensorI2C::readRegister(uint8_t reg, uint8_t* value) {
   return readRegisters(reg, 1, value);
 }

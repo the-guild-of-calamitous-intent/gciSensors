@@ -5,8 +5,14 @@
 \**************************************/
 #pragma once
 
-#include <Arduino.h>
-#include <Wire.h>
+#ifdef __linux__
+#elif ARDUINO
+  #include <Arduino.h>
+  #include <Wire.h>
+#else
+  #include <Arduino.h> // this is mock ... rename mockArduino, mockWire?
+  #include <Wire.h>
+#endif
 #include <stdint.h> // int types
 
 
@@ -21,9 +27,9 @@ inline uint16_t to_16b(uint8_t msb, uint8_t lsb) {
 I don't like some of this ... need to clean it up!
 move to camel case and
 */
-class Sensor {
+class SensorI2C {
 public:
-  Sensor(TwoWire *tw, const uint8_t address) : addr(address), i2c(tw) {}
+  SensorI2C(TwoWire *tw, const uint8_t address) : addr(address), i2c(tw) {}
 
   /*
   reg - the register we want to change

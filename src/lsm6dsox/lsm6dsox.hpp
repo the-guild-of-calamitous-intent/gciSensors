@@ -66,10 +66,10 @@ struct sensor_available_t {
   bool accel, gyro, temp; // sensor available?
 };
 
-class gciLSM6DSOX : public Sensor {
+class gciLSM6DSOX : public SensorI2C {
 public:
   gciLSM6DSOX(TwoWire *wire, uint8_t addr = LSM6DSOX_ADDRESS)
-      : Sensor(wire, addr) {}
+      : SensorI2C(wire, addr) {}
   ~gciLSM6DSOX() {}
 
   bool init();
