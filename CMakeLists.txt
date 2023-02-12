@@ -160,3 +160,9 @@ if (BUILD_SENSOR_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
+option(GTESTS "build gtests" ON)
+message(STATUS "Building gtests is ${GTESTS}")
+if (GTESTS)
+    add_subdirectory(gtests)
+endif()
+
