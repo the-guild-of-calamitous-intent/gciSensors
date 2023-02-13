@@ -1,7 +1,7 @@
 # v3.14 required for FetchContent_MakeAvailable
 cmake_minimum_required(VERSION 3.14)
 
-PROJECT(cgisensors
+PROJECT(gcisensors
     VERSION "2023.02.10"
     LANGUAGES CXX
 )
@@ -75,13 +75,13 @@ include(FetchContent)
 # endif(linux)
 
 # gciMock -----------------
-FetchContent_Declare(gciMock
+FetchContent_Declare(gcimock
   GIT_REPOSITORY "git@github.com:the-guild-of-calamitous-intent/gciMock.git"
   GIT_TAG "origin/main"
   SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/gcimock"
 )
 # set(EXAMPLES OFF CACHE INTERNAL "Dont build examples")
-FetchContent_MakeAvailable(gciMock)
+FetchContent_MakeAvailable(gcimock)
 if(gcimock_POPULATED)
     message(STATUS "=> Found gciMock")
 else()
