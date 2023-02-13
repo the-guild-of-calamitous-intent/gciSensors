@@ -21,9 +21,9 @@ list(APPEND gci-gtests
     main-gtest
 )
 
-message(STATUS "gci::gTests ----------------------")
+# message(STATUS "gci::gTests ----------------------")
 foreach(name ${gci-gtests})
-    message(STATUS " -> ${name}")
+    # message(STATUS " -> ${name}")
     add_executable(${name} ${name}.cpp)
     target_link_libraries(${name}
         GTest::gtest_main
