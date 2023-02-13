@@ -1,5 +1,5 @@
 # v3.14 required for FetchContent_MakeAvailable
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.25)
 
 PROJECT(gcisensors
     VERSION "2023.02.10"
