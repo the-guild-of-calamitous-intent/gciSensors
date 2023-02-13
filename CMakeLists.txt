@@ -1,9 +1,9 @@
 # v3.14 required for FetchContent_MakeAvailable
 cmake_minimum_required(VERSION 3.14)
 
-PROJECT(cgiSensors
+PROJECT(cgisensors
     VERSION "2023.02.10"
-    LANGUAGES CXX C
+    LANGUAGES CXX
 )
 
 set(CMAKE_CXX_STANDARD 20)
@@ -154,15 +154,15 @@ if (UNIX OR APPLE OR linux)
 endif()
 
 # Examples ====================================================================
-option(BUILD_SENSOR_EXAMPLES "Examples" ON)
-message(STATUS "Building examples is ${BUILD_SENSOR_EXAMPLES}")
-if (BUILD_SENSOR_EXAMPLES)
+option(BUILD_EXAMPLES "Examples" ON)
+message(STATUS "Building gciSensors examples is ${BUILD_EXAMPLES}")
+if (BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()
 
-option(GTESTS "build gtests" ON)
-message(STATUS "Building gtests is ${GTESTS}")
-if (GTESTS)
+option(BUILD_GTESTS "build gtests" ON)
+message(STATUS "Building gciSensors gtests is ${BUILD_GTESTS}")
+if (BUILD_GTESTS)
     add_subdirectory(gtests)
 endif()
 
