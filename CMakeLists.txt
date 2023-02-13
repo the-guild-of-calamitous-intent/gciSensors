@@ -80,7 +80,7 @@ FetchContent_Declare(gciMock
   GIT_TAG "origin/main"
   SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/gcimock"
 )
-set(EXAMPLES OFF CACHE INTERNAL "Dont build examples")
+# set(EXAMPLES OFF CACHE INTERNAL "Dont build examples")
 FetchContent_MakeAvailable(gciMock)
 if(gcimock_POPULATED)
     message(STATUS "=> Found gciMock")
@@ -144,7 +144,7 @@ add_library(${PROJECT_NAME}
 # endif (UNIX)
 
 if (UNIX OR APPLE OR linux)
-    message(STATUS "Using mock i2c ${gcimock_BINARY_DIR}")
+    # message(STATUS "Using mock i2c ${gcimock_BINARY_DIR}")
     target_link_directories(${PROJECT_NAME}
         PUBLIC
             ${gcimock_BINARY_DIR}
