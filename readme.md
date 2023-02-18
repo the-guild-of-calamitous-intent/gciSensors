@@ -17,12 +17,26 @@ and enable high data rate.
 ## Filters (`filters.hpp`)
 
 - Low/High pass filter
-- Quaternion complementary filter
 
 ## Helpers
 
 - Unit conversions `units.hpp`
 - Earth parameters `earth.hpp`
+
+## Apple and Linux
+
+To use mock serial for testing, do:
+
+```cpp
+#define USE_GCIMOCK_SERIAL 1
+```
+
+Else do:
+
+```cpp
+#include <serialcomm>
+SerialPort Serial;
+```
 
 ## Other Stuff
 
@@ -34,6 +48,7 @@ and enable high data rate.
 
 - [ ] convert `Alarm` from reading `millis()` to using HW timer
 - [ ] should `timer.hpp`, `earth.hpp`, or `units.hpp` be in this library? maybe move to `gecko2` (or what ever)
+- [x] Breakout apple, linux and arduion implementations cleaner
 
 # MIT License
 

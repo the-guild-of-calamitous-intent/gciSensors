@@ -36,7 +36,7 @@ bool gciBMP390::init() {
   ok = get_calib_data();
   if (!ok)
     return false;
-  Serial.println("reset ... got calib ...");
+  // Serial.println("reset ... got calib ...");
 
   ok = setPowerMode();
   if (!ok)
@@ -93,7 +93,7 @@ Off: 1 step delay
 bool gciBMP390::setOsMode(const OsMode mode) {
   uint8_t press_os, temp_os, odr;
 
-  Serial.println("fixme");
+  // Serial.println("fixme");
 
   switch (mode) {
   case OS_MODE_PRES_1X_TEMP_1X:
@@ -173,7 +173,7 @@ pt_t gciBMP390::read() {
   uint32_t press = to_24b(&buffer[0]);
   uint32_t temp = to_24b(&buffer[3]);
 
-  Serial.println("good read");
+  // Serial.println("good read");
 
   ret.ok = true;
   ret.temp = compensate_temperature(temp); // do temp 1st!!!

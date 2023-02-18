@@ -27,17 +27,12 @@ SOFTWARE.
 
 #pragma once
 
-#if defined(__unix__) || defined(__linux__) || defined(__APPLE__)
-// class Stream {
-//   public:
-//   int write(uint8_t d) { return 1; }
-//   int available() { return 0; }
-//   uint8_t read() { return 0; }
-// };
-// #include <serialcomm/serial.hpp>
-// typedef Serial Stream;
-#endif
+#include <stdint.h>
 
+#ifndef USE_GCIMOCK_SERIAL
+  #define USE_GCIMOCK_SERIAL 1
+  #include <mock_serial.hpp>
+#endif
 
 class TFmini {
 public:

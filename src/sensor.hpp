@@ -6,15 +6,14 @@
 #pragma once
 
 #if defined(__linux__)
+  // not sure what to do
 #elif ARDUINO
   #include <Arduino.h>
   #include <Wire.h>
 #elif defined(__APPLE__)
-  #include <Arduino.h> // this is mock ... rename mockArduino, mockWire?
-  #include <Wire.h>
-  static TwoWire Wire;
-  #include <Serial.hpp>
-  static SerialPort Serial;
+  #include <mock_arduino.hpp>
+  #include <mock_wire.hpp>
+  // static TwoWire Wire; // user does this in their main
 #endif
 #include <stdint.h> // int types
 

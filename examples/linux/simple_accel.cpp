@@ -1,6 +1,13 @@
+#define USE_GCIMOCK_SERIAL 1
+
+#include <mock_wire.hpp>
+#include <mock_serial.hpp>
+#include <mock_serial.hpp>
+SerialPort Serial;
+SerialPort Serial1;
+TwoWire Wire;
+
 #include <gciSensors.hpp>
-#include "Arduino.h"
-#include "Wire.h"
 #include <iostream>
 #include <string>
 
