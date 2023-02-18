@@ -1,6 +1,6 @@
 #include "sensor.hpp"
 
-#if defined(__linux__)
+#if defined(__APPLE__)
 
 /*!
  * @details sets register and verifies it was correct
@@ -12,10 +12,7 @@
  * @retval false fail
  * @retval true success
  */
-bool SensorI2C::writeRegister(const uint8_t reg, const uint8_t data) {
-  i2c->set(addr);
-  return i2c->write(reg, data);
-}
+bool SensorI2C::writeRegister(const uint8_t reg, const uint8_t data) { return true; }
 
 /*!
  * @details Reads the number of bytes starting at address of register
@@ -29,9 +26,6 @@ bool SensorI2C::writeRegister(const uint8_t reg, const uint8_t data) {
  * @retval true success
  */
 bool SensorI2C::readRegisters(const uint8_t reg, const uint8_t count,
-                           uint8_t *const data) {
-  i2c->set(addr);
-  return i2c->read(reg, count, data);
-}
+                           uint8_t *const data) { return true; }
 
 #endif

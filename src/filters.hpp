@@ -11,9 +11,29 @@ Quaternion complementary filter:
 https://ahrs.readthedocs.io/en/latest/filters/complementary.html
 *********************************************/
 
-#include "lsm6dsox/lsm6dsox.hpp"
-#include "timers.hpp"
+// #include "lsm6dsox/lsm6dsox.hpp"
+// #include "timers.hpp"
 #include "units.hpp"
+
+/*
+Calculates the time change since it was last called in seconds.
+*/
+class DT {
+public:
+  DT() : last(millis()) {}
+
+  void touch() { last = millis(); }
+
+  float now() {
+    uint32_t n = millis();
+    float dt = static_cast<float>(n - last) * 0.001f;
+    last = n;
+    return dt;
+  }
+
+protected:
+  uint32_t last;
+};
 
 /*
 https://en.wikipedia.org/wiki/Low-pass_filter
@@ -57,6 +77,6 @@ protected:
   DT dt;
 };
 
-struct rpy_t {
-  float r, p, y;
-};
+// struct rpy_t {
+//   float r, p, y;
+// };

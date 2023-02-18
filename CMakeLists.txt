@@ -98,6 +98,7 @@ add_library(${PROJECT_NAME}
     src/sensor.cpp
     src/sensor_arduino.cpp
     src/sensor_linux.cpp
+    src/sensor_apple.cpp
 )
 # target_include_directories(
 #     ${PROJECT_NAME} PUBLIC
