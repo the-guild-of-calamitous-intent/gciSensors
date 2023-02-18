@@ -12,13 +12,13 @@ foreach(MAINS ${apps})
     target_include_directories(${APP}
         PRIVATE
             ${CMAKE_SOURCE_DIR}/src
-            ${gcimock_SOURCE_DIR}/src
+            ${gcimock_SOURCE_DIR}/include
             ${squaternion_SOURCE_DIR}/src
     )
 
     target_link_libraries(${APP}
         PRIVATE
             ${PROJECT_NAME}
-            gcimock
+            # gcimock
     )
 endforeach()

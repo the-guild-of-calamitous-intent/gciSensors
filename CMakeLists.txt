@@ -145,14 +145,14 @@ add_library(${PROJECT_NAME}
 
 if (UNIX OR APPLE OR linux)
     # message(STATUS "Using mock i2c ${gcimock_BINARY_DIR}")
-    target_link_directories(${PROJECT_NAME}
-        PUBLIC
-            ${gcimock_BINARY_DIR}
-            # ${squaternion_BINARY_DIR}
-    )
+    # target_link_directories(${PROJECT_NAME}
+    #     PUBLIC
+    #         ${gcimock_BINARY_DIR}
+    #         # ${squaternion_BINARY_DIR}
+    # )
     target_include_directories(${PROJECT_NAME}
         PUBLIC
-            ${gcimock_SOURCE_DIR}/src
+            ${gcimock_SOURCE_DIR}/include
             # ${squaternion_SOURCE_DIR}/src
     )
     # target_link_libraries(${PROJECT_NAME}

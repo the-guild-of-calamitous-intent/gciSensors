@@ -5,13 +5,16 @@
 \**************************************/
 #pragma once
 
-#ifdef __linux__
+#if defined(__linux__)
 #elif ARDUINO
   #include <Arduino.h>
   #include <Wire.h>
-#else
+#elif defined(__APPLE__)
   #include <Arduino.h> // this is mock ... rename mockArduino, mockWire?
   #include <Wire.h>
+  static TwoWire Wire;
+  #include <Serial.hpp>
+  static SerialPort Serial;
 #endif
 #include <stdint.h> // int types
 
