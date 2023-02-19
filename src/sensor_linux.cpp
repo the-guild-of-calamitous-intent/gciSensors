@@ -29,7 +29,7 @@ bool SensorI2C::writeRegister(const uint8_t reg, const uint8_t data) {
  * @retval true success
  */
 bool SensorI2C::readRegisters(const uint8_t reg, const uint8_t count,
-                           uint8_t *const data) {
+                              uint8_t *const data) {
   i2c->set(addr);
   return i2c->read(reg, count, data);
 }

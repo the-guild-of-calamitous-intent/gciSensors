@@ -89,13 +89,9 @@ bool gciLIS3MDL::setDataRate(const Odr odr) {
   return true;
 }
 
-bool gciLIS3MDL::reboot() {
-  return writeBits(REG_CTRL_REG1, 0x01, 1, 3);
-}
+bool gciLIS3MDL::reboot() { return writeBits(REG_CTRL_REG1, 0x01, 1, 3); }
 
-bool gciLIS3MDL::reset() {
-  return writeBits(REG_CTRL_REG1, 0x01, 1, 2);
-}
+bool gciLIS3MDL::reset() { return writeBits(REG_CTRL_REG1, 0x01, 1, 2); }
 
 bool gciLIS3MDL::setRange(const Range range) {
   if (!writeBits(REG_CTRL_REG2, range, 2, 5)) {

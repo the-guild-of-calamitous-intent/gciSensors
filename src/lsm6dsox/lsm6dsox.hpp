@@ -61,7 +61,6 @@ struct sox_t {
   bool ok;
 };
 
-
 struct sensor_available_t {
   bool accel, gyro, temp; // sensor available?
 };

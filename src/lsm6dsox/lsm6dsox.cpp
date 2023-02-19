@@ -43,13 +43,15 @@ bool gciLSM6DSOX::init() {
   // bypass mode
   //   writeRegister(CTRL2_G, 0x4C);
   bool ok = setGyro(RATE_104_HZ, GYRO_RANGE_2000_DPS);
-  if (!ok) return false;
+  if (!ok)
+    return false;
 
   // Set the Accelerometer control register to work at 104 Hz, 4 g,and in bypass
   // mode and enable ODR/4 low pass filter (check figure9 of LSM6DSOX's
   // datasheet)
   ok = setAccel(RATE_104_HZ, ACCEL_RANGE_4_G);
-  if (!ok) return false;
+  if (!ok)
+    return false;
 
   // set gyroscope power mode to high performance and bandwidth to 16 MHz
   //   writeRegister(CTRL7_G, 0x00);
@@ -57,7 +59,8 @@ bool gciLSM6DSOX::init() {
   // Set the ODR config register
   // ok = writeRegister(CTRL8_XL, 0x09); // ODR/4
   ok = writeRegister(CTRL8_XL, 0x00); // ODR/2
-  if (!ok) return false;
+  if (!ok)
+    return false;
 
   // printf(">> init done ...");
 

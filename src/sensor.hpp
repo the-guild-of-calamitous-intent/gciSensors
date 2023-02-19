@@ -6,17 +6,16 @@
 #pragma once
 
 #if defined(__linux__)
-  // not sure what to do
+// not sure what to do
 #elif ARDUINO
-  #include <Arduino.h>
-  #include <Wire.h>
+#include <Arduino.h>
+#include <Wire.h>
 #elif defined(__APPLE__)
-  #include <mock_arduino.hpp>
-  #include <mock_wire.hpp>
-  // static TwoWire Wire; // user does this in their main
+#include <mock_arduino.hpp>
+#include <mock_wire.hpp>
+// static TwoWire Wire; // user does this in their main
 #endif
 #include <stdint.h> // int types
-
 
 inline uint32_t to_24b(uint8_t *b) {
   return (uint32_t)b[0] | (uint32_t)b[1] << 8 | (uint32_t)b[2] << 16;
@@ -40,7 +39,7 @@ public:
   data - returned value pointer
   */
   bool readBits(const uint8_t reg, const uint8_t bits, const uint8_t shift,
-            uint8_t *const data) ; // FIXME
+                uint8_t *const data); // FIXME
 
   /*
   Given some data, this will:
@@ -55,7 +54,7 @@ public:
   shift - how much to shift data by
   */
   bool writeBits(const uint8_t reg, const uint8_t data, const uint8_t bits,
-             const uint8_t shift);
+                 const uint8_t shift);
 
   /*!
    * @details sets register and verifies it was correct
@@ -90,7 +89,7 @@ public:
   Returns the register value and returns the entire register.
   */
   uint8_t readRegister(uint8_t reg);
-  bool readRegister(uint8_t reg, uint8_t* data); // do this instead?
+  bool readRegister(uint8_t reg, uint8_t *data); // do this instead?
 
   // inline bool checkErr(int val) { return (val < 0) ? false : true; }
 
