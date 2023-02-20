@@ -30,8 +30,8 @@ SOFTWARE.
 #include <stdint.h>
 
 #ifndef USE_GCIMOCK_SERIAL
-#define USE_GCIMOCK_SERIAL 1
-#include <mock_serial.hpp>
+  #define USE_GCIMOCK_SERIAL 1
+  #include <mock_serial.hpp>
 #endif
 
 class TFmini {
@@ -62,15 +62,14 @@ public:
   void attach(Stream &s) { stream_ = &s; }
 
   bool available() {
-    if (!stream_)
-      return false;
+    if (!stream_) return false;
 
     update();
     if (b_available_) {
       b_available_ = false;
       return true;
-    } else
-      return false;
+    }
+    else return false;
   }
 
   uint16_t getDistance() const { return packet_.distance.i; }
@@ -238,47 +237,43 @@ private:
         return;
       }
 
-      if (state_ != State::CHECKSUM)
-        buffer_.sum += data;
+      if (state_ != State::CHECKSUM) buffer_.sum += data;
 
       switch (state_) {
       case State::HEAD_L: {
         reset();
         buffer_.sum = data;
-        if (data == RECV_FRAME_HEADER)
-          state_ = State::HEAD_H;
+        if (data == RECV_FRAME_HEADER) state_ = State::HEAD_H;
         break;
       }
       case State::HEAD_H: {
-        if (data == RECV_FRAME_HEADER)
-          state_ = State::DIST_L;
-        else
-          state_ = State::HEAD_L;
+        if (data == RECV_FRAME_HEADER) state_ = State::DIST_L;
+        else state_ = State::HEAD_L;
         break;
       }
       case State::DIST_L: {
         buffer_.distance.b[0] = data;
-        state_ = State::DIST_H;
+        state_                = State::DIST_H;
         break;
       }
       case State::DIST_H: {
         buffer_.distance.b[1] = data;
-        state_ = State::STRENGTH_L;
+        state_                = State::STRENGTH_L;
         break;
       }
       case State::STRENGTH_L: {
         buffer_.strength.b[0] = data;
-        state_ = State::STRENGTH_H;
+        state_                = State::STRENGTH_H;
         break;
       }
       case State::STRENGTH_H: {
         buffer_.strength.b[1] = data;
-        state_ = State::INT_TIME;
+        state_                = State::INT_TIME;
         break;
       }
       case State::INT_TIME: {
         buffer_.int_time = data;
-        state_ = State::RESERVED;
+        state_           = State::RESERVED;
         break;
       }
       case State::RESERVED: {
@@ -287,9 +282,10 @@ private:
       }
       case State::CHECKSUM: {
         if (buffer_.sum == data) {
-          packet_ = buffer_;
+          packet_      = buffer_;
           b_available_ = true;
-        } else {
+        }
+        else {
           b_available_ = false;
         }
         reset();

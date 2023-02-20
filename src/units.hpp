@@ -31,11 +31,11 @@ inline float c2k(float c) { return c + 273.15f; }
 inline float k2c(float k) { return k - 273.15f; }
 
 // Distance
-constexpr float m2mi = 0.000621371f; // meters to miles
-constexpr float mi2m = 1609.34f;     // miles to meters
+constexpr float m2mi  = 0.000621371f; // meters to miles
+constexpr float mi2m  = 1609.34f;     // miles to meters
 constexpr float km2mi = 0.621371f;
 constexpr float mi2km = 1.60934f;
-constexpr float ft2m = 0.3048; // feet to meters
+constexpr float ft2m  = 0.3048; // feet to meters
 
 // bits/bytes ... useful?
 static uint16_t to_b16(const uint8_t b[2], const bool little = true) {
@@ -47,7 +47,8 @@ static uint16_t to_b16(const uint8_t b[2], const bool little = true) {
   if (little) {
     buff.b[0] = b[0];
     buff.b[1] = b[1];
-  } else {
+  }
+  else {
     buff.b[0] = b[1];
     buff.b[1] = b[0];
   }

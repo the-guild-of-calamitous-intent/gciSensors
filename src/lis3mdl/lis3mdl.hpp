@@ -10,19 +10,19 @@
 namespace LIS3MDL {
 
 constexpr uint8_t ADDR_PRIM = 0x1C;
-constexpr uint8_t ADDR_ALT = 0x1E;
+constexpr uint8_t ADDR_ALT  = 0x1E;
 
 enum Range : uint8_t {
-  RANGE_4GS = 0b00,
-  RANGE_8GS = 0b01,
+  RANGE_4GS  = 0b00,
+  RANGE_8GS  = 0b01,
   RANGE_12GS = 0b10,
   RANGE_16GS = 0b11
 };
 
 enum Odr : uint8_t {
-  ODR_155HZ = 0b0001,
-  ODR_300HZ = 0b0011,
-  ODR_560HZ = 0b0101,
+  ODR_155HZ  = 0b0001,
+  ODR_300HZ  = 0b0011,
+  ODR_560HZ  = 0b0101,
   ODR_1000HZ = 0b0111
 };
 
@@ -51,10 +51,10 @@ public:
 
 protected:
   enum PerfMode : uint8_t {
-    PERF_MODE_LOW_POWER = 0b00,
+    PERF_MODE_LOW_POWER    = 0b00,
     PERF_MODE_MEDIUM_POWER = 0b01,
-    PERF_MODE_HIGH = 0b10,
-    PERF_MODE_ULTRA_HIGH = 0b11
+    PERF_MODE_HIGH         = 0b10,
+    PERF_MODE_ULTRA_HIGH   = 0b11
   };
 
   bool setPerformanceMode(const PerfMode perf_mode);

@@ -26,8 +26,8 @@ public:
 
   float now() {
     uint32_t n = millis();
-    float dt = static_cast<float>(n - last) * 0.001f;
-    last = n;
+    float dt   = static_cast<float>(n - last) * 0.001f;
+    last       = n;
     return dt;
   }
 
@@ -45,7 +45,7 @@ public:
   float update(float in) {
     float b = 2.0f * static_cast<float>(M_PI) * cutoff * dt.now();
     float a = b / (1.0f + b);
-    val = val + a * (in - val);
+    val     = val + a * (in - val);
     return val;
   }
 
@@ -65,8 +65,8 @@ public:
   float update(const float in) {
     float b = 2.0f * static_cast<float>(M_PI) * cutoff * dt.now();
     float a = b / (1.0f + b);
-    val = a * (val + in - last);
-    last = in;
+    val     = a * (val + in - last);
+    last    = in;
     return val;
   }
 

@@ -14,7 +14,7 @@ bool SensorI2C::readBits(const uint8_t reg, const uint8_t bits,
   }
   val >>= shift;
   uint8_t mask = (1 << (bits)) - 1;
-  *data = val & mask;
+  *data        = val & mask;
   return true;
 }
 
@@ -37,7 +37,7 @@ bool SensorI2C::writeBits(const uint8_t reg, const uint8_t data,
     return false;
   }
   uint8_t mask = (1 << (bits)) - 1;
-  uint8_t d = data & mask;
+  uint8_t d    = data & mask;
   mask <<= shift;
   val &= ~mask;
   val |= d << shift;
@@ -49,8 +49,7 @@ Returns the register value and returns the entire register.
 */
 uint8_t SensorI2C::readRegister(uint8_t reg) {
   uint8_t value;
-  if (!readRegisters(reg, 1, &value))
-    return 0;
+  if (!readRegisters(reg, 1, &value)) return 0;
   return value;
 }
 

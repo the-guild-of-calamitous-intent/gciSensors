@@ -41,9 +41,9 @@ enum accel_range : uint8_t {
 
 /** The gyro data range */
 enum gyro_range : uint8_t {
-  GYRO_RANGE_125_DPS = 0b0010,
-  GYRO_RANGE_250_DPS = 0b0000,
-  GYRO_RANGE_500_DPS = 0b0100,
+  GYRO_RANGE_125_DPS  = 0b0010,
+  GYRO_RANGE_250_DPS  = 0b0000,
+  GYRO_RANGE_500_DPS  = 0b0100,
   GYRO_RANGE_1000_DPS = 0b1000,
   GYRO_RANGE_2000_DPS = 0b1100
 };

@@ -8,11 +8,11 @@
 #if defined(__linux__)
 // not sure what to do
 #elif ARDUINO
-#include <Arduino.h>
-#include <Wire.h>
+  #include <Arduino.h>
+  #include <Wire.h>
 #elif defined(__APPLE__)
-#include <mock_arduino.hpp>
-#include <mock_wire.hpp>
+  #include <mock_arduino.hpp>
+  #include <mock_wire.hpp>
 // static TwoWire Wire; // user does this in their main
 #endif
 #include <stdint.h> // int types

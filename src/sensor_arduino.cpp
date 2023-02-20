@@ -21,8 +21,7 @@ bool SensorI2C::writeRegister(const uint8_t reg, const uint8_t data) {
 
   delay(10);
   readRegisters(reg, 1, &ret_val);
-  if (data == ret_val)
-    return true;
+  if (data == ret_val) return true;
   return false;
 }
 

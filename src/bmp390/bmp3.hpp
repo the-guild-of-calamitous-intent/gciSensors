@@ -11,43 +11,43 @@
 
 namespace BMP390 {
 
-constexpr uint8_t OVERSAMPLING_1X = 0x00;
-constexpr uint8_t OVERSAMPLING_2X = 0x01;
-constexpr uint8_t OVERSAMPLING_4X = 0x02;
-constexpr uint8_t OVERSAMPLING_8X = 0x03;
-constexpr uint8_t OVERSAMPLING_16X = 0x04;
-constexpr uint8_t OVERSAMPLING_32X = 0x05;
+constexpr uint8_t OVERSAMPLING_1X      = 0x00;
+constexpr uint8_t OVERSAMPLING_2X      = 0x01;
+constexpr uint8_t OVERSAMPLING_4X      = 0x02;
+constexpr uint8_t OVERSAMPLING_8X      = 0x03;
+constexpr uint8_t OVERSAMPLING_16X     = 0x04;
+constexpr uint8_t OVERSAMPLING_32X     = 0x05;
 
-constexpr uint8_t IIR_FILTER_DISABLE = 0x00;
-constexpr uint8_t IIR_FILTER_COEFF_1 = 0x01;
-constexpr uint8_t IIR_FILTER_COEFF_3 = 0x02;
-constexpr uint8_t IIR_FILTER_COEFF_7 = 0x03;
-constexpr uint8_t IIR_FILTER_COEFF_15 = 0x04;
-constexpr uint8_t IIR_FILTER_COEFF_31 = 0x05;
-constexpr uint8_t IIR_FILTER_COEFF_63 = 0x06;
+constexpr uint8_t IIR_FILTER_DISABLE   = 0x00;
+constexpr uint8_t IIR_FILTER_COEFF_1   = 0x01;
+constexpr uint8_t IIR_FILTER_COEFF_3   = 0x02;
+constexpr uint8_t IIR_FILTER_COEFF_7   = 0x03;
+constexpr uint8_t IIR_FILTER_COEFF_15  = 0x04;
+constexpr uint8_t IIR_FILTER_COEFF_31  = 0x05;
+constexpr uint8_t IIR_FILTER_COEFF_63  = 0x06;
 constexpr uint8_t IIR_FILTER_COEFF_127 = 0x07;
 
-constexpr uint8_t ODR_200_HZ = 0x00;
-constexpr uint8_t ODR_100_HZ = 0x01;
-constexpr uint8_t ODR_50_HZ = 0x02;
-constexpr uint8_t ODR_25_HZ = 0x03;
-constexpr uint8_t ODR_12_5_HZ = 0x04;
-constexpr uint8_t ODR_6_25_HZ = 0x05;
-constexpr uint8_t ODR_3_1_HZ = 0x06;
-constexpr uint8_t ODR_1_5_HZ = 0x07;
-constexpr uint8_t ODR_0_78_HZ = 0x08;
-constexpr uint8_t ODR_0_39_HZ = 0x09;
-constexpr uint8_t ODR_0_2_HZ = 0x0A;
-constexpr uint8_t ODR_0_1_HZ = 0x0B;
-constexpr uint8_t ODR_0_05_HZ = 0x0C;
-constexpr uint8_t ODR_0_02_HZ = 0x0D;
-constexpr uint8_t ODR_0_01_HZ = 0x0E;
-constexpr uint8_t ODR_0_006_HZ = 0x0F;
-constexpr uint8_t ODR_0_003_HZ = 0x10;
-constexpr uint8_t ODR_0_001_HZ = 0x11;
+constexpr uint8_t ODR_200_HZ           = 0x00;
+constexpr uint8_t ODR_100_HZ           = 0x01;
+constexpr uint8_t ODR_50_HZ            = 0x02;
+constexpr uint8_t ODR_25_HZ            = 0x03;
+constexpr uint8_t ODR_12_5_HZ          = 0x04;
+constexpr uint8_t ODR_6_25_HZ          = 0x05;
+constexpr uint8_t ODR_3_1_HZ           = 0x06;
+constexpr uint8_t ODR_1_5_HZ           = 0x07;
+constexpr uint8_t ODR_0_78_HZ          = 0x08;
+constexpr uint8_t ODR_0_39_HZ          = 0x09;
+constexpr uint8_t ODR_0_2_HZ           = 0x0A;
+constexpr uint8_t ODR_0_1_HZ           = 0x0B;
+constexpr uint8_t ODR_0_05_HZ          = 0x0C;
+constexpr uint8_t ODR_0_02_HZ          = 0x0D;
+constexpr uint8_t ODR_0_01_HZ          = 0x0E;
+constexpr uint8_t ODR_0_006_HZ         = 0x0F;
+constexpr uint8_t ODR_0_003_HZ         = 0x10;
+constexpr uint8_t ODR_0_001_HZ         = 0x11;
 
-constexpr uint8_t SOFT_RESET = 0xB6;
-constexpr uint8_t LEN_CALIB_DATA = 21;
+constexpr uint8_t SOFT_RESET           = 0xB6;
+constexpr uint8_t LEN_CALIB_DATA       = 21;
 
 enum OsMode : uint8_t {
   OS_MODE_PRES_1X_TEMP_1X,
@@ -60,17 +60,17 @@ enum OsMode : uint8_t {
 
 enum FilterCoef : uint8_t {
   FILTER_COEF_OFF = IIR_FILTER_DISABLE,
-  FILTER_COEF_2 = IIR_FILTER_COEFF_1,
-  FILTER_COEF_4 = IIR_FILTER_COEFF_3,
-  FILTER_COEF_8 = IIR_FILTER_COEFF_7,
-  FILTER_COEF_16 = IIR_FILTER_COEFF_15,
-  FILTER_COEF_32 = IIR_FILTER_COEFF_31,
-  FILTER_COEF_64 = IIR_FILTER_COEFF_63,
+  FILTER_COEF_2   = IIR_FILTER_COEFF_1,
+  FILTER_COEF_4   = IIR_FILTER_COEFF_3,
+  FILTER_COEF_8   = IIR_FILTER_COEFF_7,
+  FILTER_COEF_16  = IIR_FILTER_COEFF_15,
+  FILTER_COEF_32  = IIR_FILTER_COEFF_31,
+  FILTER_COEF_64  = IIR_FILTER_COEFF_63,
   FILTER_COEF_128 = IIR_FILTER_COEFF_127,
 };
 
-constexpr uint8_t MODE_NORMAL = 0x03;
-constexpr uint8_t ADDR_I2C = 0x77;
+constexpr uint8_t MODE_NORMAL  = 0x03;
+constexpr uint8_t ADDR_I2C     = 0x77;
 constexpr uint8_t ADDR_I2C_ALT = 0x76;
 
 struct pt_t {

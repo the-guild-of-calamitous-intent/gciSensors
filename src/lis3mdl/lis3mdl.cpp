@@ -2,55 +2,50 @@
 
 using namespace LIS3MDL;
 
-constexpr uint8_t REG_WHO_AM_I = 0x0F;
-constexpr uint8_t REG_CTRL_REG1 = 0x20;
-constexpr uint8_t REG_CTRL_REG2 = 0x21;
-constexpr uint8_t REG_CTRL_REG3 = 0x22;
-constexpr uint8_t REG_CTRL_REG4 = 0x23;
-constexpr uint8_t REG_CTRL_REG5 = 0x24;
+constexpr uint8_t REG_WHO_AM_I   = 0x0F;
+constexpr uint8_t REG_CTRL_REG1  = 0x20;
+constexpr uint8_t REG_CTRL_REG2  = 0x21;
+constexpr uint8_t REG_CTRL_REG3  = 0x22;
+constexpr uint8_t REG_CTRL_REG4  = 0x23;
+constexpr uint8_t REG_CTRL_REG5  = 0x24;
 constexpr uint8_t REG_STATUS_REG = 0x27;
-constexpr uint8_t REG_OUT_X_L = 0x28;
-constexpr uint8_t REG_OUT_X_H = 0x29;
-constexpr uint8_t REG_OUT_Y_L = 0x2A;
-constexpr uint8_t REG_OUT_Y_H = 0x2B;
-constexpr uint8_t REG_OUT_Z_L = 0x2C;
-constexpr uint8_t REG_OUT_Z_H = 0x2D;
+constexpr uint8_t REG_OUT_X_L    = 0x28;
+constexpr uint8_t REG_OUT_X_H    = 0x29;
+constexpr uint8_t REG_OUT_Y_L    = 0x2A;
+constexpr uint8_t REG_OUT_Y_H    = 0x2B;
+constexpr uint8_t REG_OUT_Z_L    = 0x2C;
+constexpr uint8_t REG_OUT_Z_H    = 0x2D;
 constexpr uint8_t REG_TEMP_OUT_L = 0x2E;
 constexpr uint8_t REG_TEMP_OUT_H = 0x2F;
-constexpr uint8_t REG_INT_CFG = 0x30;
-constexpr uint8_t REG_INT_SRC = 0x31;
-constexpr uint8_t REG_INT_THS_L = 0x32;
-constexpr uint8_t REG_INT_THS_H = 0x33;
-constexpr uint8_t WHO_AM_I = 0x3D;
+constexpr uint8_t REG_INT_CFG    = 0x30;
+constexpr uint8_t REG_INT_SRC    = 0x31;
+constexpr uint8_t REG_INT_THS_L  = 0x32;
+constexpr uint8_t REG_INT_THS_H  = 0x33;
+constexpr uint8_t WHO_AM_I       = 0x3D;
 
 enum Bdu : uint8_t { BDU_OFF = 0x00, BDU_ON = 0x01 };
 
 enum OpMode : uint8_t {
   OP_MODE_CONTINUOUS = 0b00, // OpMode 155 - 1000 Hz
-  OP_MODE_SINGLE = 0b01,     // ODR 0.625 - 80 Hz ... won't use this
-  OP_MODE_POWERDOWN = 0b11
+  OP_MODE_SINGLE     = 0b01, // ODR 0.625 - 80 Hz ... won't use this
+  OP_MODE_POWERDOWN  = 0b11
 };
 
 bool gciLIS3MDL::init() {
   uint8_t who_am_i;
   // check WHOAMI
-  if (!readRegisters(REG_WHO_AM_I, sizeof(who_am_i), &who_am_i))
-    return false;
+  if (!readRegisters(REG_WHO_AM_I, sizeof(who_am_i), &who_am_i)) return false;
 
-  if (who_am_i != WHO_AM_I)
-    return false;
+  if (who_am_i != WHO_AM_I) return false;
 
   // set range to +/-4GS
-  if (!setRange(RANGE_4GS))
-    return false;
+  if (!setRange(RANGE_4GS)) return false;
 
   // set ODR to 155 Hz
-  if (!setDataRate(ODR_155HZ))
-    return false;
+  if (!setDataRate(ODR_155HZ)) return false;
 
   // Enable block update (MSB/LSB not updated until previous value read)
-  if (!setBdu(true))
-    return false;
+  if (!setBdu(true)) return false;
 
   mag_t ret = read();
   while (!ret.ok)
@@ -80,11 +75,9 @@ bool gciLIS3MDL::setDataRate(const Odr odr) {
     return false;
   }
 
-  if (!ok)
-    return false;
+  if (!ok) return false;
 
-  if (!writeBits(REG_CTRL_REG1, odr, 4, 1))
-    return false;
+  if (!writeBits(REG_CTRL_REG1, odr, 4, 1)) return false;
 
   return true;
 }
@@ -124,18 +117,18 @@ mag_t gciLIS3MDL::read() {
 
   if (readRegisters(REG_OUT_X_L, 2, buff.b)) {
     ret.x = static_cast<float>(buff.s) * scale;
-  } else
-    ok = false;
+  }
+  else ok = false;
 
   if (readRegisters(REG_OUT_Y_L, 2, buff.b)) {
     ret.y = static_cast<float>(buff.s) * scale;
-  } else
-    ok = false;
+  }
+  else ok = false;
 
   if (readRegisters(REG_OUT_Z_L, 2, buff.b)) {
     ret.z = static_cast<float>(buff.s) * scale;
-  } else
-    ok = false;
+  }
+  else ok = false;
 
   ret.ok = ok;
 
@@ -153,10 +146,8 @@ bool gciLIS3MDL::shutdown() {
 bool gciLIS3MDL::enableTemp() { return writeBits(REG_CTRL_REG1, 0x01, 1, 7); }
 
 bool gciLIS3MDL::setPerformanceMode(const PerfMode perf_mode) {
-  if (!writeBits(REG_CTRL_REG1, perf_mode, 2, 5))
-    return false; // x y axes
-  if (!writeBits(REG_CTRL_REG4, perf_mode, 2, 2))
-    return false; // z axis
+  if (!writeBits(REG_CTRL_REG1, perf_mode, 2, 5)) return false; // x y axes
+  if (!writeBits(REG_CTRL_REG4, perf_mode, 2, 2)) return false; // z axis
   if (!writeBits(REG_CTRL_REG3, OP_MODE_CONTINUOUS, 2, 0))
     return false; // enables continuous mode
 
