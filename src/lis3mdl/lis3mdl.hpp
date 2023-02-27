@@ -38,7 +38,9 @@ default:
 class gciLIS3MDL : public SensorI2C {
 public:
   gciLIS3MDL(TwoWire *i2c, const uint8_t addr = ADDR_PRIM)
-      : SensorI2C(i2c, addr) {}
+      : SensorI2C(i2c, addr),
+        mbias{-13.15340002, 29.7714855, 0.0645215},
+        mm{0.96545537, 0.94936676, 0.967698} {}
 
   bool init();
   bool reboot(); // reboot memory content
@@ -56,6 +58,8 @@ protected:
     PERF_MODE_HIGH         = 0b10,
     PERF_MODE_ULTRA_HIGH   = 0b11
   };
+  float mbias[3]; // mag bias
+  float mm[3];    // mag scale
 
   bool setPerformanceMode(const PerfMode perf_mode);
   bool setBdu(bool en); // block mode - enabled: don't update until MSB/LSB read
@@ -63,8 +67,8 @@ protected:
   bool enableTemp();    // why? not dependant on temp changes
 
   union {
-    int16_t s;    // signed short
-    uint8_t b[2]; // bytes
+    int16_t s[3];    // signed short
+    uint8_t b[6]; // bytes
   } buff;
   float scale;
 };

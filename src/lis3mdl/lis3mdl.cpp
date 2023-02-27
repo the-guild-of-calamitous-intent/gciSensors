@@ -115,20 +115,39 @@ mag_t gciLIS3MDL::read() {
   mag_t ret;
   bool ok = true;
 
-  if (readRegisters(REG_OUT_X_L, 2, buff.b)) {
-    ret.x = static_cast<float>(buff.s) * scale;
+  if (!readRegisters(REG_OUT_X_L, 6, buff.b)) {
+    ret.ok = false;
+    return ret;
   }
-  else ok = false;
 
-  if (readRegisters(REG_OUT_Y_L, 2, buff.b)) {
-    ret.y = static_cast<float>(buff.s) * scale;
-  }
-  else ok = false;
+  float x = buff.s[0] * scale;
+  float y = buff.s[1] * scale;
+  float z = buff.s[2] * scale;
 
-  if (readRegisters(REG_OUT_Z_L, 2, buff.b)) {
-    ret.z = static_cast<float>(buff.s) * scale;
-  }
-  else ok = false;
+  #if IMU_USE_UNCALIBRATED_DATA
+  ret.x = x; // uT
+  ret.y = y;
+  ret.z = z;
+  #else
+  ret.x = mm[0] * x - mbias[0]; // uT
+  ret.y = mm[1] * y - mbias[1];
+  ret.z = mm[2] * z - mbias[2];
+  #endif
+
+  // if (readRegisters(REG_OUT_X_L, 2, buff.b)) {
+  //   ret.x = static_cast<float>(buff.s) * scale;
+  // }
+  // else ok = false;
+
+  // if (readRegisters(REG_OUT_Y_L, 2, buff.b)) {
+  //   ret.y = static_cast<float>(buff.s) * scale;
+  // }
+  // else ok = false;
+
+  // if (readRegisters(REG_OUT_Z_L, 2, buff.b)) {
+  //   ret.z = static_cast<float>(buff.s) * scale;
+  // }
+  // else ok = false;
 
   ret.ok = ok;
 

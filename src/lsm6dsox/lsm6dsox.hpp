@@ -68,7 +68,11 @@ struct sensor_available_t {
 class gciLSM6DSOX : public SensorI2C {
 public:
   gciLSM6DSOX(TwoWire *wire, uint8_t addr = LSM6DSOX_ADDRESS)
-      : SensorI2C(wire, addr) {}
+      : SensorI2C(wire, addr),
+      sm{{1.00268927, -0.00056029, -0.00190925, -0.00492348},
+        {-0.00138898, 0.99580818, -0.00227335, 0.00503835},
+        {-0.01438271, 0.00673172, 0.9998954, -0.01364759}},
+        gbias{-0.00889949 - 0.00235061 - 0.00475294} {}
   ~gciLSM6DSOX() {}
 
   bool init();
@@ -80,6 +84,8 @@ public:
 
 private:
   float g_scale, a_scale;
+  float sm[3][4]; // accel scale/bias
+  float gbias[3]; // gyro bias
 
   union {
     int16_t s[3]; // signed shorts
