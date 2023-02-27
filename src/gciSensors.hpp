@@ -5,7 +5,10 @@
 \**************************************/
 #pragma once
 
-#define IMU_USE_UNCALIBRATED_DATA 0
+
+#ifndef IMU_USE_UNCALIBRATED_DATA
+#define IMU_USE_UNCALIBRATED_DATA 1
+#endif
 
 // sensor drivers
 #include "bmp390/bmp3.hpp"
