@@ -6,6 +6,36 @@ I love Adafruit sensors with QWIIC but their drivers are geared towards hobbiest
 favor low power consumption over performace. I try to strip out unnecessary abstraction
 and enable high data rate.
 
+## LSM6DSOX
+
+- ``init()``:
+    - set accel to ``RATE_104_HZ`` ``ACCEL_RANGE_4_G``
+    - sets gyro to ``RATE_104_HZ`` ``GYRO_RANGE_2000_DPS``
+
+```c++
+LSM6DSOX::gciLSM6DSOX imu(&Wire);
+imu.init();
+sox_t s = imu.read();
+// s.ok => good read true/false
+// s.ax => accel x,y,z in g's
+// s.gx => gyro x,y,z in rads/sec
+// s.temp => temperature in C
+```
+
+## LIS3MMDL
+
+- ``init()``:
+    - set range to ``RANGE_4GS``
+    - set ODR to ``ODR_155HZ``
+
+```c++
+LIS3MDL::gciLIS3MDL mag(&Wire);
+mag.init();
+mag_t m = mag.read();
+// m.x => mag x,y,z in uT
+// m.ok => good read true/false
+```
+
 ## BMP390
 
 - ``init()``: sets up the sensor
