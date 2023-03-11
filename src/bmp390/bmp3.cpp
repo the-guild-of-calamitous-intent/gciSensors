@@ -13,12 +13,42 @@ constexpr uint8_t REG_INT_CTRL    = 0x19;
 constexpr uint8_t REG_PWR_CTRL    = 0x1B;
 constexpr uint8_t REG_OSR         = 0x1C;
 constexpr uint8_t REG_ODR         = 0x1D;
+constexpr uint8_t REG_IIR_FILTER  = 0x1F;
 constexpr uint8_t REG_CALIB_DATA  = 0x31;
-constexpr uint8_t REG_CMD         = 0x71;
+constexpr uint8_t REG_CMD         = 0x7E;
 
 constexpr uint8_t WHO_AM_I        = 0x60;
-constexpr uint8_t LEN_P_T_DATA    = 0x21;
+constexpr uint8_t LEN_P_T_DATA    = 6;
 constexpr uint8_t CMD_RDY         = 0x10;
+
+namespace BITS {
+constexpr uint8_t b0 = 1;
+constexpr uint8_t b1 = 2;
+constexpr uint8_t b2 = 4;
+constexpr uint8_t b3 = 8;
+constexpr uint8_t b4 = 16;
+constexpr uint8_t b5 = 32;
+constexpr uint8_t b6 = 64;
+constexpr uint8_t b7 = 128;
+} // namespace BITS
+
+/*
+bit  value
+0    1
+1    2
+2    4
+3    8
+4    16
+5    32
+6    64
+7    128
+*/
+// constexpr uint8_t DATA_READY_BIT  = 8; // bit 3
+constexpr uint8_t DATA_READY_BIT = BITS::b3; // bit 3
+constexpr uint8_t TEMP_READY_BIT = BITS::b5; // bit 5
+constexpr uint8_t PRES_READY_BIT = BITS::b6; // bit 6
+// constexpr uint8_t TEMP_READY_BIT  = 32; // bit 5
+// constexpr uint8_t PRES_READY_BIT  = 64; // bit 6
 
 gciBMP390::gciBMP390(TwoWire *i2c, const uint8_t addr) : SensorI2C(i2c, addr) {
   found = false;
@@ -26,17 +56,16 @@ gciBMP390::gciBMP390(TwoWire *i2c, const uint8_t addr) : SensorI2C(i2c, addr) {
 
 bool gciBMP390::init() {
   bool ok;
+  // println("gciBMP390::init()");
 
   if (!(readRegister(REG_WHO_AM_I) == WHO_AM_I)) return false;
+  // println("found bmp390");
 
   ok = soft_reset();
   if (!ok) return false;
   ok = get_calib_data();
   if (!ok) return false;
-  // Serial.println("reset ... got calib ...");
-
-  ok = setPowerMode();
-  if (!ok) return false;
+  // println("reset ... got calib ...");
 
   uint8_t posr = OVERSAMPLING_2X;
   uint8_t tosr = OVERSAMPLING_1X;
@@ -58,8 +87,28 @@ bool gciBMP390::init() {
   ok = setInterrupt(1, 1);
   if (!ok) return false;
 
+  ok = setPowerMode(MODE_NORMAL); // continuous sampling
+  if (!ok) return false;
+
   return true;
 }
+
+bool gciBMP390::ready() {
+  if (((readRegister(REG_INT_STATUS) & DATA_READY_BIT) == 0)) return false;
+  return true;
+}
+
+/* VALUE??
+bool gciBMP390::temperature_ready(){
+  if (((readRegister(REG_STATUS) & TEMP_READY_BIT) == 0)) return false;
+  return true;
+}
+
+bool gciBMP390::pressure_ready(){
+  if (((readRegister(REG_STATUS) & PRES_READY_BIT) == 0)) return false;
+  return true;
+}
+*/
 
 /*
 Table 10, datasheet
@@ -85,7 +134,7 @@ Off: 1 step delay
 bool gciBMP390::setOsMode(const OsMode mode) {
   uint8_t press_os, temp_os, odr;
 
-  // Serial.println("fixme");
+  // println("fixme");
 
   switch (mode) {
   case OS_MODE_PRES_1X_TEMP_1X:
@@ -141,46 +190,44 @@ bool gciBMP390::setOverSampling(uint8_t posr, uint8_t tosr) {
 bool gciBMP390::setODR(uint8_t odr) { return writeRegister(REG_ODR, odr); }
 
 bool gciBMP390::setIIR(uint8_t iir) {
-  constexpr uint8_t REG_IIR_FILTER = 0x1F;
-  uint8_t val                      = iir << 1;
+  uint8_t val = iir << 1;
   return writeRegister(REG_IIR_FILTER, val);
 }
 
 bool gciBMP390::setInterrupt(uint8_t drdy_en, uint8_t int_level) {
   // int_level: 1 = active high
+  // drdy_en: 1 = enable pressure/temperature interrupt in INT_STATUS reg
   uint8_t val = (drdy_en << 6) | (int_level << 1);
   return writeRegister(REG_INT_CTRL, val);
 }
 
 pt_t gciBMP390::read() {
-  pt_t ret;
-  ret.ok  = false;
+  pt_t ret = {0};
+  ret.ok   = false;
 
-  bool ok = readRegisters(REG_DATA, LEN_P_T_DATA, buffer);
+  bool ok  = readRegisters(REG_DATA, LEN_P_T_DATA, buffer);
   if (!ok) return ret;
 
   uint32_t press = to_24b(&buffer[0]);
   uint32_t temp  = to_24b(&buffer[3]);
 
-  // Serial.println("good read");
+  // println("good read");
 
   ret.ok    = true;
   ret.temp  = compensate_temperature(temp); // do temp 1st!!!
   ret.press = compensate_pressure(press);
   return ret;
-  // }
-  return ret;
 }
 
-// datasheet pg 28
+// datasheet pg 55
 float gciBMP390::compensate_temperature(const uint32_t uncomp_temp) {
-  double pd1  = (double)uncomp_temp - calib.par_t1;
-  double pd2  = pd1 * calib.par_t2;
+  float pd1   = (float)uncomp_temp - calib.par_t1;
+  float pd2   = pd1 * calib.par_t2;
   calib.t_lin = pd2 + (pd1 * pd1) * calib.par_t3;
   return (float)calib.t_lin;
 }
 
-// datasheet pg 28
+// datasheet pg 56
 float gciBMP390::compensate_pressure(const uint32_t uncomp_press) {
   float pd1 = calib.par_p6 * calib.t_lin;
   float pd2 = calib.par_p7 * (calib.t_lin * calib.t_lin);
@@ -257,26 +304,27 @@ bool gciBMP390::get_calib_data() {
   // calib.par_p10 = (float)buffer[19] / pow(2,48);
   // calib.par_p11 = (float)buffer[20] / pow(2,65);
 
-  // Serial.println("got calib data");
+  // println("got calib data");
 
   return true;
 }
 
 bool gciBMP390::sleep() {
-  uint8_t op_mode = readRegister(REG_PWR_CTRL);
-  op_mode         = op_mode & 0x03; // keep bits 0-1, temp/press enable
-  return writeRegister(REG_PWR_CTRL, op_mode);
+  // uint8_t op_mode = readRegister(REG_PWR_CTRL);
+  // keep bits 0-1, temp/press enable, mode = 00 (sleep)
+  // op_mode = op_mode & (0x01 | 0x02);
+  // return writeRegister(REG_PWR_CTRL, op_mode);
+  return writeRegister(REG_PWR_CTRL, 0x00); // sleep, disable temp/press
 }
 
 bool gciBMP390::setPowerMode(uint8_t mode) {
   bool ok;
 
-  ok = sleep();
-  delay(5);
+  // ok = sleep();
+  // delay(5);
 
   constexpr uint8_t PRESS_EN = 0x01;
   constexpr uint8_t TEMP_EN  = 0x02;
-
   uint8_t val                = (mode << 4) | TEMP_EN | PRESS_EN;
   ok                         = writeRegister(REG_PWR_CTRL, val);
   if (!ok) return false;
@@ -292,17 +340,25 @@ bool gciBMP390::soft_reset() {
 
   // Device is ready to accept new command
   if (cmd_rdy_status & CMD_RDY) {
+    // println("cmd_rdy_status is CMD_RDY");
     // Write the soft reset command in the sensor
-    ok = writeRegister(REG_CMD, SOFT_RESET);
-    if (!ok) return false;
+    // datasheet, p 39, table 47, register ALWAYS reads 0x00
+    writeRegister(REG_CMD, SOFT_RESET);
 
-    delay(2);
+    // println("wrote SOFT_RESET");
+
+    delay(2); // was 2 ... too quick?
 
     // Read for command error status
     if (readRegister(REG_ERR) & REG_CMD) return false;
 
+    // print("No command errors");
+
     return true;
   }
+
+  // println("cmd_rdy_status failed CMD_RDY");
+
   return false;
 }
 

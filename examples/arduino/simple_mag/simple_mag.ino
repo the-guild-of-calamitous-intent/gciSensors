@@ -19,14 +19,11 @@ void loop() {
 
   mag_t m = mag.read();
 
-  if (m.ok) {
-    Serial.print(m.x);
-    Serial.print("\t");
-    Serial.print(m.y);
-    Serial.print("\t");
-    // Serial.println(m.z);
-    Serial.print(m.z);
-    Serial.print("\t");
-    Serial.println((m.ok)? 1 : -1);
-  }
+  Serial.print(m.x);
+  Serial.print("\t");
+  Serial.print(m.y);
+  Serial.print("\t");
+  Serial.print(m.z);
+  Serial.print(" uT \t");
+  Serial.println((m.ok)? 1 : -1);
 }

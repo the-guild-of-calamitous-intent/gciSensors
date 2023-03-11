@@ -2,6 +2,16 @@
 
 #if defined(ARDUINO)
 
+// #define DEBUG 1
+
+// #if DEBUG
+// inline void println(const String& s) {
+//   Serial.println(s);
+// }
+// #else
+// void println(const String& s) {}
+// #endif
+
 /*!
  * @details sets register and verifies it was correct
  *
@@ -22,6 +32,10 @@ bool SensorI2C::writeRegister(const uint8_t reg, const uint8_t data) {
   delay(10);
   readRegisters(reg, 1, &ret_val);
   if (data == ret_val) return true;
+
+  // println("data write failed verification: " + String(int(data)) +
+  //         " != " + String(int(ret_val)));
+
   return false;
 }
 
@@ -41,16 +55,21 @@ bool SensorI2C::readRegisters(const uint8_t reg, const uint8_t count,
   i2c->beginTransmission(addr);
   i2c->write(reg);
   i2c->endTransmission(false);
+
   // delay(500);
-  uint8_t bytes_rx = i2c->requestFrom(static_cast<uint8_t>(addr), count);
+  // delay(2);
+
+  uint8_t bytes_rx = i2c->requestFrom(addr, count);
   if (bytes_rx == count) {
     for (uint8_t i = 0; i < count; i++) {
       data[i] = i2c->read();
     }
     return true;
   }
-  // Serial.println("ReadRegisters::bad read: " + std::to_string(bytes_rx) +
-  //                " expected: " + std::to_string(count));
+
+  // println("ReadRegisters::bad read: " + String(int(bytes_rx)) +
+  //         " expected: " + String(int(count)));
+
   return false;
 }
 

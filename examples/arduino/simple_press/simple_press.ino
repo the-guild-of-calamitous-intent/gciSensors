@@ -1,3 +1,6 @@
+
+#define GCI_SENSORS_DEBUG 0
+
 #include <gciSensors.hpp>
 
 using namespace BMP390;
@@ -11,21 +14,29 @@ void setup() {
   Wire.begin();
   Wire.setClock(400000);
 
-  Serial.print("bmp390 init");
+  Serial.println("setup: bmp390 init");
 
-  if (!bmp.init()) delay(500);
+  while (!bmp.init()) {
+    delay(2000);
+    // Serial.println("ERROR: gciBMP390::init()");
+  }
 
   Serial.println("setup done ...");
 }
 
 void loop() {
 
+  Serial.println(bmp.ready());
   pt_t pt = bmp.read();
 
-  if (pt.ok) {
-    Serial.print(pt.press);
-    Serial.print("\t");
-    Serial.println(pt.temp);
-  }
-//  else Serial.println("-1\t-1");
+  Serial.print(pt.ok? "Good: " : "Error: ");
+  Serial.print(" ");
+  Serial.print(pt.press);
+  Serial.print(" Pa\t");
+  Serial.print(bmp.altitude(pt.press));
+  Serial.print(" m\t");
+  Serial.print(pt.temp);
+  Serial.println(" C");
+
+  delay(200);
 }

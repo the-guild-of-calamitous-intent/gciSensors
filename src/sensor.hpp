@@ -5,16 +5,39 @@
 \**************************************/
 #pragma once
 
-#if defined(__linux__)
+// #if defined(__linux__)
 // not sure what to do
-#elif ARDUINO
+#if defined(ARDUINO)
   #include <Arduino.h>
   #include <Wire.h>
-#elif defined(__APPLE__)
-  #include <mock_arduino.hpp>
-  #include <mock_wire.hpp>
-// static TwoWire Wire; // user does this in their main
+// #elif defined(__APPLE__)
+//   #include <mock_arduino.hpp>
+//   #include <mock_wire.hpp>
+// #elif defined(linux)
 #endif
+
+// THIS DOESN'T SEEM TO WORK RIGHT
+// Put DEBUG in main.cpp before importing this header
+// Example: #define DEBUG 1
+#if defined(GCI_SENSORS_DEBUG)
+  #if defined(ARDUINO)
+    static void println(const String &s) { Serial.println(s); }
+    static void print(const String &s) { Serial.print(s); }
+  #else // apple linux
+    #if defined(__APPLE__) || defined(linux)
+      typedef std::string String;
+    #endif
+      static void println(const String &s) {}
+      static void print(const String &s) {}
+  #endif
+#else
+  #if defined(__APPLE__) || defined(linux)
+    typedef std::string String;
+  #endif
+  static void println(const String &s) {}
+  static void print(const String &s) {}
+#endif
+
 #include <stdint.h> // int types
 
 inline uint32_t to_24b(uint8_t *b) {
@@ -32,64 +55,13 @@ class SensorI2C {
 public:
   SensorI2C(TwoWire *tw, const uint8_t address) : addr(address), i2c(tw) {}
 
-  /*
-  reg - the register we want to change
-  bits - how many bits for mask
-  shift - how much to shift data by
-  data - returned value pointer
-  */
-  bool readBits(const uint8_t reg, const uint8_t bits, const uint8_t shift,
-                uint8_t *const data); // FIXME
-
-  /*
-  Given some data, this will:
-  1. read the register to get all the bits
-  2. mask out the we don't want to change to protect them
-  3. only change the correct bits
-  4. write the final value back to the register
-
-  reg - the register we want to change
-  data - data that goes into register
-  bits - how many bits for mask
-  shift - how much to shift data by
-  */
-  bool writeBits(const uint8_t reg, const uint8_t data, const uint8_t bits,
-                 const uint8_t shift);
-
-  /*!
-   * @details sets register and verifies it was correct
-   *
-   * @param[in] reg : starting register adress
-   * @param[in] data : returned data pointer
-   *
-   * @return true (success) or false (fail)
-   * @retval false fail
-   * @retval true success
-   */
-  // bool WriteRegister(const uint8_t reg, const uint8_t data);
   bool writeRegister(const uint8_t reg, const uint8_t data); // FIXME
 
-  /*!
-   * @details Reads the number of bytes starting at address of register
-   *
-   * @param[in] reg : starting register adress
-   * @param[in] count : number of bytes to read
-   * @param[in] data : returned data pointer
-   *
-   * @return true (success) or false (fail)
-   * @retval false fail
-   * @retval true success
-   */
-  // bool ReadRegisters(const uint8_t reg, const uint8_t count,
-  //                    uint8_t *const data);
   bool readRegisters(const uint8_t reg, const uint8_t count,
                      uint8_t *const data);
-
-  /*
-  Returns the register value and returns the entire register.
-  */
+  // bool readRegister(const uint8_t reg, uint8_t *const data); // do this
+  // instead?
   uint8_t readRegister(uint8_t reg);
-  bool readRegister(uint8_t reg, uint8_t *data); // do this instead?
 
   // inline bool checkErr(int val) { return (val < 0) ? false : true; }
 

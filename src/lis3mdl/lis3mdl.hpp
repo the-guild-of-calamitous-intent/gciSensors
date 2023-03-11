@@ -38,8 +38,7 @@ default:
 class gciLIS3MDL : public SensorI2C {
 public:
   gciLIS3MDL(TwoWire *i2c, const uint8_t addr = ADDR_PRIM)
-      : SensorI2C(i2c, addr),
-        mbias{-13.15340002, 29.7714855, 0.0645215},
+      : SensorI2C(i2c, addr), mbias{-13.15340002, 29.7714855, 0.0645215},
         mm{0.96545537, 0.94936676, 0.967698} {}
 
   bool init();
@@ -65,9 +64,24 @@ protected:
   bool setBdu(bool en); // block mode - enabled: don't update until MSB/LSB read
                         // previously
   bool enableTemp();    // why? not dependant on temp changes
+  /*
+Given some data, this will:
+1. read the register to get all the bits
+2. mask out the we don't want to change to protect them
+3. only change the correct bits
+4. write the final value back to the register
+
+reg - the register we want to change
+data - data that goes into register
+bits - how many bits for mask
+shift - how much to shift data by
+*/
+  bool
+  writeBits(const uint8_t reg, const uint8_t data, const uint8_t bits,
+            const uint8_t shift); // FIXME: only lis3mdl uses this ... remove
 
   union {
-    int16_t s[3];    // signed short
+    int16_t s[3]; // signed short
     uint8_t b[6]; // bytes
   } buff;
   float scale;

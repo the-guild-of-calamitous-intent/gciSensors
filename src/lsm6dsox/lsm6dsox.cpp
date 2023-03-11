@@ -124,15 +124,15 @@ sox_t gciLSM6DSOX::read() {
   float y = data.s[1] * a_scale;
   float z = data.s[2] * a_scale;
 
-  #if IMU_USE_UNCALIBRATED_DATA
+#if IMU_USE_UNCALIBRATED_DATA
   ret.ax = x;
   ret.ay = y;
   ret.az = z;
-  #else
+#else
   ret.ax = sm[0][0] * x + sm[0][1] * y + sm[0][2] * z + sm[0][3];
   ret.ay = sm[1][0] * x + sm[1][1] * y + sm[1][2] * z + sm[1][3];
   ret.az = sm[2][0] * x + sm[2][1] * y + sm[2][2] * z + sm[2][3];
-  #endif
+#endif
 
   if (!readRegisters(OUTX_L_G, sizeof(data.b), data.b)) {
     ret.ok = false;
@@ -143,15 +143,15 @@ sox_t gciLSM6DSOX::read() {
   y = data.s[1] * g_scale;
   z = data.s[2] * g_scale;
 
-  #if IMU_USE_UNCALIBRATED_DATA
+#if IMU_USE_UNCALIBRATED_DATA
   ret.gx = x;
   ret.gy = y;
   ret.gz = z;
-  #else
+#else
   ret.gx = (x - gbias[0]);
   ret.gy = (y - gbias[1]);
   ret.gz = (z - gbias[2]);
-  #endif
+#endif
 
   if (readRegisters(OUT_TEMP_L, 2, data.b) != 1) {
     ret.ok = false;

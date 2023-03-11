@@ -5,9 +5,8 @@
 \**************************************/
 #pragma once
 
-
 #ifndef IMU_USE_UNCALIBRATED_DATA
-#define IMU_USE_UNCALIBRATED_DATA 1
+  #define IMU_USE_UNCALIBRATED_DATA 1
 #endif
 
 // sensor drivers

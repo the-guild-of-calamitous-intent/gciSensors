@@ -69,7 +69,7 @@ enum FilterCoef : uint8_t {
   FILTER_COEF_128 = IIR_FILTER_COEFF_127,
 };
 
-constexpr uint8_t MODE_NORMAL  = 0x03;
+constexpr uint8_t MODE_NORMAL  = 0x03; // continous sampling
 constexpr uint8_t ADDR_I2C     = 0x77;
 constexpr uint8_t ADDR_I2C_ALT = 0x76;
 
@@ -91,6 +91,7 @@ public:
   bool setInterrupt(uint8_t drdy_en, uint8_t int_level);
 
   pt_t read();
+  bool ready();
 
   float altitude(const float p);
 
@@ -101,20 +102,13 @@ public:
 protected:
   uint8_t buffer[LEN_CALIB_DATA];
 
-  // inline uint32_t to_24b(uint8_t *b) {
-  //   return (uint32_t)b[0] | (uint32_t)b[1] << 8 | (uint32_t)b[2] << 16;
-  // }
-  // inline uint16_t to_16b(uint8_t msb, uint8_t lsb) {
-  //   return ((uint16_t)msb << 8) | (uint16_t)lsb;
-  // }
-
-  float compensate_temperature(const uint32_t uncomp_temp); // datasheet pg 28
-  float compensate_pressure(const uint32_t uncomp_press);   // datasheet pg 28
+  float compensate_temperature(const uint32_t uncomp_temp); // datasheet pg 55
+  float compensate_pressure(const uint32_t uncomp_press);   // datasheet pg 56
   bool get_calib_data();
 
   bool sleep();
 
-  bool setPowerMode(uint8_t mode = MODE_NORMAL);
+  bool setPowerMode(uint8_t mode);
 
   bool soft_reset();
 

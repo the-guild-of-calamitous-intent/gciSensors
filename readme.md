@@ -6,13 +6,27 @@ I love Adafruit sensors with QWIIC but their drivers are geared towards hobbiest
 favor low power consumption over performace. I try to strip out unnecessary abstraction
 and enable high data rate.
 
-## Sensors
+## BMP390
 
-- [x] LSM6DSOX Accel and gyro
-- [x] LIS3MDL Magnetometer
-- [x] BMP390 Barometer
-- [ ] DPS310 Barometer
-- [x] TFmini LIDAR
+- ``init()``: sets up the sensor
+    - Does a soft reset of sensor
+    - Enables both pressure and temperature
+        - pressure oversample 2x
+        - temperature oversample 1x
+    - Sets power mode to ``MODE_NORMAL`` or continous reading
+    - ODR set to ``ODR_100_HZ``
+    - IIR filter set to ``IIR_FILTER_COEFF_1``
+
+```c++
+BMP390::gciBMP390 bmp(&Wire);
+bmp.init();
+pt_t pt = bmp.read();
+// pt.ok => good read true/false
+// pt.press => pressure in
+// pt.temp => temperature in C
+```
+
+
 
 ## Filters (`filters.hpp`)
 
@@ -49,6 +63,11 @@ SerialPort Serial;
 - [ ] convert `Alarm` from reading `millis()` to using HW timer
 - [ ] should `timer.hpp`, `earth.hpp`, or `units.hpp` be in this library? maybe move to `gecko2` (or what ever)
 - [x] Breakout apple, linux and arduion implementations cleaner
+- [x] LSM6DSOX Accel and gyro
+- [x] LIS3MDL Magnetometer
+- [x] BMP390 Barometer
+- [ ] DPS310 Barometer
+- [x] TFmini LIDAR
 
 # MIT License
 

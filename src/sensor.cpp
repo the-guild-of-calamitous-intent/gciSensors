@@ -1,50 +1,6 @@
 #include "sensor.hpp"
 
 /*
-reg - the register we want to change
-bits - how many bits for mask
-shift - how much to shift data by
-data - returned value pointer
-*/
-bool SensorI2C::readBits(const uint8_t reg, const uint8_t bits,
-                         const uint8_t shift, uint8_t *const data) {
-  uint8_t val;
-  if (!readRegisters(reg, 1, &val)) {
-    return false;
-  }
-  val >>= shift;
-  uint8_t mask = (1 << (bits)) - 1;
-  *data        = val & mask;
-  return true;
-}
-
-/*
-Given some data, this will:
-1. read the register to get all the bits
-2. mask out the we don't want to change to protect them
-3. only change the correct bits
-4. write the final value back to the register
-
-reg - the register we want to change
-data - data that goes into register
-bits - how many bits for mask
-shift - how much to shift data by
-*/
-bool SensorI2C::writeBits(const uint8_t reg, const uint8_t data,
-                          const uint8_t bits, const uint8_t shift) {
-  uint8_t val;
-  if (!readRegisters(reg, 1, &val)) {
-    return false;
-  }
-  uint8_t mask = (1 << (bits)) - 1;
-  uint8_t d    = data & mask;
-  mask <<= shift;
-  val &= ~mask;
-  val |= d << shift;
-  return writeRegister(reg, val);
-}
-
-/*
 Returns the register value and returns the entire register.
 */
 uint8_t SensorI2C::readRegister(uint8_t reg) {
@@ -53,6 +9,6 @@ uint8_t SensorI2C::readRegister(uint8_t reg) {
   return value;
 }
 
-bool SensorI2C::readRegister(uint8_t reg, uint8_t *value) {
-  return readRegisters(reg, 1, value);
-}
+// bool SensorI2C::readRegister(uint8_t reg, uint8_t *value) {
+//   return readRegisters(reg, 1, value);
+// }

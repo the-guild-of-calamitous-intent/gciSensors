@@ -23,7 +23,10 @@ void setup() {
   Wire.begin();
   Wire.setClock(400000);
 
-  while (!IMU.init()) delay (10);
+  while (!IMU.init()) {
+    Serial.println("imu error");
+    delay (1000);
+  }
 }
 
 void loop() {

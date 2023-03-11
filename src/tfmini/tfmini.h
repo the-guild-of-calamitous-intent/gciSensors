@@ -29,9 +29,11 @@ SOFTWARE.
 
 #include <stdint.h>
 
-#ifndef USE_GCIMOCK_SERIAL
-  #define USE_GCIMOCK_SERIAL 1
-  #include <mock_serial.hpp>
+#if !defined(ARDUINO)
+  #ifndef USE_GCIMOCK_SERIAL
+    #define USE_GCIMOCK_SERIAL 1
+    #include <mock_serial.hpp>
+  #endif
 #endif
 
 class TFmini {

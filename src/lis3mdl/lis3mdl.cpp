@@ -124,15 +124,15 @@ mag_t gciLIS3MDL::read() {
   float y = buff.s[1] * scale;
   float z = buff.s[2] * scale;
 
-  #if IMU_USE_UNCALIBRATED_DATA
+#if IMU_USE_UNCALIBRATED_DATA
   ret.x = x; // uT
   ret.y = y;
   ret.z = z;
-  #else
+#else
   ret.x = mm[0] * x - mbias[0]; // uT
   ret.y = mm[1] * y - mbias[1];
   ret.z = mm[2] * z - mbias[2];
-  #endif
+#endif
 
   // if (readRegisters(REG_OUT_X_L, 2, buff.b)) {
   //   ret.x = static_cast<float>(buff.s) * scale;
@@ -171,4 +171,30 @@ bool gciLIS3MDL::setPerformanceMode(const PerfMode perf_mode) {
     return false; // enables continuous mode
 
   return true;
+}
+
+/*
+Given some data, this will:
+1. read the register to get all the bits
+2. mask out the we don't want to change to protect them
+3. only change the correct bits
+4. write the final value back to the register
+
+reg - the register we want to change
+data - data that goes into register
+bits - how many bits for mask
+shift - how much to shift data by
+*/
+bool gciLIS3MDL::writeBits(const uint8_t reg, const uint8_t data,
+                           const uint8_t bits, const uint8_t shift) {
+  uint8_t val;
+  if (!readRegisters(reg, 1, &val)) {
+    return false;
+  }
+  uint8_t mask = (1 << (bits)) - 1;
+  uint8_t d    = data & mask;
+  mask <<= shift;
+  val &= ~mask;
+  val |= d << shift;
+  return writeRegister(reg, val);
 }
