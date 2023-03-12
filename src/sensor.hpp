@@ -21,21 +21,21 @@
 // Example: #define DEBUG 1
 #if defined(GCI_SENSORS_DEBUG)
   #if defined(ARDUINO)
-    static void println(const String &s) { Serial.println(s); }
-    static void print(const String &s) { Serial.print(s); }
+static void println(const String &s) { Serial.println(s); }
+static void print(const String &s) { Serial.print(s); }
   #else // apple linux
     #if defined(__APPLE__) || defined(linux)
-      typedef std::string String;
+typedef std::string String;
     #endif
-      static void println(const String &s) {}
-      static void print(const String &s) {}
+static void println(const String &s) {}
+static void print(const String &s) {}
   #endif
 #else
   #if defined(__APPLE__) || defined(linux)
-    typedef std::string String;
+typedef std::string String;
   #endif
-  static void println(const String &s) {}
-  static void print(const String &s) {}
+static void println(const String &s) {}
+static void print(const String &s) {}
 #endif
 
 #include <stdint.h> // int types
@@ -59,9 +59,14 @@ public:
 
   bool readRegisters(const uint8_t reg, const uint8_t count,
                      uint8_t *const data);
-  // bool readRegister(const uint8_t reg, uint8_t *const data); // do this
-  // instead?
-  uint8_t readRegister(uint8_t reg);
+  // bool readRegister(const uint8_t reg, uint8_t *const data) {
+  //   return readRegisters(reg, 1, value);
+  // }
+  uint8_t readRegister(uint8_t reg) {
+    uint8_t value;
+    if (!readRegisters(reg, 1, &value)) return 0;
+    return value;
+  }
 
   // inline bool checkErr(int val) { return (val < 0) ? false : true; }
 

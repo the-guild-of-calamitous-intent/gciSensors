@@ -9,12 +9,9 @@ enum data_type {
   ACCEL,
   GYRO,
   TEMP,
-  // COMPFILTER,
   AGT
 };
 
-
-// ComplementaryFilter rpycf;
 
 void setup() {
   Serial.begin(1000000);
@@ -31,7 +28,8 @@ void setup() {
 
 void loop() {
   int val = AGT;
-    sox_t s = IMU.read();
+  sox_t s = IMU.read();
+  Serial.print(s.ok? "good ":"error ");
 
   if (val == ACCEL) {
     Serial.print(s.ax);
@@ -50,30 +48,23 @@ void loop() {
   else if (val == TEMP) {
     Serial.println(s.temp);
   }
-  // else if (val == COMPFILTER) {
-  //   rpy_t rpy = rpycf.update(s);
 
-  //   Serial.print(rpy.r);
-  //   Serial.print('\t');
-  //   Serial.print(rpy.p);
-  //   Serial.print('\t');
-  //   Serial.println(rpy.y);
-  // }
   else if (val == AGT) {
+    Serial.print(s.ok ? "good " : "bad ");
     Serial.print(s.ax,6);
-    Serial.print('\t');
+    Serial.print(" ");
     Serial.print(s.ay,6);
-    Serial.print('\t');
+    Serial.print(" ");
     Serial.print(s.az,6);
-    Serial.print('\t');
+    Serial.print(" g's ");
     Serial.print(s.gx,6);
-    Serial.print('\t');
+    Serial.print(" ");
     Serial.print(s.gy,6);
-    Serial.print('\t');
+    Serial.print(" ");
     Serial.print(s.gz,6);
-    Serial.print('\t');
-    Serial.print(s.temp,3);
-    Serial.print('\t');
+    Serial.print(" rps  ");
+    Serial.print(s.temp,2);
+    Serial.print(" ");
     Serial.println(millis());
   }
 

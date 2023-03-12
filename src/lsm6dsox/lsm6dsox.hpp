@@ -77,7 +77,8 @@ public:
 
   bool init();
 
-  sox_t read(); // accel - g's, gyro - rad/s, temp - C
+  sox_t read_raw(); // accel - g's, gyro - rad/s, temp - C
+  sox_t read();     // accel - g's, gyro - rad/s, temp - C
   bool setGyro(uint8_t odr, uint8_t dps);
   bool setAccel(uint8_t odr, uint8_t range);
   sensor_available_t sensorsAvailable();

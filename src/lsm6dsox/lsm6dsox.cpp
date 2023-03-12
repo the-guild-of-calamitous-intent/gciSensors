@@ -35,29 +35,24 @@ using namespace LSM6DSOX;
 
 bool gciLSM6DSOX::init() {
 
-  if (!(readRegister(WHO_AM_I_REG) == WHO_AM_I)) {
-    return false;
-  }
+  if (!(readRegister(WHO_AM_I_REG) == WHO_AM_I)) return false;
 
   // set the gyroscope control register to work at 104 Hz, 2000 dps and in
   // bypass mode
   //   writeRegister(CTRL2_G, 0x4C);
-  bool ok = setGyro(RATE_104_HZ, GYRO_RANGE_2000_DPS);
-  if (!ok) return false;
+  if (!setGyro(RATE_104_HZ, GYRO_RANGE_2000_DPS)) return false;
 
   // Set the Accelerometer control register to work at 104 Hz, 4 g,and in bypass
   // mode and enable ODR/4 low pass filter (check figure9 of LSM6DSOX's
   // datasheet)
-  ok = setAccel(RATE_104_HZ, ACCEL_RANGE_4_G);
-  if (!ok) return false;
+  if (!setAccel(RATE_104_HZ, ACCEL_RANGE_4_G)) return false;
 
   // set gyroscope power mode to high performance and bandwidth to 16 MHz
   //   writeRegister(CTRL7_G, 0x00);
 
   // Set the ODR config register
   // ok = writeRegister(CTRL8_XL, 0x09); // ODR/4
-  ok = writeRegister(CTRL8_XL, 0x00); // ODR/2
-  if (!ok) return false;
+  if (!writeRegister(CTRL8_XL, 0x00)) return false; // ODR/2
 
   // printf(">> init done ...");
 
@@ -87,10 +82,10 @@ scale factor in g's
 */
 bool gciLSM6DSOX::setAccel(uint8_t odr, uint8_t range) {
 
-  if (range == ACCEL_RANGE_2_G) a_scale = 2.0 / 32768.0f;
-  else if (range == ACCEL_RANGE_4_G) a_scale = 4.0 / 32768.0f;
-  else if (range == ACCEL_RANGE_8_G) a_scale = 8.0 / 32768.0f;
-  else if (range == ACCEL_RANGE_16_G) a_scale = 16.0 / 32768.0f;
+  if (range == ACCEL_RANGE_2_G) a_scale = 2.0f / 32768.0f;
+  else if (range == ACCEL_RANGE_4_G) a_scale = 4.0f / 32768.0f;
+  else if (range == ACCEL_RANGE_8_G) a_scale = 8.0f / 32768.0f;
+  else if (range == ACCEL_RANGE_16_G) a_scale = 16.0f / 32768.0f;
 
   constexpr uint8_t LPF2_XL_EN = 0; // kill LFP2
 
@@ -112,7 +107,7 @@ accel - g's
 gyro = rad/s
 temp - C
 */
-sox_t gciLSM6DSOX::read() {
+sox_t gciLSM6DSOX::read_raw() {
   sox_t ret;
 
   if (!readRegisters(OUTX_L_XL, sizeof(data.b), data.b)) {
@@ -120,38 +115,18 @@ sox_t gciLSM6DSOX::read() {
     return ret;
   }
 
-  float x = data.s[0] * a_scale;
-  float y = data.s[1] * a_scale;
-  float z = data.s[2] * a_scale;
-
-#if IMU_USE_UNCALIBRATED_DATA
-  ret.ax = x;
-  ret.ay = y;
-  ret.az = z;
-#else
-  ret.ax = sm[0][0] * x + sm[0][1] * y + sm[0][2] * z + sm[0][3];
-  ret.ay = sm[1][0] * x + sm[1][1] * y + sm[1][2] * z + sm[1][3];
-  ret.az = sm[2][0] * x + sm[2][1] * y + sm[2][2] * z + sm[2][3];
-#endif
+  ret.ax = data.s[0] * a_scale;
+  ret.ay = data.s[1] * a_scale;
+  ret.az = data.s[2] * a_scale;
 
   if (!readRegisters(OUTX_L_G, sizeof(data.b), data.b)) {
     ret.ok = false;
     return ret;
   }
 
-  x = data.s[0] * g_scale;
-  y = data.s[1] * g_scale;
-  z = data.s[2] * g_scale;
-
-#if IMU_USE_UNCALIBRATED_DATA
-  ret.gx = x;
-  ret.gy = y;
-  ret.gz = z;
-#else
-  ret.gx = (x - gbias[0]);
-  ret.gy = (y - gbias[1]);
-  ret.gz = (z - gbias[2]);
-#endif
+  ret.gx = data.s[0] * g_scale;
+  ret.gy = data.s[1] * g_scale;
+  ret.gz = data.s[2] * g_scale;
 
   if (readRegisters(OUT_TEMP_L, 2, data.b) != 1) {
     ret.ok = false;
@@ -160,5 +135,28 @@ sox_t gciLSM6DSOX::read() {
   ret.temp = data.s[0] * TEMP_SCALE + 25.0f;
 
   ret.ok   = true;
+  return ret;
+}
+
+sox_t gciLSM6DSOX::read() {
+  sox_t ret = read_raw();
+  if (ret.ok == false) return ret;
+
+  float x = ret.ax;
+  float y = ret.ay;
+  float z = ret.az;
+
+  ret.ax  = sm[0][0] * x + sm[0][1] * y + sm[0][2] * z + sm[0][3];
+  ret.ay  = sm[1][0] * x + sm[1][1] * y + sm[1][2] * z + sm[1][3];
+  ret.az  = sm[2][0] * x + sm[2][1] * y + sm[2][2] * z + sm[2][3];
+
+  x       = ret.gx;
+  y       = ret.gy;
+  z       = ret.gz;
+
+  ret.gx  = (x - gbias[0]);
+  ret.gy  = (y - gbias[1]);
+  ret.gz  = (z - gbias[2]);
+
   return ret;
 }
