@@ -22,7 +22,7 @@ sox_t s = imu.read();
 // s.temp => temperature in C
 ```
 
-## LIS3MMDL
+## LIS3MDL
 
 - ``init()``:
     - set range to ``RANGE_4GS``
