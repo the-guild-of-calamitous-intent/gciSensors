@@ -16,10 +16,15 @@ void setup() {
 
   Serial.println("setup: bmp390 init");
 
-  while (!bmp.init()) {
+  while (!bmp.init(BMP390::OS_MODE_PRES_16X_TEMP_2X)) {
     delay(2000);
     // Serial.println("ERROR: gciBMP390::init()");
   }
+  for (int i; i< 10; ++i) {
+    bmp.read();
+    delay(40); // 25 Hz
+  }
+  // bmp.setOsMode(BMP390::OS_MODE_PRES_16X_TEMP_2X);
 
   Serial.println("setup done ...");
 }

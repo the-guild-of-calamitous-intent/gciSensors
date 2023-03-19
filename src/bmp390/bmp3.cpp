@@ -54,7 +54,7 @@ gciBMP390::gciBMP390(TwoWire *i2c, const uint8_t addr) : SensorI2C(i2c, addr) {
   found = false;
 }
 
-bool gciBMP390::init() {
+bool gciBMP390::init(const OsMode mode=OS_MODE_PRES_2X_TEMP_1X) {
   bool ok;
   // println("gciBMP390::init()");
 
@@ -67,13 +67,14 @@ bool gciBMP390::init() {
   if (!ok) return false;
   // println("reset ... got calib ...");
 
-  uint8_t posr = OVERSAMPLING_2X;
-  uint8_t tosr = OVERSAMPLING_1X;
-  ok           = setOverSampling(posr, tosr);
-  if (!ok) return false;
+  // uint8_t posr = OVERSAMPLING_2X;
+  // uint8_t tosr = OVERSAMPLING_1X;
+  // ok           = setOverSampling(posr, tosr);
+  // if (!ok) return false;
 
-  ok = setODR(ODR_100_HZ);
-  if (!ok) return false;
+  // ok = setODR(ODR_100_HZ);
+  // if (!ok) return false;
+  setOsMode(mode);
 
   ok = setIIR(IIR_FILTER_COEFF_1);
   if (!ok) return false;

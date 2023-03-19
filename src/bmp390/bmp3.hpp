@@ -82,13 +82,14 @@ class gciBMP390 : public SensorI2C {
 public:
   gciBMP390(TwoWire *i2c, const uint8_t addr = ADDR_I2C);
 
-  bool init();
+  bool init(const OsMode mode);
 
   bool setOsMode(const OsMode mode);
   bool setOverSampling(uint8_t posr, uint8_t tosr);
   bool setODR(uint8_t odr);
   bool setIIR(uint8_t iir);
   bool setInterrupt(uint8_t drdy_en, uint8_t int_level);
+  bool setPowerMode(uint8_t mode);
 
   pt_t read();
   bool ready();
@@ -107,8 +108,6 @@ protected:
   bool get_calib_data();
 
   bool sleep();
-
-  bool setPowerMode(uint8_t mode);
 
   bool soft_reset();
 
