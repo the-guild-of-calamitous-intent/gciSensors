@@ -6,7 +6,7 @@ using namespace BMP390;
 
 constexpr uint8_t REG_WHO_AM_I    = 0x00;
 constexpr uint8_t REG_ERR         = 0x02;
-constexpr uint8_t REG_SENS_STATUS = 0x03;
+constexpr uint8_t REG_STATUS = 0x03;
 constexpr uint8_t REG_DATA        = 0x04;
 constexpr uint8_t REG_INT_STATUS  = 0x11;
 constexpr uint8_t REG_INT_CTRL    = 0x19;
@@ -21,40 +21,12 @@ constexpr uint8_t WHO_AM_I        = 0x60;
 constexpr uint8_t LEN_P_T_DATA    = 6;
 constexpr uint8_t CMD_RDY         = 0x10;
 
-namespace BITS {
-constexpr uint8_t b0 = 1;
-constexpr uint8_t b1 = 2;
-constexpr uint8_t b2 = 4;
-constexpr uint8_t b3 = 8;
-constexpr uint8_t b4 = 16;
-constexpr uint8_t b5 = 32;
-constexpr uint8_t b6 = 64;
-constexpr uint8_t b7 = 128;
-} // namespace BITS
-
-/*
-bit  value
-0    1
-1    2
-2    4
-3    8
-4    16
-5    32
-6    64
-7    128
-*/
-// constexpr uint8_t DATA_READY_BIT  = 8; // bit 3
-constexpr uint8_t DATA_READY_BIT = BITS::b3; // bit 3
-constexpr uint8_t TEMP_READY_BIT = BITS::b5; // bit 5
-constexpr uint8_t PRES_READY_BIT = BITS::b6; // bit 6
-// constexpr uint8_t TEMP_READY_BIT  = 32; // bit 5
-// constexpr uint8_t PRES_READY_BIT  = 64; // bit 6
 
 gciBMP390::gciBMP390(TwoWire *i2c, const uint8_t addr) : SensorI2C(i2c, addr) {
   found = false;
 }
 
-bool gciBMP390::init(const OsMode mode=OS_MODE_PRES_2X_TEMP_1X) {
+bool gciBMP390::init(const OsMode mode) {
   bool ok;
   // println("gciBMP390::init()");
 
@@ -85,7 +57,7 @@ bool gciBMP390::init(const OsMode mode=OS_MODE_PRES_2X_TEMP_1X) {
   // pin push/pull = 0
   // val = (1 << 6) | (1 << 1);
   // ok = writeRegister(REG_INT_CTRL, val);
-  ok = setInterrupt(1, 1);
+  ok = setInterrupt();
   if (!ok) return false;
 
   ok = setPowerMode(MODE_NORMAL); // continuous sampling
@@ -95,8 +67,16 @@ bool gciBMP390::init(const OsMode mode=OS_MODE_PRES_2X_TEMP_1X) {
 }
 
 bool gciBMP390::ready() {
-  if (((readRegister(REG_INT_STATUS) & DATA_READY_BIT) == 0)) return false;
-  return true;
+  // constexpr uint8_t DATA_READY_BIT = BITS::b3;
+  // if (((readRegister(REG_INT_STATUS) & DATA_READY_BIT) == 0)) return false;
+  // return true;
+
+  constexpr uint8_t TEMP_READY_BIT = BITS::b5; // bit 5
+  constexpr uint8_t PRES_READY_BIT = BITS::b6; // bit 6
+  bmp3_available_t ret;
+  ret.press = readRegister(REG_STATUS) & PRES_READY_BIT;
+  ret.temp = readRegister(REG_STATUS) & TEMP_READY_BIT;
+  return ret.press && ret.temp;
 }
 
 /* VALUE??
@@ -195,14 +175,20 @@ bool gciBMP390::setIIR(uint8_t iir) {
   return writeRegister(REG_IIR_FILTER, val);
 }
 
-bool gciBMP390::setInterrupt(uint8_t drdy_en, uint8_t int_level) {
+// bool gciBMP390::setInterrupt(uint8_t drdy_en, uint8_t int_level) {
+bool gciBMP390::setInterrupt() {
+  // int_od: 0 = push-pull
   // int_level: 1 = active high
+  // int_latch: 0 = disable
   // drdy_en: 1 = enable pressure/temperature interrupt in INT_STATUS reg
-  uint8_t val = (drdy_en << 6) | (int_level << 1);
+  // uint8_t val = (drdy_en << 6) | (int_level << 1);
+  constexpr uint8_t drdy_en = BITS::b6; // 1 = enable pressure/temperature interrupt in INT_STATUS reg
+  constexpr uint8_t int_level = BITS::b1; // 1 = active high
+  uint8_t val = drdy_en | int_level;
   return writeRegister(REG_INT_CTRL, val);
 }
 
-pt_t gciBMP390::read() {
+pt_t gciBMP390::read_raw() {
   pt_t ret = {0};
   ret.ok   = false;
 
@@ -219,6 +205,13 @@ pt_t gciBMP390::read() {
   ret.press = compensate_pressure(press);
   return ret;
 }
+
+// pt_t gciBMP390::read() {
+//   pt_t ret = read_raw();
+
+//   // do stuff?
+//   return ret;
+// }
 
 // datasheet pg 55
 float gciBMP390::compensate_temperature(const uint32_t uncomp_temp) {
@@ -337,7 +330,7 @@ bool gciBMP390::soft_reset() {
   bool ok;
 
   // Check for command ready status
-  uint8_t cmd_rdy_status = readRegister(REG_SENS_STATUS);
+  uint8_t cmd_rdy_status = readRegister(REG_STATUS);
 
   // Device is ready to accept new command
   if (cmd_rdy_status & CMD_RDY) {

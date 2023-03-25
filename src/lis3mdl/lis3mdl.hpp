@@ -41,14 +41,19 @@ public:
       : SensorI2C(i2c, addr), mbias{-13.15340002, 29.7714855, 0.0645215},
         mm{0.96545537, 0.94936676, 0.967698} {}
 
-  bool init();
+  bool init(
+    const Range range=RANGE_4GS,
+    const Odr odr=ODR_155HZ
+  );
   bool reboot(); // reboot memory content
   bool reset();  // reset to default
   bool shutdown();
-  mag_t read();
 
-  bool setDataRate(const Odr data_rate); // coupled with perfMode
-  bool setRange(const Range range);
+  void set_cal(float cal[6]);
+
+  mag_t read_raw();
+  mag_t read();
+  bool ready();
 
 protected:
   enum PerfMode : uint8_t {
@@ -60,6 +65,8 @@ protected:
   float mbias[3]; // mag bias
   float mm[3];    // mag scale
 
+  bool setDataRate(const Odr data_rate); // coupled with perfMode
+  bool setRange(const Range range);
   bool setPerformanceMode(const PerfMode perf_mode);
   bool setBdu(bool en); // block mode - enabled: don't update until MSB/LSB read
                         // previously

@@ -8,6 +8,11 @@ and enable high data rate.
 
 ## LSM6DSOX
 
+
+- Accelerometer ±2/±4/±8/±16 g at 1.6 Hz to 6.7KHz update rate
+- Gyroscope: ±125/±250/±500/±1000/±2000 dps at 12.5 Hz to 6.7 KHz
+- 32 bit timer at 25 usec resolution
+- I2C Address `0x6A` or `0x6B`
 - ``init()``:
     - set accel to ``RATE_104_HZ`` ``ACCEL_RANGE_4_G``
     - sets gyro to ``RATE_104_HZ`` ``GYRO_RANGE_2000_DPS``
@@ -15,7 +20,8 @@ and enable high data rate.
 ```c++
 LSM6DSOX::gciLSM6DSOX imu(&Wire);
 imu.init();
-sox_t s = imu.read();
+bool ok = imu.ready(); // true when new data available
+if (ok) sox_t s = imu.read();
 // s.ok => good read true/false
 // s.ax => accel x,y,z in g's
 // s.gx => gyro x,y,z in rads/sec
@@ -24,6 +30,11 @@ sox_t s = imu.read();
 
 ## LIS3MDL
 
+- ±4/±8/±12/±16 gauss selectable magnetic full scales
+- 16-bit data output
+- Interrupt generator
+- I2C Address `0x1C` or `0x1E`
+- 400 kHz max
 - ``init()``:
     - set range to ``RANGE_4GS``
     - set ODR to ``ODR_155HZ``
@@ -31,6 +42,7 @@ sox_t s = imu.read();
 ```c++
 LIS3MDL::gciLIS3MDL mag(&Wire);
 mag.init();
+bool ok = mag.ready(); // true when new data available
 mag_t m = mag.read();
 // m.x => mag x,y,z in uT
 // m.ok => good read true/false
@@ -50,6 +62,7 @@ mag_t m = mag.read();
 ```c++
 BMP390::gciBMP390 bmp(&Wire);
 bmp.init();
+bool ok = bmp.ready(); // true when new data available
 pt_t pt = bmp.read();
 // pt.ok => good read true/false
 // pt.press => pressure in

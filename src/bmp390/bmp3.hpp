@@ -78,20 +78,25 @@ struct pt_t {
   bool ok;
 };
 
+struct bmp3_available_t {
+  bool press, temp; // sensor available?
+};
+
 class gciBMP390 : public SensorI2C {
 public:
   gciBMP390(TwoWire *i2c, const uint8_t addr = ADDR_I2C);
 
-  bool init(const OsMode mode);
+  bool init(const OsMode mode=OS_MODE_PRES_2X_TEMP_1X);
 
   bool setOsMode(const OsMode mode);
   bool setOverSampling(uint8_t posr, uint8_t tosr);
   bool setODR(uint8_t odr);
   bool setIIR(uint8_t iir);
-  bool setInterrupt(uint8_t drdy_en, uint8_t int_level);
+  bool setInterrupt();
   bool setPowerMode(uint8_t mode);
 
-  pt_t read();
+  pt_t read_raw();
+  inline pt_t read() { return read_raw(); }
   bool ready();
 
   float altitude(const float p);

@@ -47,6 +47,17 @@ inline uint16_t to_16b(uint8_t msb, uint8_t lsb) {
   return ((uint16_t)msb << 8) | (uint16_t)lsb;
 }
 
+namespace BITS {
+constexpr uint8_t b0 = 1;
+constexpr uint8_t b1 = 2;
+constexpr uint8_t b2 = 4;
+constexpr uint8_t b3 = 8;
+constexpr uint8_t b4 = 16;
+constexpr uint8_t b5 = 32;
+constexpr uint8_t b6 = 64;
+constexpr uint8_t b7 = 128;
+} // namespace BITS
+
 /*
 I don't like some of this ... need to clean it up!
 move to camel case and
@@ -62,7 +73,7 @@ public:
   // bool readRegister(const uint8_t reg, uint8_t *const data) {
   //   return readRegisters(reg, 1, value);
   // }
-  uint8_t readRegister(uint8_t reg) {
+  uint8_t readRegister(uint8_t reg) { // this seems backwards
     uint8_t value;
     if (!readRegisters(reg, 1, &value)) return 0;
     return value;

@@ -11,7 +11,7 @@ namespace LSM6DSOX {
 
 constexpr int LSM6DSOX_ADDRESS = 0x6A;
 
-/** The accelerometer data rate */
+// The accelerometer data rate
 enum ODR : uint8_t {
   RATE_SHUTDOWN,
   RATE_12_5_HZ,
@@ -26,7 +26,7 @@ enum ODR : uint8_t {
   RATE_6_66K_HZ,
 };
 
-/** The accelerometer data range */
+// The accelerometer data range
 enum accel_range : uint8_t {
   ACCEL_RANGE_2_G,
   ACCEL_RANGE_16_G,
@@ -34,12 +34,7 @@ enum accel_range : uint8_t {
   ACCEL_RANGE_8_G
 };
 
-// constexpr uint8_t  ACCEL_RANGE_2_G = 0;
-// constexpr uint8_t  ACCEL_RANGE_16_G = 1;
-// constexpr uint8_t  ACCEL_RANGE_4_G = 2;
-// constexpr uint8_t  ACCEL_RANGE_8_G = 3;
-
-/** The gyro data range */
+// The gyro data range
 enum gyro_range : uint8_t {
   GYRO_RANGE_125_DPS  = 0b0010,
   GYRO_RANGE_250_DPS  = 0b0000,
@@ -56,15 +51,26 @@ enum gyro_range : uint8_t {
 //   HPF_ODR_DIV_400 = 3,
 // };
 
+constexpr float LSM6DSOX_TIMESTEP_RES = 25e-6;
+
 struct sox_t {
   float ax, ay, az, gx, gy, gz, temp;
+  uint32_t ts;
   bool ok;
 };
 
-struct sensor_available_t {
+struct lsm6_available_t {
   bool accel, gyro, temp; // sensor available?
 };
 
+
+
+/*
+Can insert user defined accel bias offsets:
+X_OFS_USR
+Y_OFS_USR
+Z_OFS_USR
+*/
 class gciLSM6DSOX : public SensorI2C {
 public:
   gciLSM6DSOX(TwoWire *wire, uint8_t addr = LSM6DSOX_ADDRESS)
@@ -75,15 +81,30 @@ public:
         gbias{-0.00889949 - 0.00235061 - 0.00475294} {}
   ~gciLSM6DSOX() {}
 
-  bool init();
+  bool init(
+    uint8_t accel_range=ACCEL_RANGE_4_G,
+    uint8_t gyro_range=GYRO_RANGE_2000_DPS,
+    uint8_t odr=RATE_104_HZ
+  );
+
+  // bool init(
+  //   uint8_t accel_range=ACCEL_RANGE_4_G,
+  //   uint8_t accel_odr=RATE_104_HZ,
+  //   uint8_t gyro_range=GYRO_RANGE_2000_DPS,
+  //   uint8_t gyro_odr=RATE_104_HZ
+  // );
+
+  void set_cal(float cal[15]); // accel - 12, gyro - 3
 
   sox_t read_raw(); // accel - g's, gyro - rad/s, temp - C
   sox_t read();     // accel - g's, gyro - rad/s, temp - C
-  bool setGyro(uint8_t odr, uint8_t dps);
-  bool setAccel(uint8_t odr, uint8_t range);
-  sensor_available_t sensorsAvailable();
+  bool ready();
+  bool set_interrupts(bool val);
 
 private:
+  bool setGyro(uint8_t odr, uint8_t dps);
+  bool setAccel(uint8_t odr, uint8_t range);
+
   float g_scale, a_scale;
   float sm[3][4]; // accel scale/bias
   float gbias[3]; // gyro bias
@@ -91,6 +112,7 @@ private:
   union {
     int16_t s[3]; // signed shorts
     uint8_t b[6]; // bytes
+    uint32_t l;   // long - timestamp
   } data;
 };
 

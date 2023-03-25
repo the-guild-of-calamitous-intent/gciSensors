@@ -8,7 +8,7 @@ constexpr uint8_t REG_CTRL_REG2  = 0x21;
 constexpr uint8_t REG_CTRL_REG3  = 0x22;
 constexpr uint8_t REG_CTRL_REG4  = 0x23;
 constexpr uint8_t REG_CTRL_REG5  = 0x24;
-constexpr uint8_t REG_STATUS_REG = 0x27;
+constexpr uint8_t REG_STATUS     = 0x27;
 constexpr uint8_t REG_OUT_X_L    = 0x28;
 constexpr uint8_t REG_OUT_X_H    = 0x29;
 constexpr uint8_t REG_OUT_Y_L    = 0x2A;
@@ -31,7 +31,7 @@ enum OpMode : uint8_t {
   OP_MODE_POWERDOWN  = 0b11
 };
 
-bool gciLIS3MDL::init() {
+bool gciLIS3MDL::init(const Range range, const Odr odr) {
   uint8_t who_am_i;
   // check WHOAMI
   if (!readRegisters(REG_WHO_AM_I, sizeof(who_am_i), &who_am_i)) return false;
@@ -39,19 +39,29 @@ bool gciLIS3MDL::init() {
   if (who_am_i != WHO_AM_I) return false;
 
   // set range to +/-4GS
-  if (!setRange(RANGE_4GS)) return false;
+  if (!setRange(range)) return false;
 
   // set ODR to 155 Hz
-  if (!setDataRate(ODR_155HZ)) return false;
+  if (!setDataRate(odr)) return false;
 
   // Enable block update (MSB/LSB not updated until previous value read)
-  if (!setBdu(true)) return false;
+  // if (!setBdu(true)) return false;
 
-  mag_t ret = read();
-  while (!ret.ok)
-    ret = read();
+  // mag_t ret = read();
+  // while (!ret.ok)
+  //   ret = read();
 
   return true;
+}
+
+void gciLIS3MDL::set_cal(float cal[6]) {
+  mm[0] = cal[0];
+  mm[1] = cal[1];
+  mm[2] = cal[2];
+
+  mbias[0] = cal[3];
+  mbias[1] = cal[4];
+  mbias[2] = cal[5];
 }
 
 bool gciLIS3MDL::setDataRate(const Odr odr) {
@@ -111,9 +121,8 @@ bool gciLIS3MDL::setRange(const Range range) {
   return true;
 }
 
-mag_t gciLIS3MDL::read() {
+mag_t gciLIS3MDL::read_raw() {
   mag_t ret;
-  bool ok = true;
 
   if (!readRegisters(REG_OUT_X_L, 6, buff.b)) {
     ret.ok = false;
@@ -124,34 +133,30 @@ mag_t gciLIS3MDL::read() {
   float y = buff.s[1] * scale;
   float z = buff.s[2] * scale;
 
-#if IMU_USE_UNCALIBRATED_DATA
   ret.x = x; // uT
   ret.y = y;
   ret.z = z;
-#else
-  ret.x = mm[0] * x - mbias[0]; // uT
-  ret.y = mm[1] * y - mbias[1];
-  ret.z = mm[2] * z - mbias[2];
-#endif
 
-  // if (readRegisters(REG_OUT_X_L, 2, buff.b)) {
-  //   ret.x = static_cast<float>(buff.s) * scale;
-  // }
-  // else ok = false;
-
-  // if (readRegisters(REG_OUT_Y_L, 2, buff.b)) {
-  //   ret.y = static_cast<float>(buff.s) * scale;
-  // }
-  // else ok = false;
-
-  // if (readRegisters(REG_OUT_Z_L, 2, buff.b)) {
-  //   ret.z = static_cast<float>(buff.s) * scale;
-  // }
-  // else ok = false;
-
-  ret.ok = ok;
+  ret.ok = true;
 
   return ret;
+}
+
+mag_t gciLIS3MDL::read() {
+  mag_t ret = read_raw();
+
+  ret.x = mm[0] * ret.x - mbias[0]; // uT
+  ret.y = mm[1] * ret.y - mbias[1];
+  ret.z = mm[2] * ret.z - mbias[2];
+
+  return ret;
+}
+
+bool gciLIS3MDL::ready() {
+  constexpr uint8_t ZYXDA = BITS::b3;
+
+  uint8_t val = readRegister(REG_STATUS);
+  return val & ZYXDA;
 }
 
 bool gciLIS3MDL::setBdu(bool en) {
