@@ -140,6 +140,7 @@ protected:
 
     float t_lin; // was int64_t??
   } calib;
+
 };
 
 } // namespace BMP390

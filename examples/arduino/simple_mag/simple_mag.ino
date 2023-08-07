@@ -13,11 +13,17 @@ void setup() {
   Wire.setClock(400000);
 
   while (!mag.init()) delay(10);
+
+  float sm[12]{
+    0.864, 0.0, 0.0, 20.553,  
+    0.0, 0.893, 0.0, 16.331,
+    0.0, 0.0, 0.988, 30.067};
+  mag.set_cal(sm);
 }
 
 void loop() {
 
-  mag_t m = mag.read();
+  const mag_t m = mag.read_cal();
 
   Serial.print(m.x);
   Serial.print("\t");

@@ -43,8 +43,9 @@ default:
 class gciLIS3MDL : public SensorI2C {
 public:
   gciLIS3MDL(TwoWire *i2c, const uint8_t addr = ADDR_PRIM)
-      : SensorI2C(i2c, addr), mbias{-13.15340002, 29.7714855, 0.0645215},
-        mm{0.96545537, 0.94936676, 0.967698} {}
+      : SensorI2C(i2c, addr) {}
+      // , mbias{-13.15340002, 29.7714855, 0.0645215},
+      //   mm{0.96545537, 0.94936676, 0.967698} {}
 
   bool init(
     const Range range=RANGE_4GS,
@@ -54,7 +55,7 @@ public:
   bool reset();  // reset to default
   bool shutdown();
 
-  void set_cal(float cal[6]);
+  void set_cal(float cal[12]);
 
   mag_raw_t read_raw();
   mag_t read();
@@ -68,8 +69,9 @@ protected:
     PERF_MODE_HIGH         = 0b10,
     PERF_MODE_ULTRA_HIGH   = 0b11
   };
-  float mbias[3]; // mag bias
-  float mm[3];    // mag scale
+  // float mbias[3]; // mag bias
+  // float mm[3];    // mag scale
+  float sm[12]{0}; // scale and bias
 
   bool setDataRate(const Odr data_rate); // coupled with perfMode
   bool setRange(const Range range);

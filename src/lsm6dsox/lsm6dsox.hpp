@@ -80,11 +80,11 @@ Z_OFS_USR
 class gciLSM6DSOX : public SensorI2C {
 public:
   gciLSM6DSOX(TwoWire *wire, uint8_t addr = LSM6DSOX_ADDRESS)
-      : SensorI2C(wire, addr),
-        sm{{1.00268927, -0.00056029, -0.00190925, -0.00492348},
-           {-0.00138898, 0.99580818, -0.00227335, 0.00503835},
-           {-0.01438271, 0.00673172, 0.9998954, -0.01364759}},
-        gbias{-0.00889949 - 0.00235061 - 0.00475294} {}
+      : SensorI2C(wire, addr) {}
+        // sm{{1.00268927, -0.00056029, -0.00190925, -0.00492348},
+        //    {-0.00138898, 0.99580818, -0.00227335, 0.00503835},
+        //    {-0.01438271, 0.00673172, 0.9998954, -0.01364759}},
+        // gbias{-0.00889949 - 0.00235061 - 0.00475294} {}
   ~gciLSM6DSOX() {}
 
   bool init(
@@ -100,7 +100,7 @@ public:
   //   uint8_t gyro_odr=RATE_104_HZ
   // );
 
-  void set_cal(float cal[15]); // accel - 12, gyro - 3
+  void set_cal(float a_cal[12], float g_cal[3]); // accel - 12, gyro - 3
 
   sox_raw_t read_raw(); // accel - g's, gyro - rad/s, temp - C
   sox_t read();     // accel - g's, gyro - rad/s, temp - C
@@ -113,8 +113,8 @@ private:
   bool setAccel(uint8_t odr, uint8_t range);
 
   float g_scale, a_scale;
-  float sm[3][4]; // accel scale/bias
-  float gbias[3]; // gyro bias
+  float sm[12]{0.0f}; // accel scale/bias
+  float gbias[3]{0.0f}; // gyro bias
 
   union {
     int16_t s[3]; // signed shorts

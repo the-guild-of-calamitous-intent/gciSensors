@@ -74,13 +74,14 @@ bool gciLSM6DSOX::init(uint8_t accel_range, uint8_t gyro_range, uint8_t odr) {
   return true;
 }
 
-void gciLSM6DSOX::set_cal(float cal[15]) {
-  for (int i=0; i<3; ++i)
-    for (int j=0; j<4; ++j) sm[i][j] = cal[i*3 + j];
+void gciLSM6DSOX::set_cal(float a_cal[12], float g_cal[3]) {
+  // for (int i=0; i<3; ++i)
+  //   for (int j=0; j<4; ++j) sm[i][j] = cal[i*3 + j];
+  memcpy(sm, a_cal, 12*sizeof(float));
 
-  gbias[0] = cal[12];
-  gbias[1] = cal[13];
-  gbias[2] = cal[14];
+  gbias[0] = g_cal[0];
+  gbias[1] = g_cal[1];
+  gbias[2] = g_cal[2];
 }
 
 /*
@@ -217,9 +218,13 @@ sox_t gciLSM6DSOX::read_cal() {
   // const float y = ret.ay;
   // const float z = ret.az;
 
-  ret.ax  = sm[0][0] * m.ax + sm[0][1] * m.ay + sm[0][2] * m.az + sm[0][3];
-  ret.ay  = sm[1][0] * m.ax + sm[1][1] * m.ay + sm[1][2] * m.az + sm[1][3];
-  ret.az  = sm[2][0] * m.ax + sm[2][1] * m.ay + sm[2][2] * m.az + sm[2][3];
+  // ret.ax  = sm[0][0] * m.ax + sm[0][1] * m.ay + sm[0][2] * m.az + sm[0][3];
+  // ret.ay  = sm[1][0] * m.ax + sm[1][1] * m.ay + sm[1][2] * m.az + sm[1][3];
+  // ret.az  = sm[2][0] * m.ax + sm[2][1] * m.ay + sm[2][2] * m.az + sm[2][3];
+
+  ret.ax  = sm[0] * m.ax + sm[1] * m.ay + sm[2] * m.az + sm[3];
+  ret.ay  = sm[4] * m.ax + sm[5] * m.ay + sm[6] * m.az + sm[7];
+  ret.az  = sm[8] * m.ax + sm[9] * m.ay + sm[10] * m.az + sm[11];
 
   // x       = ret.gx;
   // y       = ret.gy;

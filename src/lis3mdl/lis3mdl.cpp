@@ -54,14 +54,18 @@ bool gciLIS3MDL::init(const Range range, const Odr odr) {
   return true;
 }
 
-void gciLIS3MDL::set_cal(float cal[6]) {
-  mm[0] = cal[0];
-  mm[1] = cal[1];
-  mm[2] = cal[2];
+// void gciLIS3MDL::set_cal(float cal[6]) {
+//   mm[0] = cal[0];
+//   mm[1] = cal[1];
+//   mm[2] = cal[2];
 
-  mbias[0] = cal[3];
-  mbias[1] = cal[4];
-  mbias[2] = cal[5];
+//   mbias[0] = cal[3];
+//   mbias[1] = cal[4];
+//   mbias[2] = cal[5];
+// }
+
+void gciLIS3MDL::set_cal(float cal[12]) {
+  memcpy(sm, cal, 12*sizeof(float));
 }
 
 bool gciLIS3MDL::setDataRate(const Odr odr) {
@@ -171,11 +175,19 @@ mag_t gciLIS3MDL::read() {
 }
 
 mag_t gciLIS3MDL::read_cal() {
-  mag_t ret = read();
+  const mag_t m = read();
+  mag_t ret{0};
+  ret.ok = false;
+  if (m.ok == false) return ret;
 
-  ret.x = mm[0] * ret.x - mbias[0]; // uT
-  ret.y = mm[1] * ret.y - mbias[1];
-  ret.z = mm[2] * ret.z - mbias[2];
+  // ret.x = mm[0] * ret.x - mbias[0]; // uT
+  // ret.y = mm[1] * ret.y - mbias[1];
+  // ret.z = mm[2] * ret.z - mbias[2];
+
+  ret.x  = sm[0] * m.x + sm[1] * m.y + sm[2] * m.z + sm[3];
+  ret.y  = sm[4] * m.x + sm[5] * m.y + sm[6] * m.z + sm[7];
+  ret.z  = sm[8] * m.x + sm[9] * m.y + sm[10] * m.z + sm[11];
+  ret.ok = true;
 
   return ret;
 }
@@ -200,8 +212,7 @@ bool gciLIS3MDL::enableTemp() { return writeBits(REG_CTRL_REG1, 0x01, 1, 7); }
 bool gciLIS3MDL::setPerformanceMode(const PerfMode perf_mode) {
   if (!writeBits(REG_CTRL_REG1, perf_mode, 2, 5)) return false; // x y axes
   if (!writeBits(REG_CTRL_REG4, perf_mode, 2, 2)) return false; // z axis
-  if (!writeBits(REG_CTRL_REG3, OP_MODE_CONTINUOUS, 2, 0))
-    return false; // enables continuous mode
+  if (!writeBits(REG_CTRL_REG3, OP_MODE_CONTINUOUS, 2, 0)) return false;
 
   return true;
 }
