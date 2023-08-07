@@ -31,6 +31,11 @@ struct mag_t {
   bool ok;       // error?
 };
 
+struct mag_raw_t {
+  int16_t x, y, z; // micro Tesla (uT)
+  bool ok;       // error?
+};
+
 /*
 default:
 -
@@ -51,8 +56,9 @@ public:
 
   void set_cal(float cal[6]);
 
-  mag_t read_raw();
+  mag_raw_t read_raw();
   mag_t read();
+  mag_t read_cal();
   bool ready();
 
 protected:

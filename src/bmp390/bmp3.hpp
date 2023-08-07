@@ -78,6 +78,11 @@ struct pt_t {
   bool ok;
 };
 
+// struct pt_t {
+//   int16_t press, temp;
+//   bool ok;
+// };
+
 struct bmp3_available_t {
   bool press, temp; // sensor available?
 };

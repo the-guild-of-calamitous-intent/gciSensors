@@ -121,21 +121,21 @@ bool gciLIS3MDL::setRange(const Range range) {
   return true;
 }
 
-mag_t gciLIS3MDL::read_raw() {
-  mag_t ret;
+mag_raw_t gciLIS3MDL::read_raw() {
+  mag_raw_t ret{0};
 
   if (!readRegisters(REG_OUT_X_L, 6, buff.b)) {
     ret.ok = false;
     return ret;
   }
 
-  float x = buff.s[0] * scale;
-  float y = buff.s[1] * scale;
-  float z = buff.s[2] * scale;
+  ret.x = buff.s[0];
+  ret.y = buff.s[1];
+  ret.z = buff.s[2];
 
-  ret.x = x; // uT
-  ret.y = y;
-  ret.z = z;
+  // ret.x = x; // uT
+  // ret.y = y;
+  // ret.z = z;
 
   ret.ok = true;
 
@@ -143,7 +143,35 @@ mag_t gciLIS3MDL::read_raw() {
 }
 
 mag_t gciLIS3MDL::read() {
-  mag_t ret = read_raw();
+  const mag_raw_t raw = read_raw();
+  mag_t ret{0};
+  ret.ok = false;
+  if (raw.ok == false) return ret;
+
+  // if (!readRegisters(REG_OUT_X_L, 6, buff.b)) {
+  //   ret.ok = false;
+  //   return ret;
+  // }
+
+  // float x = buff.s[0] * scale;
+  // float y = buff.s[1] * scale;
+  // float z = buff.s[2] * scale;
+
+  ret.x = raw.x * scale;
+  ret.y = raw.y * scale;
+  ret.z = raw.z * scale;
+
+  // ret.x = x; // uT
+  // ret.y = y;
+  // ret.z = z;
+
+  ret.ok = true;
+
+  return ret;
+}
+
+mag_t gciLIS3MDL::read_cal() {
+  mag_t ret = read();
 
   ret.x = mm[0] * ret.x - mbias[0]; // uT
   ret.y = mm[1] * ret.y - mbias[1];

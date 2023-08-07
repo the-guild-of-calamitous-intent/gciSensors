@@ -122,40 +122,32 @@ bool gciLSM6DSOX::ready() {
   return (val & BITS::b0) && (val & BITS::b1); // bits 0/1 are press/temp ready
 }
 
-/*
-accel - g's
-gyro = rad/s
-temp - C
-*/
-sox_t gciLSM6DSOX::read_raw() {
-  sox_t ret;
+sox_raw_t gciLSM6DSOX::read_raw() {
+  sox_raw_t ret{0};
+  ret.ok = false;
 
   if (!readRegisters(REG_OUTX_L_A, sizeof(data.b), data.b)) {
-    ret.ok = false;
     return ret;
   }
 
-  ret.ax = data.s[0] * a_scale;
-  ret.ay = data.s[1] * a_scale;
-  ret.az = data.s[2] * a_scale;
+  ret.ax = data.s[0];
+  ret.ay = data.s[1];
+  ret.az = data.s[2];
 
   if (!readRegisters(REG_OUTX_L_G, sizeof(data.b), data.b)) {
-    ret.ok = false;
     return ret;
   }
 
-  ret.gx = data.s[0] * g_scale;
-  ret.gy = data.s[1] * g_scale;
-  ret.gz = data.s[2] * g_scale;
+  ret.gx = data.s[0];
+  ret.gy = data.s[1];
+  ret.gz = data.s[2];
 
   if (readRegisters(REG_OUT_TEMP_L, 2, data.b) != 1) {
-    ret.ok = false;
     return ret;
   }
-  ret.temp = data.s[0] * TEMP_SCALE + 25.0f;
+  ret.temp = data.s[0];
 
   if (!readRegisters(REG_TIMESTAMP0, 4, data.b)) {
-    ret.ok = false;
     return ret;
   }
 
@@ -167,25 +159,77 @@ sox_t gciLSM6DSOX::read_raw() {
   return ret;
 }
 
+/*
+accel - g's
+gyro = rad/s
+temp - C
+*/
 sox_t gciLSM6DSOX::read() {
-  sox_t ret = read_raw();
-  if (ret.ok == false) return ret;
+  const sox_raw_t raw = read_raw();
+  sox_t ret{0};
+  ret.ok = false;
+  if (raw.ok == false) return ret;
 
-  float x = ret.ax;
-  float y = ret.ay;
-  float z = ret.az;
+  // if (!readRegisters(REG_OUTX_L_A, sizeof(data.b), data.b)) {
+  //   ret.ok = false;
+  //   return ret;
+  // }
 
-  ret.ax  = sm[0][0] * x + sm[0][1] * y + sm[0][2] * z + sm[0][3];
-  ret.ay  = sm[1][0] * x + sm[1][1] * y + sm[1][2] * z + sm[1][3];
-  ret.az  = sm[2][0] * x + sm[2][1] * y + sm[2][2] * z + sm[2][3];
+  ret.ax = raw.ax * a_scale;
+  ret.ay = raw.ay * a_scale;
+  ret.az = raw.az * a_scale;
 
-  x       = ret.gx;
-  y       = ret.gy;
-  z       = ret.gz;
+  // if (!readRegisters(REG_OUTX_L_G, sizeof(data.b), data.b)) {
+  //   ret.ok = false;
+  //   return ret;
+  // }
 
-  ret.gx  = (x - gbias[0]);
-  ret.gy  = (y - gbias[1]);
-  ret.gz  = (z - gbias[2]);
+  ret.gx = raw.gx * g_scale;
+  ret.gy = raw.gy * g_scale;
+  ret.gz = raw.gz * g_scale;
+
+  // if (readRegisters(REG_OUT_TEMP_L, 2, data.b) != 1) {
+  //   ret.ok = false;
+  //   return ret;
+  // }
+  ret.temp = raw.temp * TEMP_SCALE + 25.0f;
+
+  // if (!readRegisters(REG_TIMESTAMP0, 4, data.b)) {
+  //   ret.ok = false;
+  //   return ret;
+  // }
+
+  ret.ts = raw.ts; // 25 usec per count
+  // ret.ts = data.l - timestamp;
+  // timestamp = data.l; // 25 usec per count
+
+  ret.ok = true;
+  return ret;
+}
+
+sox_t gciLSM6DSOX::read_cal() {
+  const sox_t m = read();
+  sox_t ret{0};
+  ret.ok = false;
+  if (m.ok == false) return ret;
+
+  // const float x = ret.ax;
+  // const float y = ret.ay;
+  // const float z = ret.az;
+
+  ret.ax  = sm[0][0] * m.ax + sm[0][1] * m.ay + sm[0][2] * m.az + sm[0][3];
+  ret.ay  = sm[1][0] * m.ax + sm[1][1] * m.ay + sm[1][2] * m.az + sm[1][3];
+  ret.az  = sm[2][0] * m.ax + sm[2][1] * m.ay + sm[2][2] * m.az + sm[2][3];
+
+  // x       = ret.gx;
+  // y       = ret.gy;
+  // z       = ret.gz;
+
+  ret.gx  = (m.gx - gbias[0]);
+  ret.gy  = (m.gy - gbias[1]);
+  ret.gz  = (m.gz - gbias[2]);
+
+  ret.ok = true;
 
   return ret;
 }

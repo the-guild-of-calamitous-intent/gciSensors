@@ -59,6 +59,12 @@ struct sox_t {
   bool ok;
 };
 
+struct sox_raw_t {
+  int16_t ax, ay, az, gx, gy, gz, temp;
+  uint32_t ts;
+  bool ok;
+};
+
 struct lsm6_available_t {
   bool accel, gyro, temp; // sensor available?
 };
@@ -96,8 +102,9 @@ public:
 
   void set_cal(float cal[15]); // accel - 12, gyro - 3
 
-  sox_t read_raw(); // accel - g's, gyro - rad/s, temp - C
+  sox_raw_t read_raw(); // accel - g's, gyro - rad/s, temp - C
   sox_t read();     // accel - g's, gyro - rad/s, temp - C
+  sox_t read_cal();     // accel - g's, gyro - rad/s, temp - C
   bool ready();
   bool set_interrupts(bool val);
 
