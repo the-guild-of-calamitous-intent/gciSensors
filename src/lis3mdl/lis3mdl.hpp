@@ -5,7 +5,7 @@
 \**************************************/
 #pragma once
 
-#include "../sensor.hpp"
+#include "sensor.hpp"
 
 namespace LIS3MDL {
 
@@ -42,10 +42,8 @@ default:
 */
 class gciLIS3MDL : public SensorI2C {
 public:
-  gciLIS3MDL(TwoWire *i2c, const uint8_t addr = ADDR_PRIM)
+  gciLIS3MDL(TwoWire *i2c, const uint8_t addr=ADDR_PRIM)
       : SensorI2C(i2c, addr) {}
-      // , mbias{-13.15340002, 29.7714855, 0.0645215},
-      //   mm{0.96545537, 0.94936676, 0.967698} {}
 
   bool init(
     const Range range=RANGE_4GS,

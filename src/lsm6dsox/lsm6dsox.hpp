@@ -5,7 +5,7 @@
 \**************************************/
 #pragma once
 
-#include "../sensor.hpp"
+#include "sensor.hpp"
 
 namespace LSM6DSOX {
 

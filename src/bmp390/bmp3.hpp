@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "../sensor.hpp"
+#include "sensor.hpp"
 
 namespace BMP390 {
 
