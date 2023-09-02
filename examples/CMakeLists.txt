@@ -1,24 +1,10 @@
 LIST(APPEND apps
-    linux/simple_press.cpp
-    linux/simple_accel.cpp
-    linux/simple_mag.cpp
+    simple_press
+    simple_accel
+    simple_mag
 )
 
-foreach(MAINS ${apps})
-    get_filename_component(APP ${MAINS} NAME_WE)
-    # message(STATUS ">> ${MAINS} as ${APP}")
-    add_executable(${APP} ${MAINS})
-
-    target_include_directories(${APP}
-        PRIVATE
-            ${CMAKE_SOURCE_DIR}/src
-            ${gcimock_SOURCE_DIR}/include
-            ${squaternion_SOURCE_DIR}/src
-    )
-
-    target_link_libraries(${APP}
-        PRIVATE
-            ${PROJECT_NAME}
-            # gcimock
-    )
+foreach(app ${apps})
+    add_executable(${app} ${app}.cpp)
+    target_link_libraries(${app} PRIVATE ${PROJECT_NAME})
 endforeach()

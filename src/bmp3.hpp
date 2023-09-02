@@ -143,4 +143,6 @@ protected:
 
 };
 
+#include "bmp3.hxx"
+
 } // namespace BMP390

@@ -1,8 +1,10 @@
 
-#include "bmp3.hpp"
+#pragma once
+#include <string.h> // memcpy
 #include <math.h>
+// #include "bmp3.hpp"
 
-using namespace BMP390;
+// using namespace BMP390;
 
 constexpr uint8_t REG_WHO_AM_I    = 0x00;
 constexpr uint8_t REG_ERR         = 0x02;
@@ -340,9 +342,9 @@ bool gciBMP390::soft_reset() {
     writeRegister(REG_CMD, SOFT_RESET);
 
     // println("wrote SOFT_RESET");
-
+#if defined(ARDUINO)
     delay(2); // was 2 ... too quick?
-
+#endif
     // Read for command error status
     if (readRegister(REG_ERR) & REG_CMD) return false;
 

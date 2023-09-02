@@ -123,4 +123,6 @@ private:
   } data;
 };
 
+#include "lsm6dsox.hxx"
+
 } // namespace LSM6DSOX

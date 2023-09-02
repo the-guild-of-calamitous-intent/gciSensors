@@ -1,3 +1,5 @@
+
+#include <Wire.h>
 #include <gciSensors.hpp>
 
 using namespace LSM6DSOX;

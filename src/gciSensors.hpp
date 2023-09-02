@@ -5,22 +5,24 @@
 \**************************************/
 #pragma once
 
-#ifndef IMU_USE_UNCALIBRATED_DATA
-  #define IMU_USE_UNCALIBRATED_DATA 1
-#endif
+#include <string.h> // memcpy
+
+// #if defined(ARDUINO)
+//   #include <Arduino.h>
+//   #include <Wire.h>
+// #else
+//   #include <Wire.hpp>
+// #endif
 
 // sensor drivers
-#include "bmp390/bmp3.hpp"
-#include "lis3mdl/lis3mdl.hpp"
-#include "lsm6dsox/lsm6dsox.hpp"
+#include "sensor.hpp"
+#include "units.hpp"
+#include "bmp3.hpp"
+#include "lis3mdl.hpp"
+#include "lsm6dsox.hpp"
 
 // range driver
-#include "tfmini/tfmini.h"
+// #include "tfmini/tfmini.h"
 
 // filters
-#include "filters.hpp"
-
-// helpers
-#include "earth.hpp"
-// #include "timers.hpp"
-#include "units.hpp"
+// #include "filters.hpp"

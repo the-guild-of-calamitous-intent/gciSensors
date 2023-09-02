@@ -1,6 +1,10 @@
-#include "lis3mdl.hpp"
 
-using namespace LIS3MDL;
+#pragma once
+
+#include <string.h> // memcpy
+// #include "lis3mdl.hpp"
+
+// using namespace LIS3MDL;
 
 constexpr uint8_t REG_WHO_AM_I   = 0x0F;
 constexpr uint8_t REG_CTRL_REG1  = 0x20;

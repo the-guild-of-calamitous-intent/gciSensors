@@ -100,4 +100,6 @@ shift - how much to shift data by
   float scale;
 };
 
+#include "lis3mdl.hxx"
+
 } // namespace LIS3MDL

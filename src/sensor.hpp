@@ -5,40 +5,15 @@
 \**************************************/
 #pragma once
 
-// #if defined(__linux__)
-// not sure what to do
+#include <stdint.h> // int types
+
 #if defined(ARDUINO)
   #include <Arduino.h>
   #include <Wire.h>
-// #elif defined(__APPLE__)
-//   #include <mock_arduino.hpp>
-//   #include <mock_wire.hpp>
-// #elif defined(linux)
-#endif
-
-// THIS DOESN'T SEEM TO WORK RIGHT
-// Put DEBUG in main.cpp before importing this header
-// Example: #define DEBUG 1
-#if defined(GCI_SENSORS_DEBUG)
-  #if defined(ARDUINO)
-static void println(const String &s) { Serial.println(s); }
-static void print(const String &s) { Serial.print(s); }
-  #else // apple linux
-    #if defined(__APPLE__) || defined(linux)
-typedef std::string String;
-    #endif
-static void println(const String &s) {}
-static void print(const String &s) {}
-  #endif
 #else
-  #if defined(__APPLE__) || defined(linux)
-typedef std::string String;
-  #endif
-static void println(const String &s) {}
-static void print(const String &s) {}
+  #include <Wire.hpp>
+  // #include <wire_apple.hpp>
 #endif
-
-#include <stdint.h> // int types
 
 inline uint32_t to_24b(uint8_t *b) {
   return (uint32_t)b[0] | (uint32_t)b[1] << 8 | (uint32_t)b[2] << 16;
@@ -58,29 +33,89 @@ constexpr uint8_t b6 = 64;
 constexpr uint8_t b7 = 128;
 } // namespace BITS
 
-/*
-I don't like some of this ... need to clean it up!
-move to camel case and
-*/
+
 class SensorI2C {
 public:
   SensorI2C(TwoWire *tw, const uint8_t address) : addr(address), i2c(tw) {}
 
-  bool writeRegister(const uint8_t reg, const uint8_t data); // FIXME
+//[ LINUX ]////////////////////////////////////////////////////////////////////////////////
+#if defined(__linux__)
+
+  bool writeRegister(const uint8_t reg, const uint8_t data) {
+    i2c->set(addr);
+    return i2c->write(reg, data);
+  }
+
+  bool readRegisters(const uint8_t reg, const uint8_t count, uint8_t *const data) {
+    i2c->set(addr);
+    return i2c->read(reg, count, data);
+  }
+
+
+//[ APPLE ]///////////////////////////////////////////////////////////////////////////////
+#elif defined(__APPLE__)
+
+  bool writeRegister(const uint8_t reg, const uint8_t data) {
+    return true;
+  }
 
   bool readRegisters(const uint8_t reg, const uint8_t count,
-                     uint8_t *const data);
-  // bool readRegister(const uint8_t reg, uint8_t *const data) {
-  //   return readRegisters(reg, 1, value);
-  // }
-  uint8_t readRegister(uint8_t reg) { // this seems backwards
+                                uint8_t *const data) {
+    return true;
+  }
+
+//[ Arduino ]///////////////////////////////////////////////////////////////////////////////
+#elif defined(ARDUINO)
+
+  bool writeRegister(const uint8_t reg, const uint8_t data) {
+    uint8_t ret_val;
+    i2c->beginTransmission(addr);
+    i2c->write(reg);
+    i2c->write(data);
+    i2c->endTransmission();
+
+    delay(10);
+    readRegisters(reg, 1, &ret_val);
+    if (data == ret_val) return true;
+
+    // println("data write failed verification: " + String(int(data)) +
+    //         " != " + String(int(ret_val)));
+
+    return false;
+  }
+
+  bool readRegisters(const uint8_t reg, const uint8_t count, uint8_t *const data) {
+    i2c->beginTransmission(addr);
+    i2c->write(reg);
+    i2c->endTransmission(false);
+
+    // delay(500);
+    // delay(2);
+
+    uint8_t bytes_rx = i2c->requestFrom(addr, count);
+    if (bytes_rx == count) {
+      for (uint8_t i = 0; i < count; i++) {
+        data[i] = i2c->read();
+      }
+      return true;
+    }
+
+    // println("ReadRegisters::bad read: " + String(int(bytes_rx)) +
+    //         " expected: " + String(int(count)));
+
+    return false;
+  }
+
+#endif
+
+  uint8_t readRegister(uint8_t reg) {
     uint8_t value;
     if (!readRegisters(reg, 1, &value)) return 0;
     return value;
   }
 
-  // inline bool checkErr(int val) { return (val < 0) ? false : true; }
-
-  TwoWire *i2c;
   uint8_t addr;
+
+protected:
+  TwoWire *i2c;
 };

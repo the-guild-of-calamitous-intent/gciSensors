@@ -1,5 +1,9 @@
-#include "lsm6dsox.hpp"
-#include "../units.hpp"
+
+#pragma once
+
+#include <string.h> // memcpy
+// #include "lsm6dsox.hpp"
+#include "units.hpp"
 
 constexpr uint8_t REG_INT1_CTRL = 0x0D;
 constexpr uint8_t REG_INT2_CTRL = 0x0E;
