@@ -78,14 +78,14 @@ bool gciLSM6DSOX::init(uint8_t accel_range, uint8_t gyro_range, uint8_t odr) {
   return true;
 }
 
-void gciLSM6DSOX::set_cal(float a_cal[12], float g_cal[3]) {
-  // for (int i=0; i<3; ++i)
-  //   for (int j=0; j<4; ++j) sm[i][j] = cal[i*3 + j];
-  memcpy(sm, a_cal, 12*sizeof(float));
+void gciLSM6DSOX::set_acal(float cal[12]) {
+  memcpy(sm, cal, 12*sizeof(float));
+}
 
-  gbias[0] = g_cal[0];
-  gbias[1] = g_cal[1];
-  gbias[2] = g_cal[2];
+void gciLSM6DSOX::set_gcal(float cal[12]) {
+  gbias[0] = cal[0];
+  gbias[1] = cal[1];
+  gbias[2] = cal[2];
 }
 
 /*

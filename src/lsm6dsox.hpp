@@ -100,7 +100,8 @@ public:
   //   uint8_t gyro_odr=RATE_104_HZ
   // );
 
-  void set_cal(float a_cal[12], float g_cal[3]); // accel - 12, gyro - 3
+  void set_acal(float cal[12]);
+  void set_gcal(float cal[12]); // accel - 12, gyro - 3
 
   sox_raw_t read_raw(); // accel - g's, gyro - rad/s, temp - C
   sox_t read();     // accel - g's, gyro - rad/s, temp - C
