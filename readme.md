@@ -8,7 +8,6 @@ and enable high data rate.
 
 ## LSM6DSOX
 
-
 - Accelerometer ±2/±4/±8/±16 g at 1.6 Hz to 6.7KHz update rate
 - Gyroscope: ±125/±250/±500/±1000/±2000 dps at 12.5 Hz to 6.7 KHz
 - 32 bit timer at 25 usec resolution
@@ -69,32 +68,6 @@ pt_t pt = bmp.read();
 // pt.temp => temperature in C
 ```
 
-
-
-## Filters (`filters.hpp`)
-
-- Low/High pass filter
-
-## Helpers
-
-- Unit conversions `units.hpp`
-- Earth parameters `earth.hpp`
-
-## Apple and Linux
-
-To use mock serial for testing, do:
-
-```cpp
-#define USE_GCIMOCK_SERIAL 1
-```
-
-Else do:
-
-```cpp
-#include <serialcomm>
-SerialPort Serial;
-```
-
 ## Other Stuff
 
 - KF code, look at: /Users/kevin/tmp/inertial-navigation
@@ -103,14 +76,11 @@ SerialPort Serial;
 
 ## Todo
 
-- [ ] convert `Alarm` from reading `millis()` to using HW timer
-- [ ] should `timer.hpp`, `earth.hpp`, or `units.hpp` be in this library? maybe move to `gecko2` (or what ever)
 - [x] Breakout apple, linux and arduion implementations cleaner
 - [x] LSM6DSOX Accel and gyro
 - [x] LIS3MDL Magnetometer
 - [x] BMP390 Barometer
 - [ ] DPS310 Barometer
-- [x] TFmini LIDAR
 
 # MIT License
 
