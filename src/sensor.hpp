@@ -12,7 +12,6 @@
   #include <Wire.h>
 #else
   #include <Wire.hpp>
-  // #include <wire_apple.hpp>
 #endif
 
 inline uint32_t to_24b(uint8_t *b) {

@@ -28,7 +28,7 @@ if(PROJECT_IS_TOP_LEVEL)
     message(STATUS " ${PROC}")
     message(STATUS "-------------------------------------")
 
-    set(BUILD_EXAMPLES ON)
+    # set(BUILD_EXAMPLES ON)
     set(BUILD_GTESTS ON)
 
     # GTest -----------------
@@ -39,7 +39,7 @@ if(PROJECT_IS_TOP_LEVEL)
     LIST(APPEND libs gtest)
 else()
     message(STATUS "-> ${PROJECT_NAME} is submodule")
-    set(BUILD_EXAMPLES OFF)
+    # set(BUILD_EXAMPLES OFF)
     set(BUILD_GTESTS OFF)
 endif()
 
@@ -64,10 +64,10 @@ target_include_directories(${PROJECT_NAME} INTERFACE src)
 target_link_libraries(${PROJECT_NAME} INTERFACE gciwire)
 
 # Examples ====================================================================
-message(STATUS "Building gciSensors examples is ${BUILD_EXAMPLES}")
-if (BUILD_EXAMPLES)
-    add_subdirectory(examples)
-endif()
+# message(STATUS "Building gciSensors examples is ${BUILD_EXAMPLES}")
+# if (BUILD_EXAMPLES)
+#     add_subdirectory(examples)
+# endif()
 
 message(STATUS "Building gciSensors gtests is ${BUILD_GTESTS}")
 if (BUILD_GTESTS)

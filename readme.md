@@ -6,6 +6,17 @@ I love Adafruit sensors with QWIIC but their drivers are geared towards hobbiest
 favor low power consumption over performace. I try to strip out unnecessary abstraction
 and enable high data rate.
 
+## Units
+
+| Sensor Type | Units        | Abbreviation
+|-------------|--------------|--------------|
+| Accels      | gravity      | g
+| Gyros       | degrees/sec  | dps
+| Mags        | micro Teslas | uT
+| Temperature | Celcius      | C
+| Pressure    | Pascal       | Pa
+| Time        | seconds      | sec
+
 ## LSM6DSOX
 
 - Accelerometer ±2/±4/±8/±16 g at 1.6 Hz to 6.7KHz update rate
@@ -23,11 +34,16 @@ bool ok = imu.ready(); // true when new data available
 if (ok) sox_t s = imu.read();
 // s.ok => good read true/false
 // s.ax => accel x,y,z in g's
-// s.gx => gyro x,y,z in rads/sec
+// s.gx => gyro x,y,z in deg/sec
 // s.temp => temperature in C
 ```
 
 ## LIS3MDL
+
+> I am having issues with this sensor. I think it must be calibrated to produce
+> any useable data. No matter what I do, I can not use it as a compass ... I
+> am doing something wrong either here or in a filter that turns the measurements
+> into heading!
 
 - ±4/±8/±12/±16 gauss selectable magnetic full scales
 - 16-bit data output
@@ -64,8 +80,8 @@ bmp.init();
 bool ok = bmp.ready(); // true when new data available
 pt_t pt = bmp.read();
 // pt.ok => good read true/false
-// pt.press => pressure in
-// pt.temp => temperature in C
+// pt.press => 24-bit, pressure in Pa
+// pt.temp => 24-bit, temperature in C
 ```
 
 ## Other Stuff
@@ -81,6 +97,9 @@ pt_t pt = bmp.read();
 - [x] LIS3MDL Magnetometer
 - [x] BMP390 Barometer
 - [ ] DPS310 Barometer
+- [ ] Add more unit tests
+- [ ] Add some simple filters that use these sensors
+- [ ] Update Arduino examples
 
 # MIT License
 
