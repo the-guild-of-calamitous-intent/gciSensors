@@ -29,6 +29,7 @@ constexpr uint8_t IIR_FILTER_COEFF_31  = 0x05;
 constexpr uint8_t IIR_FILTER_COEFF_63  = 0x06;
 constexpr uint8_t IIR_FILTER_COEFF_127 = 0x07;
 
+// datasheet p 26 oversample hz
 constexpr uint8_t ODR_200_HZ           = 0x00;
 constexpr uint8_t ODR_100_HZ           = 0x01;
 constexpr uint8_t ODR_50_HZ            = 0x02;
@@ -62,6 +63,7 @@ constexpr uint8_t REG_PWR_CTRL    = 0x1B;
 constexpr uint8_t REG_OSR         = 0x1C;
 constexpr uint8_t REG_ODR         = 0x1D;
 constexpr uint8_t REG_IIR_FILTER  = 0x1F;
+constexpr uint8_t REG_SENSORTIME  = 0x0C;
 constexpr uint8_t REG_CALIB_DATA  = 0x31;
 constexpr uint8_t REG_CMD         = 0x7E;
 
@@ -79,16 +81,17 @@ enum OsMode : uint8_t {
   OS_MODE_PRES_32X_TEMP_2X
 };
 
-enum FilterCoef : uint8_t {
-  FILTER_COEF_OFF = IIR_FILTER_DISABLE,
-  FILTER_COEF_2   = IIR_FILTER_COEFF_1,
-  FILTER_COEF_4   = IIR_FILTER_COEFF_3,
-  FILTER_COEF_8   = IIR_FILTER_COEFF_7,
-  FILTER_COEF_16  = IIR_FILTER_COEFF_15,
-  FILTER_COEF_32  = IIR_FILTER_COEFF_31,
-  FILTER_COEF_64  = IIR_FILTER_COEFF_63,
-  FILTER_COEF_128 = IIR_FILTER_COEFF_127,
-};
+// why is this confusing???
+// enum FilterCoef : uint8_t {
+//   FILTER_COEF_OFF = IIR_FILTER_DISABLE,
+//   FILTER_COEF_2   = IIR_FILTER_COEFF_1,
+//   FILTER_COEF_4   = IIR_FILTER_COEFF_3,
+//   FILTER_COEF_8   = IIR_FILTER_COEFF_7,
+//   FILTER_COEF_16  = IIR_FILTER_COEFF_15,
+//   FILTER_COEF_32  = IIR_FILTER_COEFF_31,
+//   FILTER_COEF_64  = IIR_FILTER_COEFF_63,
+//   FILTER_COEF_128 = IIR_FILTER_COEFF_127,
+// };
 
 constexpr uint8_t MODE_NORMAL  = 0x03; // continous sampling
 constexpr uint8_t ADDR_I2C     = 0x77;
@@ -96,16 +99,15 @@ constexpr uint8_t ADDR_I2C_ALT = 0x76;
 
 struct pt_t {
   float press, temp;
+  // uint32_t time; // not sure value of counter
   bool ok;
 };
 
-// struct pt_t {
-//   int16_t press, temp;
-//   bool ok;
-// };
-
-struct bmp3_available_t {
-  bool press, temp; // sensor available?
+enum bmp_available_t: uint8_t {
+  BMP_NONE = 0,
+  BMP_PRESSURE = (1 << 5),
+  BMP_TEMPERATURE = (1 << 6),
+  BMP_PRESSURE_TEMPERATURE = BMP_PRESSURE | BMP_TEMPERATURE
 };
 
 class gciBMP390 : public SensorI2C {
@@ -153,11 +155,11 @@ public:
   Hi Res   | x8  | x1 | 53  |
   Ultr Hi  | x16 | x2 | 27  |
 
-
-  Figure 6, datasheet
+  IIR Filter
+  Figure 6, pg 16, datasheet
   Off: 1 step delay
-  2: 10 step delay
-  4: 20 step delay
+  coeff 3: 10 step delay
+  coeff 7: 20 step delay
   */
   bool setOsMode(const OsMode mode) {
     uint8_t press_os, temp_os, odr;
@@ -235,8 +237,6 @@ public:
   }
 
   bool setPowerMode(uint8_t mode) {
-    bool ok;
-
     constexpr uint8_t PRESS_EN = 0x01;
     constexpr uint8_t TEMP_EN  = 0x02;
     uint8_t val                = (mode << 4) | TEMP_EN | PRESS_EN;
@@ -247,32 +247,41 @@ public:
     pt_t ret = {0};
     ret.ok   = false;
 
+    if (!ready()) return ret;
+
     bool ok  = readRegisters(REG_DATA, LEN_P_T_DATA, buffer);
     if (!ok) return ret;
 
-    uint32_t press = to_24b(&buffer[0]);
+    uint32_t press = to_24b(buffer);
     uint32_t temp  = to_24b(&buffer[3]);
 
-    // println("good read");
-
-    ret.ok    = true;
     ret.temp  = compensate_temperature(temp); // do temp 1st!!!
     ret.press = compensate_pressure(press);
+
+    // value?
+    // bool ok  = readRegisters(REG_SENSORTIME, 3, buffer);
+    // if (!ok) return ret;
+    // uint32_t time = to_24b(buffer);
+
+    ret.ok    = true;
     return ret;
   }
 
-  inline pt_t read() { return read_raw(); }
+  inline
+  pt_t read() { return read_raw(); }
+
   bool ready() {
     // constexpr uint8_t DATA_READY_BIT = BITS::b3;
     // if (((readRegister(REG_INT_STATUS) & DATA_READY_BIT) == 0)) return false;
     // return true;
 
-    constexpr uint8_t TEMP_READY_BIT = BITS::b5; // bit 5
-    constexpr uint8_t PRES_READY_BIT = BITS::b6; // bit 6
-    bmp3_available_t ret;
-    ret.press = readRegister(REG_STATUS) & PRES_READY_BIT;
-    ret.temp = readRegister(REG_STATUS) & TEMP_READY_BIT;
-    return ret.press && ret.temp;
+    uint8_t reg = readRegister(REG_STATUS);
+    return (3 << 5) & reg;
+  }
+
+  bmp_available_t available() {
+    uint8_t val = readRegister(REG_STATUS) & (3 << 5);
+    return static_cast<bmp_available_t>(val);
   }
 
   float altitude(const float p) {

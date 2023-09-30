@@ -57,12 +57,13 @@ enum Odr : uint8_t {
   ODR_1000HZ = 0b0111
 };
 
-using mag_t = gcisensors::vecf_t;
+using mag_t = gci::sensors::vecf_t;
+using mag_raw_t = gci::sensors::veci_t;
 
-struct mag_raw_t {
-  int16_t x, y, z; // micro Tesla (uT)
-  bool ok;       // error?
-};
+// struct mag_raw_t {
+//   int16_t x, y, z; // micro Tesla (uT)
+//   bool ok;       // error?
+// };
 
 /*
 default:
@@ -73,19 +74,18 @@ public:
   gciLIS3MDL(TwoWire *i2c, const uint8_t addr=ADDR_PRIM)
       : SensorI2C(i2c, addr) {}
 
-  bool init(const Range range=RANGE_4GS,const Odr odr=ODR_155HZ) {
-    uint8_t who_am_i;
-    // check WHOAMI
-    if (!readRegisters(REG_WHO_AM_I, sizeof(who_am_i), &who_am_i)) return false;
+  uint8_t init(const Range range=RANGE_4GS, const Odr odr=ODR_155HZ) {
+    uint8_t who = readRegister(REG_WHO_AM_I);
+    if (who != WHO_AM_I) return who;
 
-    if (who_am_i != WHO_AM_I) return false;
-    if (!setRange(range)) return false;
-    if (!setDataRate(odr)) return false;
+    if (!setRange(range)) return 1;
+    if (!setDataRate(odr)) return 2;
 
     // Enable block update (MSB/LSB not updated until previous value read)
     // if (!setBdu(true)) return false;
+    if (!writeRegister(REG_CTRL_REG5, 0b0100000)) return 3;
 
-    return true;
+    return 0;
   }
 
   bool reboot() { return writeBits(REG_CTRL_REG1, 0x01, 1, 3); } // reboot memory content
@@ -100,22 +100,11 @@ public:
 
     if (!ready()) return ret;
 
-    if (!readRegisters(REG_OUT_X_L, 6, buff.b)) {
-      return ret;
-    }
+    if (!readRegisters(REG_OUT_X_L, 6, buff.b)) return ret;
 
     ret.x = buff.s[0]; // counts
     ret.y = buff.s[1];
     ret.z = buff.s[2];
-
-    // static uint8_t buffer[6];
-    // if (!readRegisters(REG_OUT_X_L, 6, buffer)) {
-    //   return ret;
-    // }
-
-    // ret.x = (buffer[1] << 8) | buffer[0];
-    // ret.y = (buffer[3] << 8) | buffer[2];
-    // ret.z = (buffer[5] << 8) | buffer[4];
 
     ret.ok = true;
 
@@ -142,16 +131,16 @@ public:
     ret.ok = false;
     if (m.ok == false) return ret;
 
-    ret.x  = sm[0] * m.x + sm[1] * m.y + sm[2] * m.z + sm[3];
-    ret.y  = sm[4] * m.x + sm[5] * m.y + sm[6] * m.z + sm[7];
-    ret.z  = sm[8] * m.x + sm[9] * m.y + sm[10] * m.z + sm[11];
+    ret.x  = sm[0] * m.x + sm[1] * m.y + sm[2] * m.z - sm[3];
+    ret.y  = sm[4] * m.x + sm[5] * m.y + sm[6] * m.z - sm[7];
+    ret.z  = sm[8] * m.x + sm[9] * m.y + sm[10] * m.z - sm[11];
     ret.ok = true;
 
     return ret;
   }
 
   bool ready() {
-    constexpr uint8_t ZYXDA = BITS::b3;
+    constexpr uint8_t ZYXDA = 0b00001000; //BITS::b3;
 
     uint8_t val = readRegister(REG_STATUS);
     return val & ZYXDA;
@@ -209,16 +198,16 @@ protected:
     // pg8, table 3
     switch (range) {
     case RANGE_4GS:
-      scale = 1.0f / 6842.0f * 100.0f;
+      scale = 100.0f / 6842.0f;
       break;
     case RANGE_8GS:
-      scale = 1.0f / 3421.0f * 100.0f;
+      scale = 100.0f / 3421.0f;
       break;
     case RANGE_12GS:
-      scale = 1.0f / 2281.0f * 100.0f;
+      scale = 100.0f / 2281.0f;
       break;
     case RANGE_16GS:
-      scale = 1.0f / 1711.0f * 100.0f;
+      scale = 100.0f / 1711.0f;
       break;
     }
     return true;
@@ -237,7 +226,7 @@ protected:
 
   // block mode - enabled: don't update until MSB/LSB read
   // previously
-  bool setBdu(bool en) { return writeBits(REG_CTRL_REG5, (en) ? BDU_ON : BDU_OFF, 1, 6); }
+  // bool setBdu(bool en) { return writeBits(REG_CTRL_REG5, (en) ? BDU_ON : BDU_OFF, 1, 6); }
   /*
   Given some data, this will:
   1. read the register to get all the bits

@@ -6,6 +6,14 @@ I love Adafruit sensors with QWIIC but their drivers are geared towards hobbiest
 favor low power consumption over performace. I try to strip out unnecessary abstraction
 and enable high data rate.
 
+## Bit Stuff
+
+```c
+N |= 1 << K;    // set bit
+n &= ~(1 << k); // clear bit
+n ^= 1 << k;    // toggle bit
+```
+
 ## Units
 
 | Sensor Type | Units        | Abbreviation
@@ -84,11 +92,25 @@ pt_t pt = bmp.read();
 // pt.temp => 24-bit, temperature in C
 ```
 
+## Filters
+
+So these aren't working too great right now ... mainly due to the
+magnitometer issue
+
+- [AHRS](https://ahrs.readthedocs.io/en/latest/filters.html)
+
 ## Other Stuff
 
 - KF code, look at: /Users/kevin/tmp/inertial-navigation
 - Eigen KF code at: /Users/kevin/tmp/kf-eigen
     - Probably not good for uC
+
+| Type     | Significant digits | Number of bytes
+|----------|--------------------|-----------------|
+| `float`  | 6 - 7              | 4
+| `double` | 15 - 16            | 8
+
+- Ref: [microsoft.com](https://learn.microsoft.com/en-us/cpp/c-language/type-float?view=msvc-170#floating-point-types)
 
 ## Todo
 

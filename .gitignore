@@ -4,3 +4,5 @@ build
 old
 .ipynb_checkpoints
 MadgwickAHRS*
+__pycache__
+docs/notebooks/calibration/*.pkl

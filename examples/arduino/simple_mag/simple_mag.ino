@@ -12,13 +12,19 @@ void setup() {
   Wire.begin();
   Wire.setClock(400000);
 
-  while (!mag.init()) delay(10);
+  while (true) {
+    int err = mag.init();
+    if (err == 0) break;
+    Serial.print("error: ");
+    Serial.println(err);
+    delay(100);
+  }
 
-  // float sm[12]{
-  //   0.864, 0.0, 0.0, 20.553,  
-  //   0.0, 0.893, 0.0, 16.331,
-  //   0.0, 0.0, 0.988, 30.067};
-  // mag.set_cal(sm);
+  float mc[12]{
+    0.017661,0.000000,0.000000,-0.592696,
+    0.000000,0.019208,0.000000,0.149252,
+    0.000000,0.000000,0.017813,-0.079242};
+  mag.set_cal(mc);
 }
 
 void loop() {
@@ -34,8 +40,7 @@ void loop() {
   Serial.print(" uT \t");
   Serial.print(" mag: ");
   Serial.print(m.magnitude());
-  Serial.print(" h: ");
-  Serial.print(atan2(m.y, m.x)*180.0/M_PI);
+  Serial.print("\t");
   Serial.print(" ok: ");
   Serial.println((m.ok)? 1 : -1);
 

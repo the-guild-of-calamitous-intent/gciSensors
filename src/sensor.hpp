@@ -113,7 +113,7 @@ public:
     return value;
   }
 
-  uint8_t addr;
+  const uint8_t addr;
 
 protected:
   TwoWire *i2c;
