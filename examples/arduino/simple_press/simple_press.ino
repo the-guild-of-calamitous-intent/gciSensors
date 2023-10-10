@@ -1,11 +1,11 @@
 
-#define GCI_SENSORS_DEBUG 0
-
 #include <gciSensors.hpp>
 
 using namespace BMP390;
+using namespace gci::sensors;
 
 gciBMP390 bmp(&Wire);
+Hertz hz(30);
 
 void setup() {
   Serial.begin(115200);
@@ -16,32 +16,32 @@ void setup() {
 
   Serial.println("setup: bmp390 init");
 
-  while (!bmp.init(BMP390::OS_MODE_PRES_16X_TEMP_2X)) {
-    delay(2000);
-    // Serial.println("ERROR: gciBMP390::init()");
-  }
-  for (int i; i< 10; ++i) {
-    bmp.read();
-    delay(40); // 25 Hz
-  }
-  // bmp.setOsMode(BMP390::OS_MODE_PRES_16X_TEMP_2X);
+  uint8_t err;
+  do {
+    err = bmp.init(BMP390::OS_MODE_PRES_16X_TEMP_2X);
+    sleep_ms(1000);
+    Serial.println("ERROR: gciBMP390::init()");
+  } while (err != NO_ERROR);
 
   Serial.println("setup done ...");
 }
 
 void loop() {
+  // Serial.print(".");
 
-  Serial.println(bmp.ready());
   pt_t pt = bmp.read();
+  if (pt.ok == false) return;
 
-  Serial.print(pt.ok? "Good: " : "Error: ");
-  Serial.print(" ");
-  Serial.print(pt.press);
-  Serial.print(" Pa\t");
-  Serial.print(bmp.altitude(pt.press));
-  Serial.print(" m\t");
-  Serial.print(pt.temp);
-  Serial.println(" C");
+  if (hz.check()) {
+    Serial.print(hz.hertz);
+    Serial.print(" hz\t");
+    Serial.print(pt.press);
+    Serial.print(" Pa\t");
+    Serial.print(bmp.altitude(pt.press));
+    Serial.print(" m\t");
+    Serial.print(pt.temp);
+    Serial.println(" C");
+  }
 
-  delay(200);
+  // sleep_ms(40);
 }

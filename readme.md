@@ -123,6 +123,26 @@ magnitometer issue
 - [ ] Add some simple filters that use these sensors
 - [ ] Update Arduino examples
 
+## Filter
+
+```
+FilteredAngle_k = alpha * GyroscopeAngle + (1 − alpha) * AccelerometerAngle
+alpha = tau / (tau + dt)
+GyroscopeAngle = FilteredAngle_k-1 + w * dt
+```
+
+dt = sampling rate, tau = time constant greater than timescale of typical accelerometer noise
+
+I had a sampling rate of about 0.04 seconds and chose a time constant of about 1 second, giving alpha = 0.96. [ref](https://www.geekmomprojects.com/gyroscopes-and-accelerometers-on-a-chip/)
+
+## References
+
+- Alternative: [Betafight](https://github.com/betaflight/betaflight/tree/master)
+- ozzmaker.com: [Compass1](https://ozzmaker.com/compass1/)
+- ozzmaker.com: [Compass2](https://ozzmaker.com/compass2/)
+- [Raspberry Pico Libs](https://github.com/earlephilhower/arduino-pico/tree/master)
+- STMicro github: [lsm6dsox](https://github.com/STMicroelectronics/lsm6dsox-pid/tree/master)
+
 # MIT License
 
 **Copyright (c) 2022 The Guild of Calamitous Intent**

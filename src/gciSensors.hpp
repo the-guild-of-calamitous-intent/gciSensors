@@ -11,19 +11,37 @@
 
 
 #if !defined(ARDUINO)
+  inline
   void delay(int) {} // FIXME: do a better way!
+
+  inline
   uint32_t millis() {return 0;}
 #else
   #include <Arduino.h>
 #endif
 
-namespace gci {
-namespace sensors {
+inline
+void sleep_ms(uint32_t ms) {
+  #if defined(ARDUINO)
+  delay(ms);
+  #endif
+}
 
+inline
+void sleep_us(uint16_t us) {
+  #if defined(ARDUINO)
+  delayMicroseconds(us);
+  #endif
+}
+
+
+namespace gci {
+
+namespace sensors {
 template<typename T>
 struct vec_t {
   T x, y, z;
-  bool ok;  // error?
+  // bool ok;  // error?
 
   inline
   const T magnitude() const {
@@ -48,10 +66,10 @@ using veci_t = vec_t<int16_t>;
 
 class Hertz {
   public:
-  Hertz(uint32_t v=300): val(v), epoch(millis()) {}
+  Hertz(uint32_t v=300): threshold(v), epoch(millis()) {}
 
   bool check() {
-    if (++count % val == 0) {
+    if (++count % threshold == 0) {
       uint32_t now = millis();
       hertz = 1000.0f * float(count) / float(now - epoch);
       epoch = now;
@@ -67,7 +85,7 @@ class Hertz {
   protected:
   uint32_t epoch;
   uint32_t count{0};
-  uint32_t val;
+  const uint32_t threshold;
 };
 
 } // sensors

@@ -16,87 +16,83 @@ constexpr uint8_t REG_FIFO_CTRL4  = 0x0A;
 constexpr uint8_t REG_INT1_CTRL = 0x0D;
 constexpr uint8_t REG_INT2_CTRL = 0x0E;
 constexpr uint8_t REG_WHO_AM_I = 0x0F;
-constexpr uint8_t CTRL1_XL     = 0x10; // Accel settings
-constexpr uint8_t CTRL2_G      = 0x11; // Gyro settings hz and dps
+constexpr uint8_t REG_CTRL1_XL     = 0x10; // Accel settings
+constexpr uint8_t REG_CTRL2_G      = 0x11; // Gyro settings hz and dps
 constexpr uint8_t REG_CTRL3_C  = 0x12; // interrupt stuff
-constexpr uint8_t CTRL6_C      = 0x15; // Accel perf mode and Gyro LPF
-constexpr uint8_t CTRL7_G      = 0x16; // Gyro filtering
+constexpr uint8_t REG_CTRL4_C  = 0x13;
+constexpr uint8_t REG_CTRL5_C  = 0x14;
+constexpr uint8_t REG_CTRL6_C      = 0x15; // Accel perf mode and Gyro LPF
+constexpr uint8_t REG_CTRL7_G      = 0x16; // Gyro filtering
 constexpr uint8_t REG_CTRL8_XL     = 0x17; // Accel filtering
 constexpr uint8_t REG_CTRL9_XL     = 0x18; // Accel filtering
 constexpr uint8_t REG_CTRL10_C     = 0x19; // tiimestamp
 
 constexpr uint8_t REG_STATUS   = 0x1E;
 
-constexpr uint8_t REG_OUT_TEMP_L   = 0x20;
-// constexpr uint8_t OUT_TEMP_H   = 0x21;
-
+constexpr uint8_t REG_OUT_TEMP_L   = 0x20; // termperature
 constexpr uint8_t REG_OUTX_L_G     = 0x22; // gyro
-// constexpr uint8_t OUTX_H_G     = 0x23;
-// constexpr uint8_t OUTY_L_G     = 0x24;
-// constexpr uint8_t OUTY_H_G     = 0x25;
-// constexpr uint8_t OUTZ_L_G     = 0x26;
-// constexpr uint8_t OUTZ_H_G     = 0x27;
-
 constexpr uint8_t REG_OUTX_L_A    = 0x28; // accel
-// constexpr uint8_t OUTX_H_XL    = 0x29;
-// constexpr uint8_t OUTY_L_XL    = 0x2A;
-// constexpr uint8_t OUTY_H_XL    = 0x2B;
-// constexpr uint8_t OUTZ_L_XL    = 0x2C;
-// constexpr uint8_t OUTZ_H_XL    = 0x2D;
-
 constexpr uint8_t REG_TIMESTAMP0 = 0x40; // 4B timestamp
-
-constexpr uint8_t WHO_AM_I     = 0x6C; // 01101100
-
-constexpr float TEMP_SCALE     = 1.0f / 256.0f;
 
 // The accelerometer/gyroscope data rate
 enum ODR : uint8_t {
-  RATE_SHUTDOWN,
-  RATE_12_5_HZ,
-  RATE_26_HZ,
-  RATE_52_HZ,
-  RATE_104_HZ,
-  RATE_208_HZ,
-  RATE_416_HZ,
-  RATE_833_HZ,
-  RATE_1_66K_HZ,
-  RATE_3_33K_HZ,
-  RATE_6_66K_HZ,
+  RATE_SHUTDOWN = 0x00,
+  RATE_104_HZ = 0x40,
+  RATE_208_HZ = 0x50,
+  RATE_416_HZ = 0x60,
+  RATE_833_HZ = 0x70,
+  RATE_1_66_KHZ = 0x80,
+  RATE_3_33_KHZ = 0x90,
+  RATE_6_66_KHZ = 0xA0,
 };
 
 // The accelerometer data range
 enum accel_range : uint8_t {
-  ACCEL_RANGE_2_G,
-  ACCEL_RANGE_16_G,
-  ACCEL_RANGE_4_G,
-  ACCEL_RANGE_8_G
+  ACCEL_RANGE_2_G  = (0x00 << 2),
+  ACCEL_RANGE_16_G = (0x01 << 2),
+  ACCEL_RANGE_4_G  = (0x02 << 2),
+  ACCEL_RANGE_8_G  = (0x03 << 2)
 };
 
 // The gyro data range
 enum gyro_range : uint8_t {
-  GYRO_RANGE_125_DPS  = 0b0010,
-  GYRO_RANGE_250_DPS  = 0b0000,
-  GYRO_RANGE_500_DPS  = 0b0100,
-  GYRO_RANGE_1000_DPS = 0b1000,
-  GYRO_RANGE_2000_DPS = 0b1100
+  GYRO_RANGE_125_DPS  = (0x01 << 1),
+  GYRO_RANGE_250_DPS  = (0x00 << 1),
+  GYRO_RANGE_500_DPS  = (0x02 << 1),
+  GYRO_RANGE_1000_DPS = (0x04 << 1),
+  GYRO_RANGE_2000_DPS = (0x06 << 1)
 };
 
-// The high pass filter bandwidth
-// enum hpf_range: uint8_t {
-//   HPF_ODR_DIV_50 = 0,
-//   HPF_ODR_DIV_100 = 1,
-//   HPF_ODR_DIV_9 = 2,
-//   HPF_ODR_DIV_400 = 3,
-// };
+constexpr uint8_t WHO_AM_I     = 0x6C; // 01101100
+constexpr uint8_t IF_INC       = 0x04;
+constexpr uint8_t XL_FS_MODE   = 0x02; // new mode, default 0
+constexpr uint8_t TIMESTAMP_EN = 0x20;
+constexpr uint8_t LPF2_XL_EN   = 0x02; // output from LPF2 second filtering stage selected (not default)
+constexpr uint8_t INT_DRDY_XL  = 0x01; // accel data ready INT pin
+constexpr uint8_t INT_DRDY_G   = 0x02; // gyro data ready INT pin
+constexpr uint8_t INT_DRDY_TEMP = 0x04; // temperature data ready INT pin
+// constexpr uint8_t H_LACTIVE    = 0x20; // 0-high, 1-low - don't set this
 
 constexpr float LSM6DSOX_TIMESTEP_RES = 25e-6;
+constexpr float TEMP_SCALE     = 1.0f / 256.0f;
 
 using gci::sensors::vecf_t;
 using gci::sensors::veci_t;
 
+struct sox_regs_t {
+  uint8_t CTRL1_XL;
+  uint8_t CTRL2_G;
+  uint8_t CTRL3_C;
+  uint8_t CTRL4_C;
+  uint8_t CTRL5_C;
+  uint8_t CTRL6_C;
+  uint8_t CTRL7_G;
+  uint8_t CTRL8_XL;
+  uint8_t CTRL9_XL;
+  uint8_t CTRL10_C;
+};
+
 struct sox_t {
-  // float ax, ay, az, gx, gy, gz, temp;
   vecf_t a, g;
   float temp;
   uint32_t ts;
@@ -104,17 +100,17 @@ struct sox_t {
 };
 
 struct sox_raw_t {
-  // int16_t ax, ay, az, gx, gy, gz, temp;
   veci_t a, g;
   int16_t temp;
   uint32_t ts;
   bool ok;
 };
 
-// struct lsm6_available_t {
-//   bool accel, gyro, temp; // sensor available?
-// };
-
+// TDA: temperature
+// GDA: gyro
+// XLDA: accel
+//                             4   2    1
+// STATUS_REG: MSB 0 0 0 0 0 TDA GDA XLDA LSB
 enum sox_available_t: uint8_t {
   SOX_NONE = 0,
   SOX_ACCEL = 1,
@@ -133,10 +129,12 @@ enum sox_error: uint8_t {
   ERROR_ENABLE_TIMESTAMP = 5,
   ERROR_ENABLE_BDU = 6,
   ERROR_DISABLE_FIFO = 7,
-  ERROR_DISABLE_I3C = 8
+  ERROR_DISABLE_I3C = 8,
+  ERROR_ENABLE_INT_ACCEL = 9,
+  ERROR_ENABLE_INT_GYRO = 10
 };
 
-constexpr int MAX_CHECK = 10;
+// constexpr int MAX_CHECK = 10;
 
 class gciLSM6DSOX : public SensorI2C {
 public:
@@ -149,58 +147,82 @@ public:
         uint8_t gyro_range=GYRO_RANGE_2000_DPS,
         uint8_t odr=RATE_104_HZ) {
 
-    // if (!(readRegister(REG_WHO_AM_I) == WHO_AM_I)) return ERROR_WHOAMI;
-    for (int i=0; i <= MAX_CHECK; ++i) {
-      uint8_t who = readRegister(REG_WHO_AM_I);
-      if (who == WHO_AM_I) break;
-      if (i == MAX_CHECK) return who; //ERROR_WHOAMI;
-      delay(10);
-    }
+    if (!(readRegister(REG_WHO_AM_I) == WHO_AM_I)) return ERROR_WHOAMI;
 
-    // diable I3C
-    // LSM6DSOX_CTRL9_XL
-    // LSM6DSOX_I3C_BUS_AVB
-    uint8_t val = 0b1110000;
-    if (!writeRegister(REG_CTRL9_XL, val)) return ERROR_DISABLE_I3C;
-
-    // auto-increament during multi-byte reads
-    // LSM6DSOX_CTRL3_C - set by default
-    // enable BDU
-    // LSM6DSOX_CTRL3_C
-    // uint8_t reg = readRegister(REG_FIFO_CTRL4);
-    // reg &= ~(1<<6); // really the setting is 0x04 which does multi-byte reads
-    uint8_t BDU = 0; // continous sampling
-    uint8_t IF_INC = 1; // addr incremented during multi-byte reads
-    val = (BDU << 6) + (IF_INC << 2);
-    if (!writeRegister(REG_CTRL3_C, val)) return ERROR_ENABLE_BDU;
-
-    // disable fifo
-    // LSM6DSOX_FIFO_CTRL4 bypassmode (0)
-    // if (!writeRegister(REG_FIFO_CTRL4, 0x00)) return ERROR_DISABLE_FIFO;
-
-    // set the gyroscope control register to work at 104 Hz, 2000 dps and in
-    // bypass mode
-    //   writeRegister(CTRL2_G, 0x4C);
-    if (!setGyro(odr, gyro_range)) return ERROR_GYRO_RANGE;
+    // reset memory
+    // MSB [ BOOT BDU H_LACTIVE PP_OD SIM IF_INC 0 SW_RESET ] LSB
+    // if (!writeRegister(REG_CTRL3_C, 0x84)) return 99;
 
     // Set the Accelerometer control register to work at 104 Hz, 4 g,and in bypass
     // mode and enable ODR/4 low pass filter (check figure9 of LSM6DSOX's
     // datasheet)
-    if (!setAccel(odr, accel_range)) return ERROR_ACCEL_RANGE;
+    // kill LFP2 (default)
+    switch (accel_range) {
+      case ACCEL_RANGE_2_G:
+        a_scale = 2.0f / 32768.0f;
+        break;
+      case ACCEL_RANGE_4_G:
+        a_scale = 4.0f / 32768.0f;
+        break;
+      case ACCEL_RANGE_8_G:
+        a_scale = 8.0f / 32768.0f;
+        break;
+      case ACCEL_RANGE_16_G:
+        a_scale = 16.0f / 32768.0f;
+        break;
+      default:
+      return ERROR_ACCEL_RANGE;
+    }
+    if (!writeRegister(REG_CTRL1_XL, odr | accel_range)) return ERROR_ENABLE_BDU;
+    // Serial.println(int(readRegister(REG_CTRL1_XL)));
+
+    if (gyro_range == GYRO_RANGE_125_DPS)
+      g_scale = 125.0f / 32768.0f;
+    else if (gyro_range == GYRO_RANGE_250_DPS)
+      g_scale = 250.0f / 32768.0f;
+    else if (gyro_range == GYRO_RANGE_500_DPS)
+      g_scale = 500.0f / 32768.0f;
+    else if (gyro_range == GYRO_RANGE_1000_DPS)
+      g_scale = 1000.0f / 32768.0f;
+    else if (gyro_range == GYRO_RANGE_2000_DPS)
+      g_scale = 2000.0f / 32768.0f;
+    else return ERROR_GYRO_RANGE;
+
+    if (!writeRegister(REG_CTRL2_G, odr | gyro_range)) return ERROR_ENABLE_BDU;
+    // Serial.println(int(readRegister(REG_CTRL2_G)));
+
+    // auto-increament during multi-byte reads
+    // continous sampling BDU = 0
+    if (!writeRegister(REG_CTRL3_C, IF_INC)) return ERROR_ENABLE_BDU;
+    // Serial.println(int(readRegister(REG_CTRL3_C)));
+
+    // disable fifo
+    // LSM6DSOX_FIFO_CTRL4 bypassmode (0)
+    uint8_t DRDY_MASK = 0x08;
+    // if (!writeRegister(REG_FIFO_CTRL4, 0x00)) return ERROR_DISABLE_FIFO;
+    if (!writeRegister(REG_FIFO_CTRL4, DRDY_MASK)) return ERROR_DISABLE_FIFO; // ??
 
     // set gyroscope power mode to high performance and bandwidth to 16 MHz
-    //   writeRegister(CTRL7_G, 0x00);
+    if (!writeRegister(REG_CTRL7_G, 0x00)) return 80;
 
     // Set LPF and HPF config register
-    // if (!writeRegister(REG_CTRL8_XL, 0x00)) return ERROR_ENABLE_FILTER; // LPF ODR/2, disable HPF
+    // LPF ODR/2, HPCF_XL = 0, LPF2_XL_EN = 0
+    // disable HPF, HP_REF_MODE_XL = 0x00
+    if (!writeRegister(REG_CTRL8_XL, 0x00)) return ERROR_ENABLE_FILTER;
+    // if (!writeRegister(REG_CTRL8_XL, XL_FS_MODE)) return ERROR_ENABLE_FILTER;
 
-    if (!writeRegister(REG_CTRL8_XL, 0x02)) return ERROR_ENABLE_FILTER;
+    // diable I3C
+    // LSM6DSOX_CTRL9_XL
+    // LSM6DSOX_I3C_BUS_AVB
+    // uint8_t val = 0xD0; // 0b1110000; // these are default
+    // if (!writeRegister(REG_CTRL9_XL, val)) return ERROR_DISABLE_I3C;
 
-    if (!writeRegister(REG_CTRL10_C, BITS::b5)) return ERROR_ENABLE_TIMESTAMP; // enable timestamp
+    // enable timestamp
+    if (!writeRegister(REG_CTRL10_C, TIMESTAMP_EN)) return ERROR_ENABLE_TIMESTAMP;
 
-    // Serial.println("pre-iinterrupt");
-    // if (!set_interrupts(true)) return false; // set interrupts
-    // Serial.println(">> init done ...");
+    // enable INT1 and INT2 pins when data is ready
+    if (!writeRegister(REG_INT1_CTRL, INT_DRDY_XL)) return ERROR_ENABLE_INT_ACCEL; // accel
+    if (!writeRegister(REG_INT2_CTRL, INT_DRDY_G)) return ERROR_ENABLE_INT_GYRO; // gyro
 
     return ERROR_NONE;
   }
@@ -215,6 +237,7 @@ public:
     sox_raw_t ret{0};
     ret.ok = false;
 
+    // Serial.println(ready());
     if (!ready()) return ret;
 
     if (!readRegisters(REG_OUT_TEMP_L, sizeof(block.b), block.b)) return ret;
@@ -225,13 +248,14 @@ public:
     ret.g.x = block.g.x;
     ret.g.y = block.g.y;
     ret.g.z = block.g.z;
-    ret.temp = block.temperature;
+    ret.temp = block.temperature; // 52Hz, pg13, Table 4
 
     if (!readRegisters(REG_TIMESTAMP0, 4, block.b)) return ret;
 
+    // pg 13, Table 4, temp ODR is ~52Hz
     ret.ts = block.timestamp; // 25 usec per count
+    ret.ok = true;
 
-    ret.ok   = true;
     return ret;
   }
 
@@ -256,10 +280,10 @@ public:
 
   sox_t read_cal() { // accel - g's, gyro - dps, temp - C
     const sox_t m = read();
+    if (m.ok == false) return m;
+
     sox_t ret{0};
     ret.ok = false;
-
-    if (m.ok == false) return ret;
 
     // accel = A * accel_meas - bias
     ret.a.x  = acal[0] * m.a.x + acal[1] * m.a.y + acal[2] * m.a.z - acal[3];
@@ -273,7 +297,6 @@ public:
 
     ret.ts = m.ts; // 25 usec per count
     ret.temp = m.temp;
-
     ret.ok = true;
 
     return ret;
@@ -285,8 +308,10 @@ public:
     // XLDA: accel
     //                             4   2    1
     // STATUS_REG: MSB 0 0 0 0 0 TDA GDA XLDA LSB
-    uint8_t val = readRegister(REG_STATUS);
-    return val >= 3;
+    // return readRegister(REG_STATUS);
+    // uint8_t val = readRegister(REG_STATUS) & 3;
+    return readRegister(REG_STATUS) < 3 ? false : true;
+    // return val == 3;
   }
 
   sox_available_t available() {
@@ -299,62 +324,22 @@ public:
     return static_cast<sox_available_t>(val);
   }
 
-  bool set_interrupts(bool val) {
-    uint8_t INT1_DRDY_XL = BITS::b0;
-    uint8_t INT2_DRDY_G = BITS::b1;
-    uint8_t DEN_DRDY_flag = 0; //BITS::b7; // need this too? not sure what it is
-    // uint8_t LIR = BITS::b0;
-    uint8_t IF_INC = BITS::b2; // default enabled
-    uint8_t H_LACTIVE = BITS::b5; // 0-high, 1-low
-    // uint8_t PP_OD = BITS::b4; // open-drain
-    bool ret = true;
-    // uint8_t TAP_CFG0 = 0x56;
-    ret &= writeRegister(REG_INT1_CTRL, INT1_DRDY_XL | DEN_DRDY_flag); // accel
-    // ret &= writeRegister(TAP_CFG0, LIR); // latching
-    ret &= writeRegister(REG_CTRL3_C, H_LACTIVE | IF_INC); // INT high
-    ret &= writeRegister(REG_INT2_CTRL, INT2_DRDY_G); // gyro
-
-    return ret;
+  sox_regs_t getRegs() {
+    sox_regs_t regs;
+    regs.CTRL1_XL = readRegister(REG_CTRL1_XL);
+    regs.CTRL2_G = readRegister(REG_CTRL2_G);
+    regs.CTRL3_C = readRegister(REG_CTRL3_C);
+    regs.CTRL4_C = readRegister(REG_CTRL4_C);
+    regs.CTRL5_C = readRegister(REG_CTRL5_C);
+    regs.CTRL6_C = readRegister(REG_CTRL6_C);
+    regs.CTRL7_G = readRegister(REG_CTRL7_G);
+    regs.CTRL8_XL = readRegister(REG_CTRL8_XL);
+    regs.CTRL9_XL = readRegister(REG_CTRL9_XL);
+    regs.CTRL10_C = readRegister(REG_CTRL10_C);
+    return regs;
   }
 
 private:
-  bool setGyro(uint8_t odr, uint8_t dps) {
-    if (dps == GYRO_RANGE_125_DPS)
-      g_scale = 125.0f / 32768.0f;
-    else if (dps == GYRO_RANGE_250_DPS)
-      g_scale = 250.0f / 32768.0f;
-    else if (dps == GYRO_RANGE_500_DPS)
-      g_scale = 500.0f / 32768.0f;
-    else if (dps == GYRO_RANGE_1000_DPS)
-      g_scale = 1000.0f / 32768.0f;
-    else if (dps == GYRO_RANGE_2000_DPS)
-      g_scale = 2000.0f / 32768.0f;
-
-    uint8_t val = (odr << 4) + (dps);
-    return writeRegister(CTRL2_G, val);
-  }
-
-  bool setAccel(uint8_t odr, uint8_t range) {
-    a_scale = 1.0f / 32768.0f;
-    switch (range) {
-      case ACCEL_RANGE_2_G:
-        a_scale *= 2.0f;
-        break;
-      case ACCEL_RANGE_4_G:
-        a_scale *= 4.0f;
-        break;
-      case ACCEL_RANGE_8_G:
-        a_scale *= 8.0f;
-        break;
-      case ACCEL_RANGE_16_G:
-        a_scale *= 16.0f;
-        break;
-    }
-
-    uint8_t LPF2_XL_EN = 0; // kill LFP2 (default)
-    uint8_t val = (odr << 4) + (range << 2) + (LPF2_XL_EN << 1);
-    return writeRegister(CTRL1_XL, val);
-  }
 
   float g_scale, a_scale;
 
@@ -370,15 +355,11 @@ private:
     0.0, 0.0, 1.0, 0.0
   };
 
-  struct vec_t {
-    uint16_t x,y,z;
-  };
-
   union {
     struct {
       uint16_t temperature;  // 2b
-      vec_t g; // 2*3 = 6b
-      vec_t a; // 2*3 = 6b
+      veci_t g; // 2*3 = 6b
+      veci_t a; // 2*3 = 6b
     }; // 14b
     uint32_t timestamp;
     uint8_t b[14];
@@ -387,3 +368,74 @@ private:
 
 
 } // namespace LSM6DSOX
+
+  // bool setGyro(uint8_t odr, uint8_t dps) {
+  //   if (dps == GYRO_RANGE_125_DPS)
+  //     g_scale = 125.0f / 32768.0f;
+  //   else if (dps == GYRO_RANGE_250_DPS)
+  //     g_scale = 250.0f / 32768.0f;
+  //   else if (dps == GYRO_RANGE_500_DPS)
+  //     g_scale = 500.0f / 32768.0f;
+  //   else if (dps == GYRO_RANGE_1000_DPS)
+  //     g_scale = 1000.0f / 32768.0f;
+  //   else if (dps == GYRO_RANGE_2000_DPS)
+  //     g_scale = 2000.0f / 32768.0f;
+
+  //   uint8_t val = (odr << 4) + (dps);
+  //   return writeRegister(CTRL2_G, val);
+  // }
+
+  // bool setAccel(uint8_t odr, uint8_t range) {
+  //   a_scale = 1.0f / 32768.0f;
+  //   switch (range) {
+  //     case ACCEL_RANGE_2_G:
+  //       a_scale *= 2.0f;
+  //       break;
+  //     case ACCEL_RANGE_4_G:
+  //       a_scale *= 4.0f;
+  //       break;
+  //     case ACCEL_RANGE_8_G:
+  //       a_scale *= 8.0f;
+  //       break;
+  //     case ACCEL_RANGE_16_G:
+  //       a_scale *= 16.0f;
+  //       break;
+  //   }
+
+  //   uint8_t LPF2_XL_EN = 0; // kill LFP2 (default)
+  //   uint8_t val = (odr << 4) + (range << 2) + (LPF2_XL_EN << 1);
+  //   return writeRegister(CTRL1_XL, val);
+  // }
+
+  // bool set_interrupts(bool val) {
+  //   uint8_t INT1_DRDY_XL = BITS::b0;
+  //   uint8_t INT2_DRDY_G = BITS::b1;
+  //   uint8_t DEN_DRDY_flag = 0; //BITS::b7; // need this too? not sure what it is
+  //   // uint8_t LIR = BITS::b0;
+  //   uint8_t IF_INC = BITS::b2; // default enabled
+  //   uint8_t H_LACTIVE = BITS::b5; // 0-high, 1-low
+  //   // uint8_t PP_OD = BITS::b4; // open-drain
+  //   bool ret = true;
+  //   // uint8_t TAP_CFG0 = 0x56;
+  //   ret &= writeRegister(REG_INT1_CTRL, INT1_DRDY_XL | DEN_DRDY_flag); // accel
+  //   // ret &= writeRegister(TAP_CFG0, LIR); // latching
+  //   ret &= writeRegister(REG_CTRL3_C, H_LACTIVE | IF_INC); // INT high
+  //   ret &= writeRegister(REG_INT2_CTRL, INT2_DRDY_G); // gyro
+
+  //   return ret;
+  // }
+
+
+  //   uint8_t INT1_DRDY_XL = BITS::b0;
+  //   uint8_t INT2_DRDY_G = BITS::b1;
+  //   uint8_t DEN_DRDY_flag = 0; //BITS::b7; // need this too? not sure what it is
+  //   // uint8_t LIR = BITS::b0;
+  //   uint8_t IF_INC = BITS::b2; // default enabled
+  //   uint8_t H_LACTIVE = BITS::b5; // 0-high, 1-low
+  //   // uint8_t PP_OD = BITS::b4; // open-drain
+  //   bool ret = true;
+  //   // uint8_t TAP_CFG0 = 0x56;
+  //   // ret &= writeRegister(TAP_CFG0, LIR); // latching
+  //   ret &= writeRegister(REG_INT1_CTRL, INT1_DRDY_XL | DEN_DRDY_flag); // accel
+  //   ret &= writeRegister(REG_INT2_CTRL, INT2_DRDY_G); // gyro
+  //   ret &= writeRegister(REG_CTRL3_C, H_LACTIVE | IF_INC); // INT high

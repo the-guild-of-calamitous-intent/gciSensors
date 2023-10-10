@@ -2,7 +2,9 @@
 #include <gciSensors.hpp>
 
 using namespace LIS3MDL;
+using namespace gci::sensors;
 
+Hertz hz(100);
 gciLIS3MDL mag(&Wire);
 
 void setup() {
@@ -13,7 +15,7 @@ void setup() {
   Wire.setClock(400000);
 
   while (true) {
-    int err = mag.init();
+    int err = mag.init(RANGE_4GAUSS,ODR_155HZ);
     if (err == 0) break;
     Serial.print("error: ");
     Serial.println(err);
@@ -31,18 +33,19 @@ void loop() {
 
   // const mag_t m = mag.read();
   const mag_t m = mag.read_cal();
+  if (m.ok == false) return;
 
-  Serial.print(m.x);
-  Serial.print("\t");
-  Serial.print(m.y);
-  Serial.print("\t");
-  Serial.print(m.z);
-  Serial.print(" uT \t");
-  Serial.print(" mag: ");
-  Serial.print(m.magnitude());
-  Serial.print("\t");
-  Serial.print(" ok: ");
-  Serial.println((m.ok)? 1 : -1);
+  if (hz.check()) {
+    Serial.print(hz.hertz);
+    Serial.print(": ");
+    Serial.print(m.x);
+    Serial.print("\t");
+    Serial.print(m.y);
+    Serial.print("\t");
+    Serial.print(m.z);
+    Serial.print("\t");
+    Serial.print(" mag: ");
+    Serial.println(m.magnitude());
+  }
 
-  delay(100);
 }

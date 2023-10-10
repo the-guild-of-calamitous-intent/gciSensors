@@ -10,7 +10,7 @@ using gci::sensors::vecf_t;
 
 gciLIS3MDL mag(&Wire);
 gciLSM6DSOX IMU(&Wire);
-gci::sensors::Hertz hz(25);
+gci::sensors::Hertz hz(500);
 
 // float ac[12]{
 //    1.00268927, -0.00056029, -0.00190925, -0.00492348,
@@ -142,18 +142,18 @@ void setup() {
   Wire.begin();
   Wire.setClock(400000);
 
-  while (true) {
-    int err = IMU.init(ACCEL_RANGE_4_G, GYRO_RANGE_2000_DPS, RATE_104_HZ);
-    if (err == 0) break;
-    Serial.print("accel/gyro error: ");
-    Serial.println(err);
-    delay (1000);
-  }
+  // while (true) {
+  //   int err = IMU.init(ACCEL_RANGE_4_G, GYRO_RANGE_2000_DPS, RATE_104_HZ);
+  //   if (err == 0) break;
+  //   Serial.print("accel/gyro error: ");
+  //   Serial.println(err);
+  //   delay (1000);
+  // }
 
   // flatcal(200); // not sure this helps, need to do a better calibration
 
   while (true) {
-    int err = mag.init(RANGE_4GS, ODR_155HZ);
+    int err = mag.init(RANGE_4GAUSS, ODR_1000HZ);
     if (err == 0) break;
     Serial.print("mag error: ");
     Serial.println(err);
@@ -165,20 +165,27 @@ void setup() {
   mag.set_cal(mc);
 }
 
+
+vecf_t accels;
+vecf_t mags;
+
 void loop() {
-  const sox_t s = IMU.read_cal();
+  // const sox_t s = IMU.read_cal();
   
   // this is the slowest
   // since the imu is set to operate at ~100Hz, s.ok will only be valid
   // when good data is available. Thus this loop will run print at 
   // ~100 Hz
-  if (s.ok == false) return; 
+  // if (s.ok) accels = s.a; 
+  // if (s.ok == false) return;
 
-  const mag_t m = mag.read_cal(); // 155Hz
-  // if (m.ok == false) return;
+  const mag_t m = mag.read(); // 155Hz
+  if (m.ok == false) return;
 
-  vecf_t v = stablize(s.a,m, true);
-  v = to_compass_degrees(v);
+  // vecf_t v = stablize(accels,mags, true);
+  // if (v.ok == false) return;
+  // v = to_compass_degrees(v);
+  vecf_t v = m;
 
   if (hz.check()) {
     Serial.print(hz.hertz,1);
@@ -191,4 +198,6 @@ void loop() {
     Serial.print(v.z);
     Serial.println(" ");
   }
+
+  // delay(5);
 }
