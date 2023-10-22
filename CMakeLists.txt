@@ -69,4 +69,6 @@ add_library(${PROJECT_NAME} INTERFACE)
 target_include_directories(${PROJECT_NAME} INTERFACE src)
 target_link_libraries(${PROJECT_NAME} INTERFACE ${pico_libs})
 
-add_subdirectory(examples/pico)
+if (BUILD_EXAMPLES)
+    add_subdirectory(examples/pico)
+endif()

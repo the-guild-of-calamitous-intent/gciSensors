@@ -10,16 +10,10 @@
 constexpr uint I2C_100KHZ = 100 * 1000;
 constexpr uint I2C_400KHZ = 400 * 1000;
 
-#if defined(ARDUINO)
-  #include <Arduino.h>
-  #include <Wire.h>
-#elif defined(__linux__) || defined(__APPLE__)
-  #include <Wire.hpp>
-#endif
-
 inline uint32_t to_24b(uint8_t *b) {
   return (uint32_t)b[0] | (uint32_t)b[1] << 8 | (uint32_t)b[2] << 16;
 }
+
 inline uint16_t to_16b(uint8_t msb, uint8_t lsb) {
   return ((uint16_t)msb << 8) | (uint16_t)lsb;
 }
