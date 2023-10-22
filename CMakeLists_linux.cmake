@@ -43,25 +43,25 @@ else()
     set(BUILD_GTESTS OFF)
 endif()
 
-FetchContent_Declare(
-    gciwire
-    GIT_REPOSITORY "https://github.com/the-guild-of-calamitous-intent/gciWire.git"
-    GIT_TAG "origin/main"
-)
+# FetchContent_Declare(
+#     gciwire
+#     GIT_REPOSITORY "https://github.com/the-guild-of-calamitous-intent/gciWire.git"
+#     GIT_TAG "origin/main"
+# )
 
-LIST(APPEND libs gciwire)
+# LIST(APPEND libs gciwire)
 
-FetchContent_MakeAvailable( ${libs} )
+# FetchContent_MakeAvailable( ${libs} )
 
-message(STATUS "[ Wire ]=======================")
-message(STATUS "> POPULATED: ${gciwire_POPULATED}")
-message(STATUS "> SRC_DIR: ${gciwire_SOURCE_DIR}")
-message(STATUS "> BIN_DIR: ${gciwire_BINARY_DIR}")
-message(STATUS "===============================")
+# message(STATUS "[ Wire ]=======================")
+# message(STATUS "> POPULATED: ${gciwire_POPULATED}")
+# message(STATUS "> SRC_DIR: ${gciwire_SOURCE_DIR}")
+# message(STATUS "> BIN_DIR: ${gciwire_BINARY_DIR}")
+# message(STATUS "===============================")
 
 add_library(${PROJECT_NAME} INTERFACE)
 target_include_directories(${PROJECT_NAME} INTERFACE src)
-target_link_libraries(${PROJECT_NAME} INTERFACE gciwire)
+# target_link_libraries(${PROJECT_NAME} INTERFACE gciwire)
 
 # Examples ====================================================================
 # message(STATUS "Building gciSensors examples is ${BUILD_EXAMPLES}")
@@ -69,7 +69,7 @@ target_link_libraries(${PROJECT_NAME} INTERFACE gciwire)
 #     add_subdirectory(examples)
 # endif()
 
-add_subdirectory(examples/pico)
+# add_subdirectory(examples/pico)
 
 # message(STATUS "Building gciSensors gtests is ${BUILD_GTESTS}")
 # if (BUILD_GTESTS)
