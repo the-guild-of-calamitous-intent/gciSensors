@@ -1,11 +1,11 @@
 #include <stdio.h>
-#include <string>
 
 using namespace std;
 
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
 #include "hardware/gpio.h"
+#include "tusb.h" // wait for USB
 
 #include <gciSensors.hpp>
 
@@ -20,15 +20,28 @@ const uint LED_PIN = 25;
 int main() {
   stdio_init_all();
 
+  while (!tud_cdc_connected()) {
+    sleep_ms(100);
+  }
+
   gpio_init(LED_PIN);
   gpio_set_dir(LED_PIN, GPIO_OUT);
 
-  IMU.init_tw(I2C_400KHZ,0,I2C0_SDA_PIN, I2C0_SCL_PIN);
+  puts("/// Accel/Gyros START ///\n");
+
+  bool ok = IMU.init_tw(I2C_400KHZ,0,I2C0_SDA_PIN, I2C0_SCL_PIN);
+  while (!ok) {
+    puts("I2C initialization error");
+    sleep_ms(1000);
+  }
 
   while (true) {
     uint8_t err = IMU.init(ACCEL_RANGE_4_G, GYRO_RANGE_2000_DPS, RATE_208_HZ);
     if (err == 0) break;
-    puts("imu error");
+    char msg[32];
+    snprintf(msg, 32, "imu error %d", int(err));
+    msg[31] = '\0';
+    puts(msg);
     sleep_ms(1000);
   }
 
@@ -41,9 +54,11 @@ int main() {
     sox_t i = IMU.read();
     if (i.ok == false) continue;
 
-    string accel = to_string(i.a.x) + " " + to_string(i.a.y) + " " + to_string(i.a.z);
-    puts(accel.c_str());
-    string gyro = to_string(i.g.x) + " " + to_string(i.g.y) + " " + to_string(i.g.z);
-    puts(gyro.c_str());
+    printf("-----------------------------\n");
+    printf("Accels: %f %f %f g\n", i.a.x, i.a.y, i.a.z);
+    printf("Gyros: %f %f %f rps\n", i.g.x, i.g.y, i.g.z);
+    printf("Temperature: %f C\n", i.temp);
+    printf("Timestamp: %u msec\n", i.ts);
+
   }
 }

@@ -1,11 +1,11 @@
 #include <stdio.h>
-#include <string>
 
 using namespace std;
 
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
 #include "hardware/gpio.h"
+#include "tusb.h" // wait for USB
 
 #include <gciSensors.hpp>
 
@@ -19,15 +19,20 @@ const uint LED_PIN = 25;
 int main() {
   stdio_init_all();
 
+  while (!tud_cdc_connected()) {
+    sleep_ms(100);
+  }
+
+  printf("/// Press/Temp Started ///\n");
+
   gpio_init(LED_PIN);
   gpio_set_dir(LED_PIN, GPIO_OUT);
 
   bmp.init_tw(I2C_400KHZ,0,I2C0_SDA_PIN, I2C0_SCL_PIN);
-
   while (true) {
-    int err = bmp.init(BMP390::OS_MODE_PRES_16X_TEMP_2X);
+    uint err = bmp.init(BMP390::OS_MODE_PRES_16X_TEMP_2X);
     if (err == 0) break;
-    puts("bmp error");
+    printf("BMP Error: %u\n", err);
     sleep_ms(1000);
   }
 
@@ -39,7 +44,9 @@ int main() {
 
     pt_t pt = bmp.read();
     if (pt.ok == false) continue;
-    string pts = to_string(pt.press) + " " + to_string(pt.temp);
-    puts(pts.c_str());
+
+    printf("-----------------------------\n");
+    printf("Pressure: %f Pa\n", pt.press);
+    printf("Temperature: %f C\n", pt.temp);
   }
 }

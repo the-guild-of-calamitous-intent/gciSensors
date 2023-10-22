@@ -8,26 +8,27 @@
 #include <cmath> // isinf
 #include <cstdint>
 #include <string.h> // memcpy
+#include <stdio.h> // FIXME: remove
 
-#if !defined(ARDUINO)
-inline void delay(int) {} // FIXME: do a better way!
+// #if !defined(ARDUINO)
+// inline void delay(int) {} // FIXME: do a better way!
 
-inline uint32_t millis() { return 0; }
-#else
-  #include <Arduino.h>
-#endif
+// inline uint32_t millis() { return 0; }
+// #else
+//   #include <Arduino.h>
+// #endif
 
-inline void sleep_ms(uint32_t ms) {
-#if defined(ARDUINO)
-  delay(ms);
-#endif
-}
+// inline void sleep_ms(uint32_t ms) {
+// #if defined(ARDUINO)
+//   delay(ms);
+// #endif
+// }
 
-inline void sleep_us(uint16_t us) {
-#if defined(ARDUINO)
-  delayMicroseconds(us);
-#endif
-}
+// inline void sleep_us(uint16_t us) {
+// #if defined(ARDUINO)
+//   delayMicroseconds(us);
+// #endif
+// }
 
 namespace gci {
 
@@ -54,29 +55,29 @@ using vecf_t = vec_t<float>;
 using vecd_t = vec_t<double>;
 using veci_t = vec_t<int16_t>;
 
-class Hertz {
-public:
-  Hertz(uint32_t v = 300) : threshold(v), epoch(millis()) {}
+// class Hertz {
+// public:
+//   Hertz(uint32_t v = 300) : threshold(v), epoch(millis()) {}
 
-  bool check() {
-    if (++count % threshold == 0) {
-      uint32_t now = millis();
-      hertz        = 1000.0f * float(count) / float(now - epoch);
-      epoch        = now;
-      count        = 0;
-      return true;
-    }
+//   bool check() {
+//     if (++count % threshold == 0) {
+//       uint32_t now = millis();
+//       hertz        = 1000.0f * float(count) / float(now - epoch);
+//       epoch        = now;
+//       count        = 0;
+//       return true;
+//     }
 
-    return false;
-  }
+//     return false;
+//   }
 
-  float hertz{0.0f};
+//   float hertz{0.0f};
 
-protected:
-  uint32_t epoch;
-  uint32_t count{0};
-  const uint32_t threshold;
-};
+// protected:
+//   uint32_t epoch;
+//   uint32_t count{0};
+//   const uint32_t threshold;
+// };
 
 } // namespace sensors
 } // namespace gci

@@ -20,12 +20,12 @@ inline uint16_t to_16b(uint8_t msb, uint8_t lsb) {
 
 #if defined(PICO_SDK)
   #include "sensor_pico.hpp"
-#elif defined(__linux__)
-  #include "sensor_linux.hpp"
-#elif defined(__APPLE__)
-  #include "sensor_apple.hpp"
 #elif defined(ARDUINO)
   #include "sensor_arduino.hpp"
+#elif defined(__linux__)
+  #include "sensor_linux.hpp"
+// #elif defined(__APPLE__)
+//   #include "sensor_apple.hpp"
 #endif
 
 // class SensorI2C {

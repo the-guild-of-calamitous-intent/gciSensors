@@ -9,6 +9,7 @@ include(${PICO_SDK_PATH}/pico_sdk_init.cmake)
 
 include(FetchContent)
 
+# Need ASM for tinyUSB and picotool to work
 project(${PROJECT} C CXX ASM)
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_CXX_STANDARD 20)

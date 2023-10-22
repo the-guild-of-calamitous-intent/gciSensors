@@ -137,7 +137,7 @@ public:
                const uint8_t iir = IIR_FILTER_COEFF_1) {
     bool ok;
 
-    if (!(readRegister(REG_WHO_AM_I) == WHO_AM_I)) return 1;
+    if (!(readRegister(REG_WHO_AM_I) == WHO_AM_I)) return ERROR_WHOAMI;
     if (!soft_reset()) return ERROR_RESET;
     if (!get_calib_data()) return ERROR_CAL_DATA;
     if (!setOsMode(mode)) return ERROR_OS_MODE;
@@ -157,7 +157,7 @@ public:
     uint8_t MODE_NORMAL = (0x03 << 4); // continous sampling
     uint8_t PRESS_EN    = 0x01;
     uint8_t TEMP_EN     = 0x02;
-    return writeRegister(REG_PWR_CTRL, MODE_NORMAL | TEMP_EN | PRESS_EN);
+    ok = writeRegister(REG_PWR_CTRL, MODE_NORMAL | TEMP_EN | PRESS_EN);
     if (!ok) return ERROR_PWR_MODE;
 
     return NO_ERROR;

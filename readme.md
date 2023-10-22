@@ -102,6 +102,36 @@ magnitometer issue
 
 - [AHRS](https://ahrs.readthedocs.io/en/latest/filters.html)
 
+## Pi Pico
+
+```
+[100%] Linking CXX executable press.elf
+Memory region         Used Size  Region Size  %age Used
+           FLASH:       28156 B         2 MB      1.34%
+             RAM:        9620 B       256 KB      3.67%
+       SCRATCH_X:          0 GB         4 KB      0.00%
+       SCRATCH_Y:          0 GB         4 KB      0.00%
+-------------------------------------
+File press.uf2:
+
+Program Information
+ name:          press
+ features:      USB stdin / stdout
+ binary start:  0x10000000
+ binary end:    0x10006dfc
+
+Fixed Pin Information
+ none
+
+Build Information
+ sdk version:       1.5.1
+ pico_board:        pico
+ boot2_name:        boot2_w25q080
+ build date:        Oct 22 2023
+ build attributes:  Release
+-------------------------------------
+```
+
 ## Other Stuff
 
 - KF code, look at: /Users/kevin/tmp/inertial-navigation

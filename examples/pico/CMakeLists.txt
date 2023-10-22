@@ -2,6 +2,8 @@ list(APPEND examples
     accel
     mag
     press
+    dummy
+    scan_bus
 )
 
 foreach(app ${examples})

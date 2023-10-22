@@ -11,8 +11,12 @@
 
 #include "hardware/i2c.h"
 
-constexpr uint I2C0_SDA_PIN = 8;
-constexpr uint I2C0_SCL_PIN = 9;
+#if !defined(i2c_default)
+  #warning i2c not enabled
+#endif
+
+constexpr uint I2C0_SDA_PIN = 4;
+constexpr uint I2C0_SCL_PIN = 5;
 constexpr uint I2C1_SDA_PIN = 14;
 constexpr uint I2C1_SCL_PIN = 15;
 // constexpr uint I2C_100KHZ = 100 * 1000;
@@ -29,25 +33,36 @@ class SensorI2C {
   static bool initialized1;
 
 public:
-  SensorI2C(uint8_t addr): addr(addr) {}
+  SensorI2C(uint8_t addr): addr(addr) { puts("SensorI2C"); }
   ~SensorI2C() { i2c_deinit(i2c); }
 
-  void init_tw(uint baud, uint8_t port, uint8_t pin_sda, uint8_t pin_scl) {
+  bool init_tw(const uint baud, const uint port, const uint pin_sda, const uint pin_scl) {
+    uint ret;
     if (port == 0) {
-      i2c = i2c0;
-      if (initialized0 == false) i2c_init(i2c, baud);
+      i2c = &i2c0_inst;
+      if (initialized0 == false) ret = i2c_init(i2c, baud);
       initialized0 = true;
     }
     else if (port == 1) {
-      i2c = i2c1;
-      if (initialized1 == false) i2c_init(i2c, baud);
+      i2c = &i2c1_inst;
+      if (initialized1 == false) ret = i2c_init(i2c, baud);
       initialized1 = true;
     }
+    else return false;
+    printf(">> i2c instance: %u buad: %u\n", port, ret);
+    printf(">> i2c SDA: %u SCL: %u\n", pin_sda, pin_scl);
+
+    // bi_decl(bi_2pins_with_func(pin_sda, pin_scl, GPIO_FUNC_I2C));
+    // bi_decl(bi_program_description("SensorI2C init_tw"));
+    // bi_decl(bi_2pins_with_func(4, 5, GPIO_FUNC_I2C));
+    // bi_decl(bi_program_description("SensorI2C init_tw"));
 
     gpio_set_function(pin_sda, GPIO_FUNC_I2C);
     gpio_set_function(pin_scl, GPIO_FUNC_I2C);
     gpio_pull_up(pin_sda);
     gpio_pull_up(pin_scl);
+
+    return true;
   }
 
   bool writeRegister(const uint8_t reg, const uint8_t data) {
@@ -70,12 +85,15 @@ public:
     // return false;
   }
 
-  bool readRegisters(const uint8_t reg, const uint8_t data_size,
+  bool readRegisters(const uint8_t reg, const size_t data_size,
                      uint8_t *const data) {
     i2c_write_blocking(i2c, addr, &reg, 1, I2C_HOLD_BUS);
     int ret = i2c_read_blocking(i2c, addr, data, data_size, I2C_RELEASE_BUS);
-    if (ret < 0) return false;
-    return true;
+    return (ret < 0) ? false : true;
+
+    // if (ret < 0) return false;
+    // return true;
+
     // i2c->beginTransmission(addr);
     // i2c->write(reg);
     // i2c->endTransmission(false);
@@ -97,10 +115,12 @@ public:
     // return false;
   }
 
-  uint8_t readRegister(uint8_t reg) {
+  // inline
+  uint8_t readRegister(const uint8_t reg) {
     uint8_t value;
-    if (!readRegisters(reg, 1, &value)) return 0;
-    return value;
+    // return (readRegisters(reg, 1, &value) == true) ? value : 0;
+    if (readRegisters(reg, 1, &value)) return value;
+    return 0;
   }
 
   inline

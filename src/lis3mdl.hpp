@@ -8,6 +8,8 @@
 #include "sensor.hpp"
 #include <string.h> // memcpy
 
+#include <stdio.h>
+
 namespace LIS3MDL {
 
 constexpr uint8_t REG_WHO_AM_I   = 0x0F;
@@ -29,7 +31,17 @@ constexpr uint8_t REG_OUT_X_L    = 0x28;
 // constexpr uint8_t REG_INT_SRC    = 0x31;
 // constexpr uint8_t REG_INT_THS_L  = 0x32;
 // constexpr uint8_t REG_INT_THS_H  = 0x33;
+
 constexpr uint8_t WHO_AM_I  = 0x3D;
+constexpr uint8_t STATUS_ZYXDA = 0x08; // 0b00001000;
+constexpr uint8_t LIS3MDL_TEMP_EN = 0x80; // chip default off
+constexpr uint8_t LIS3MDL_FAST_ODR_EN = 0x02;
+constexpr uint8_t LIS3MDL_BDU_EN = 0x40; // chip default off
+
+constexpr uint8_t LIS3MDL_LP = 0x00;
+constexpr uint8_t LIS3MDL_MP = 0x01;
+constexpr uint8_t LIS3MDL_HIP = 0x02;
+constexpr uint8_t LIS3MDL_UHP = 0x03;
 
 constexpr uint8_t ADDR_PRIM = 0x1C;
 constexpr uint8_t ADDR_ALT  = 0x1E;
@@ -72,24 +84,26 @@ struct mag_t {
 
 struct mag_raw_t {
   int16_t x, y, z;
-  int16_t temperature;
+  // int16_t temperature;
   bool ok;
 };
-
-#define LIS3MDL_TEMP_EN 0x80 // chip default off
-#define LIS3MDL_FAST_ODR_EN 0x02
-#define LIS3MDL_BDU_EN 0x40 // chip default off
-
-#define LIS3MDL_LP 0x00
-#define LIS3MDL_MP 0x01
-#define LIS3MDL_HIP 0x02
-#define LIS3MDL_UHP 0x03
 
 enum Odr : uint8_t {
   ODR_155HZ  = LIS3MDL_UHP,
   ODR_300HZ  = LIS3MDL_HIP,
   ODR_560HZ  = LIS3MDL_MP,
   ODR_1000HZ = LIS3MDL_LP
+};
+
+
+enum mdl_error : uint8_t {
+  NO_ERROR,
+  ERROR_WHOAMI,
+  ERROR_REG1,
+  ERROR_REG2,
+  ERROR_REG3,
+  ERROR_REG4,
+  ERROR_REG5
 };
 
 /*
@@ -106,21 +120,22 @@ public:
       : SensorI2C(addr) {}
 
   uint8_t init(const Range range = RANGE_4GAUSS, const Odr odr = ODR_155HZ) {
-    uint8_t who = readRegister(REG_WHO_AM_I);
-    if (who != WHO_AM_I) return who;
+    // uint8_t who = readRegister(REG_WHO_AM_I);
+    // if (who != WHO_AM_I) return who;
+    if (readRegister(REG_WHO_AM_I) != WHO_AM_I) return ERROR_WHOAMI;
 
     uint8_t reg1 = LIS3MDL_FAST_ODR_EN | LIS3MDL_TEMP_EN | (odr << 5);
     uint8_t reg4 = (odr << 2);
     // Serial.println(reg1);
 
-    if (!writeRegister(REG_CTRL_REG1, reg1)) return 1;
-    if (!writeRegister(REG_CTRL_REG2, range)) return 2;
-    if (!writeRegister(REG_CTRL_REG3, 0x00)) return 3; // continuous sampling
-    if (!writeRegister(REG_CTRL_REG4, reg4)) return 4; // enable z-axis
+    if (!writeRegister(REG_CTRL_REG1, reg1)) return ERROR_REG1; // enable x/y-axis, temp
+    if (!writeRegister(REG_CTRL_REG2, range)) return ERROR_REG2; // set range
+    if (!writeRegister(REG_CTRL_REG3, 0x00)) return ERROR_REG3; // continuous sampling
+    if (!writeRegister(REG_CTRL_REG4, reg4)) return ERROR_REG4; // enable z-axis
     if (!writeRegister(REG_CTRL_REG5, 0x00))
-      return 5; // continuous sampling / no fast read
+      return ERROR_REG5; // continuous sampling / no fast read
 
-    return 0;
+    return NO_ERROR;
   }
 
   // bool reboot() { return writeBits(REG_CTRL_REG1, 0x01, 1, 3); } // reboot
@@ -128,7 +143,8 @@ public:
   // }  // reset to default
   bool reboot() {
     if (!writeRegister(REG_CTRL_REG3, 0x03)) return false;
-    delay(100);
+    // delay(100);
+    sleep_ms(100);
     return writeRegister(REG_CTRL_REG3, 0x00);
   }
 
@@ -140,12 +156,19 @@ public:
 
     if (!ready()) return ret;
 
-    if (!readRegisters(REG_OUT_X_L, 6, buff.b)) return ret;
+    #define READ_MAG 6
+    #define READ_MAG_TEMP 8
 
-    ret.x           = buff.s[0]; // counts
-    ret.y           = buff.s[1];
-    ret.z           = buff.s[2];
-    ret.temperature = buff.s[3];
+    if (!readRegisters(REG_OUT_X_L, READ_MAG, buff.b)) return ret;
+
+    // ret.x           = buff.s[0]; // counts
+    // ret.y           = buff.s[1];
+    // ret.z           = buff.s[2];
+    // ret.temperature = buff.s[3];
+    ret.x           = buff.s.x; // counts
+    ret.y           = buff.s.y;
+    ret.z           = buff.s.z;
+    // ret.temperature = buff.s.temp;
     ret.ok          = true;
 
     return ret;
@@ -163,8 +186,14 @@ public:
     ret.x = static_cast<float>(raw.x); // gauss
     ret.y = static_cast<float>(raw.y);
     ret.z = static_cast<float>(raw.z);
-    ret.temperature =
-        static_cast<float>(raw.temperature) / 8.0f; // pg 9, Table 4
+
+    // BROKEN????
+    // ((float_t)lsb / 8.0f) + (25.0f);
+    // https://github.com/STMicroelectronics/lis3mdl-pid/blob/master/lis3mdl_reg.c#L113
+    // ret.temperature = (float)(raw.temperature) / 8.0f + 25.0f;
+        // static_cast<float>(raw.temperature) / 8.0f + 25.0f; // pg 9, Table 4
+
+    // printf(">> temp raw: %u", uint(raw.temperature));
 
     // normalize mag readings
     if (!ret.normalize()) return ret;
@@ -181,16 +210,19 @@ public:
     ret.x  = sm[0] * m.x + sm[1] * m.y + sm[2] * m.z - sm[3];
     ret.y  = sm[4] * m.x + sm[5] * m.y + sm[6] * m.z - sm[7];
     ret.z  = sm[8] * m.x + sm[9] * m.y + sm[10] * m.z - sm[11];
+    // ret.temperature = m.temperature;
     ret.ok = true;
 
     return ret;
   }
 
+  inline
   bool ready() {
-    constexpr uint8_t ZYXDA = 0x08; // 0b00001000; //BITS::b3;
+    // constexpr uint8_t ZYXDA = 0x08; // 0b00001000;
 
-    uint8_t val             = readRegister(REG_STATUS_REG);
-    return val & ZYXDA;
+    // uint8_t val             = readRegister(REG_STATUS_REG);
+    // return val & ZYXDA;
+    return (readRegister(REG_STATUS_REG) & STATUS_ZYXDA) > 0;
   }
 
 protected:
@@ -198,7 +230,10 @@ protected:
   float sm[12]{1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0};
 
   union {
-    int16_t s[4]; // signed short
+    struct {
+      int16_t x,y,z,temp;
+    } s;
+    // int16_t s[4]; // signed short
     uint8_t b[8]; // bytes
   } buff;
 
