@@ -7,9 +7,9 @@
 
 #pragma once
 
-#include <string.h> // memcpy
-#include <math.h>
 #include "sensor.hpp"
+#include <math.h>
+#include <string.h> // memcpy
 
 namespace BMP390 {
 
@@ -30,11 +30,11 @@ constexpr uint8_t IIR_FILTER_COEFF_63  = 0x0C; // 1100
 constexpr uint8_t IIR_FILTER_COEFF_127 = 0x0E; // 1110
 
 // datasheet p 26 oversample hz
-constexpr uint8_t ODR_200_HZ           = 0x00;
-constexpr uint8_t ODR_100_HZ           = 0x01;
-constexpr uint8_t ODR_50_HZ            = 0x02;
-constexpr uint8_t ODR_25_HZ            = 0x03;
-constexpr uint8_t ODR_12_5_HZ          = 0x04;
+constexpr uint8_t ODR_200_HZ  = 0x00;
+constexpr uint8_t ODR_100_HZ  = 0x01;
+constexpr uint8_t ODR_50_HZ   = 0x02;
+constexpr uint8_t ODR_25_HZ   = 0x03;
+constexpr uint8_t ODR_12_5_HZ = 0x04;
 // constexpr uint8_t ODR_6_25_HZ          = 0x05;
 // constexpr uint8_t ODR_3_1_HZ           = 0x06;
 // constexpr uint8_t ODR_1_5_HZ           = 0x07;
@@ -49,26 +49,26 @@ constexpr uint8_t ODR_12_5_HZ          = 0x04;
 // constexpr uint8_t ODR_0_003_HZ         = 0x10;
 // constexpr uint8_t ODR_0_001_HZ         = 0x11;
 
-constexpr uint8_t REG_WHO_AM_I    = 0x00;
-constexpr uint8_t REG_ERR         = 0x02;
-constexpr uint8_t REG_STATUS      = 0x03;
-constexpr uint8_t REG_DATA        = 0x04;
-constexpr uint8_t REG_INT_STATUS  = 0x11;
-constexpr uint8_t REG_INT_CTRL    = 0x19;
-constexpr uint8_t REG_PWR_CTRL    = 0x1B;
-constexpr uint8_t REG_OSR         = 0x1C;
-constexpr uint8_t REG_ODR         = 0x1D;
-constexpr uint8_t REG_IIR_FILTER  = 0x1F;
-constexpr uint8_t REG_SENSORTIME  = 0x0C;
-constexpr uint8_t REG_CALIB_DATA  = 0x31;
-constexpr uint8_t REG_CMD         = 0x7E;
+constexpr uint8_t REG_WHO_AM_I   = 0x00;
+constexpr uint8_t REG_ERR        = 0x02;
+constexpr uint8_t REG_STATUS     = 0x03;
+constexpr uint8_t REG_DATA       = 0x04;
+constexpr uint8_t REG_INT_STATUS = 0x11;
+constexpr uint8_t REG_INT_CTRL   = 0x19;
+constexpr uint8_t REG_PWR_CTRL   = 0x1B;
+constexpr uint8_t REG_OSR        = 0x1C;
+constexpr uint8_t REG_ODR        = 0x1D;
+constexpr uint8_t REG_IIR_FILTER = 0x1F;
+constexpr uint8_t REG_SENSORTIME = 0x0C;
+constexpr uint8_t REG_CALIB_DATA = 0x31;
+constexpr uint8_t REG_CMD        = 0x7E;
 
-constexpr uint8_t WHO_AM_I        = 0x60;
-constexpr uint8_t CMD_RDY         = 0x10;
-constexpr uint8_t PRES_READY_BIT  = (1 << 5);
-constexpr uint8_t TEMP_READY_BIT  = (1 << 6);
-constexpr uint8_t SOFT_RESET      = 0xB6;
-constexpr uint8_t LEN_CALIB_DATA  = 21;
+constexpr uint8_t WHO_AM_I       = 0x60;
+constexpr uint8_t CMD_RDY        = 0x10;
+constexpr uint8_t PRES_READY_BIT = (1 << 5);
+constexpr uint8_t TEMP_READY_BIT = (1 << 6);
+constexpr uint8_t SOFT_RESET     = 0xB6;
+constexpr uint8_t LEN_CALIB_DATA = 21;
 
 struct bmp3_reg_calib_data {
   float par_t1;
@@ -128,9 +128,13 @@ enum bmp_error : uint8_t {
 
 class gciBMP390 : public SensorI2C {
 public:
-  gciBMP390(TwoWire *i2c, const uint8_t addr = ADDR_I2C) : SensorI2C(i2c, addr) {}
+  // gciBMP390(TwoWire *i2c, const uint8_t addr = ADDR_I2C)
+  //     : SensorI2C(i2c, addr) {}
+  gciBMP390(const uint8_t addr = ADDR_I2C)
+      : SensorI2C(addr) {}
 
-  uint8_t init(const OsMode mode=OS_MODE_PRES_2X_TEMP_1X, const uint8_t iir=IIR_FILTER_COEFF_1) {
+  uint8_t init(const OsMode mode = OS_MODE_PRES_2X_TEMP_1X,
+               const uint8_t iir = IIR_FILTER_COEFF_1) {
     bool ok;
 
     if (!(readRegister(REG_WHO_AM_I) == WHO_AM_I)) return 1;
@@ -142,47 +146,48 @@ public:
     // Enable interrupt pin
     // int_od: 0 = push-pull
     // int_latch: 0 = disable
-    uint8_t DRDY_EN = (1 << 6); // 1 = enable pressure/temperature interrupt in INT_STATUS reg
+    uint8_t DRDY_EN =
+        (1 << 6); // 1 = enable pressure/temperature interrupt in INT_STATUS reg
     uint8_t INT_LEVEL_HI = (1 << 1); // 1 = active high
-    uint8_t INT_LATCH_EN = (1 << 2); // latch int pin and status reg ... do I need this?
+    uint8_t INT_LATCH_EN =
+        (1 << 2); // latch int pin and status reg ... do I need this?
     ok = writeRegister(REG_INT_CTRL, DRDY_EN | INT_LEVEL_HI | INT_LATCH_EN);
     if (!ok) return ERROR_INT_PIN;
 
     uint8_t MODE_NORMAL = (0x03 << 4); // continous sampling
-    uint8_t PRESS_EN = 0x01;
-    uint8_t TEMP_EN  = 0x02;
+    uint8_t PRESS_EN    = 0x01;
+    uint8_t TEMP_EN     = 0x02;
     return writeRegister(REG_PWR_CTRL, MODE_NORMAL | TEMP_EN | PRESS_EN);
     if (!ok) return ERROR_PWR_MODE;
 
     return NO_ERROR;
   }
 
-  const pt_t read_raw()  {
+  const pt_t read_raw() {
     pt_t ret = {0};
     ret.ok   = false;
 
     if (!ready()) return ret;
 
-    bool ok  = readRegisters(REG_DATA, 6, buffer);
+    bool ok = readRegisters(REG_DATA, 6, buffer);
     if (!ok) return ret;
 
     uint32_t press = to_24b(buffer);
     uint32_t temp  = to_24b(&buffer[3]);
 
-    ret.temp  = compensate_temperature(temp); // do temp 1st!!!
-    ret.press = compensate_pressure(press);
+    ret.temp       = compensate_temperature(temp); // do temp 1st!!!
+    ret.press      = compensate_pressure(press);
 
     // value?
     // bool ok  = readRegisters(REG_SENSORTIME, 3, buffer);
     // if (!ok) return ret;
     // uint32_t time = to_24b(buffer);
 
-    ret.ok    = true;
+    ret.ok = true;
     return ret;
   }
 
-  inline
-  const pt_t read() { return read_raw(); }
+  inline const pt_t read() { return read_raw(); }
 
   bool ready() {
     // constexpr uint8_t DATA_READY_BIT = BITS::b3;
@@ -207,22 +212,21 @@ public:
     // https://www.mide.com/air-pressure-at-altitude-calculator
     // const float Tb = 15; // temperature at sea level [C] - doesn't work
     // const float Lb = -0.0098; // lapse rate [C/m] - doesn't work ... pow?
-    constexpr float Tb    = 288.15f;           // temperature at sea level [K]
-    constexpr float Lb    = -0.0065f;          // lapse rate [K/m]
-    constexpr float Pb    = 101325.0f;         // pressure at sea level [Pa]
-    constexpr float R     = 8.31446261815324f; // universal gas const [Nm/(mol K)]
-    constexpr float M     = 0.0289644f; // molar mass of Earth's air [kg/mol]
-    constexpr float g0    = 9.80665f;   // gravitational const [m/s^2]
+    constexpr float Tb  = 288.15f;           // temperature at sea level [K]
+    constexpr float Lb  = -0.0065f;          // lapse rate [K/m]
+    constexpr float Pb  = 101325.0f;         // pressure at sea level [Pa]
+    constexpr float R   = 8.31446261815324f; // universal gas const [Nm/(mol K)]
+    constexpr float M   = 0.0289644f; // molar mass of Earth's air [kg/mol]
+    constexpr float g0  = 9.80665f;   // gravitational const [m/s^2]
 
-    constexpr float exp   = -R * Lb / (g0 * M);
-    constexpr float scale = Tb / Lb;
+    constexpr float exp = -R * Lb / (g0 * M);
+    constexpr float scale  = Tb / Lb;
     constexpr float inv_Pb = 1.0f / Pb;
 
     return scale * (pow(p * inv_Pb, exp) - 1.0);
   }
 
-  inline
-  bool reset() { return soft_reset(); }
+  inline bool reset() { return soft_reset(); }
 
 protected:
   uint8_t buffer[LEN_CALIB_DATA];
@@ -313,7 +317,7 @@ protected:
     return (float)calib.t_lin;
   }
 
-  float compensate_pressure(const uint32_t uncomp_press) {   // datasheet pg 56
+  float compensate_pressure(const uint32_t uncomp_press) { // datasheet pg 56
     float pd1 = calib.par_p6 * calib.t_lin;
     float pd2 = calib.par_p7 * (calib.t_lin * calib.t_lin);
     float pd3 = calib.par_p8 * (calib.t_lin * calib.t_lin * calib.t_lin);
@@ -327,9 +331,9 @@ protected:
     pd1       = (float)uncomp_press * (float)uncomp_press;
     pd2       = calib.par_p9 + calib.par_p10 * calib.t_lin;
     pd3       = pd1 * pd2;
-    float pd4 =
-        pd3 + ((float)uncomp_press * (float)uncomp_press * (float)uncomp_press) *
-                  calib.par_p11;
+    float pd4 = pd3 + ((float)uncomp_press * (float)uncomp_press *
+                       (float)uncomp_press) *
+                          calib.par_p11;
     float comp_press = po1 + po2 + pd4;
 
     return comp_press;
@@ -419,8 +423,6 @@ protected:
   // } calib;
 
   // bmp3_reg_calib_data calib;
-
 };
-
 
 } // namespace BMP390
