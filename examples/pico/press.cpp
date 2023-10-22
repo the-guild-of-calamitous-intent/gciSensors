@@ -37,9 +37,9 @@ int main() {
     gpio_put(LED_PIN, 1);
     sleep_ms(500);
 
-  pt_t pt = bmp.read();
-  if (pt.ok == false) continue;
-  string pts = to_string(pt.press) + " " + to_string(pt.temp);
-  puts(pts.c_str());
+    pt_t pt = bmp.read();
+    if (pt.ok == false) continue;
+    string pts = to_string(pt.press) + " " + to_string(pt.temp);
+    puts(pts.c_str());
   }
 }

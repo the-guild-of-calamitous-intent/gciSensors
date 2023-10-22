@@ -7,6 +7,9 @@
 
 #include <stdint.h> // int types
 
+constexpr uint I2C_100KHZ = 100 * 1000;
+constexpr uint I2C_400KHZ = 400 * 1000;
+
 #if defined(ARDUINO)
   #include <Arduino.h>
   #include <Wire.h>

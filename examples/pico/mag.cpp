@@ -9,7 +9,6 @@ using namespace std;
 
 #include <gciSensors.hpp>
 
-
 using namespace LIS3MDL;
 using namespace gci::sensors;
 

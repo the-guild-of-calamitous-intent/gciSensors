@@ -15,22 +15,22 @@ constexpr uint I2C0_SDA_PIN = 8;
 constexpr uint I2C0_SCL_PIN = 9;
 constexpr uint I2C1_SDA_PIN = 14;
 constexpr uint I2C1_SCL_PIN = 15;
-constexpr uint I2C_100KHZ = 100 * 1000;
-constexpr uint I2C_400KHZ = 400 * 1000;
+// constexpr uint I2C_100KHZ = 100 * 1000;
+// constexpr uint I2C_400KHZ = 400 * 1000;
 constexpr bool I2C_HOLD_BUS = true;
 constexpr bool I2C_RELEASE_BUS = false;
 
 class TwoWire {};
 
 class SensorI2C {
-  uint8_t addr;
+  const uint8_t addr;
   i2c_inst_t* i2c;
   static bool initialized0;
   static bool initialized1;
 
 public:
   SensorI2C(uint8_t addr): addr(addr) {}
-  // SensorI2C() {}
+  ~SensorI2C() { i2c_deinit(i2c); }
 
   void init_tw(uint baud, uint8_t port, uint8_t pin_sda, uint8_t pin_scl) {
     if (port == 0) {
@@ -102,6 +102,9 @@ public:
     if (!readRegisters(reg, 1, &value)) return 0;
     return value;
   }
+
+  inline
+  size_t available() { return i2c_get_read_available(i2c); }
 
   // const uint8_t addr;
 
