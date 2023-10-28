@@ -10,7 +10,9 @@ include(${PICO_SDK_PATH}/pico_sdk_init.cmake)
 include(FetchContent)
 
 # Need ASM for tinyUSB and picotool to work
-project(${PROJECT} C CXX ASM)
+project(${PROJECT}
+    VERSION "2023.10.28"
+    LANGUAGES C CXX ASM)
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_CXX_STANDARD 20)
 
@@ -49,7 +51,7 @@ if(PROJECT_IS_TOP_LEVEL)
 else()
     message(STATUS "-> ${PROJECT_NAME} is submodule")
     set(BUILD_EXAMPLES OFF)
-    set(BUILD_GTESTS OFF)
+    # set(BUILD_GTESTS OFF)
 endif()
 
 # FetchContent_Declare(
@@ -71,5 +73,5 @@ target_include_directories(${PROJECT_NAME} INTERFACE src)
 target_link_libraries(${PROJECT_NAME} INTERFACE ${pico_libs})
 
 if (BUILD_EXAMPLES)
-    add_subdirectory(examples/pico)
+    add_subdirectory(examples)
 endif()

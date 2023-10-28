@@ -6,7 +6,7 @@
 #pragma once
 
 #include <stdint.h> // int types
-#include <Wire.hpp>
+// #include <Wire.hpp>
 
 class SensorI2C {
 public:

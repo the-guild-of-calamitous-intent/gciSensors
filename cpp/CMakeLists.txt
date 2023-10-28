@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 PROJECT(gcisensors
-    VERSION "2023.07.01"
+    VERSION "2023.10.28"
     LANGUAGES CXX
 )
 
@@ -29,14 +29,14 @@ if(PROJECT_IS_TOP_LEVEL)
     message(STATUS "-------------------------------------")
 
     # set(BUILD_EXAMPLES ON)
-    set(BUILD_GTESTS OFF)
+    set(BUILD_GTESTS ON)
 
     # GTest -----------------
-    # FetchContent_Declare(
-    #     gtest
-    #     URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
-    # )
-    # LIST(APPEND libs gtest)
+    FetchContent_Declare(
+        gtest
+        URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+    )
+    LIST(APPEND libs gtest)
 else()
     message(STATUS "-> ${PROJECT_NAME} is submodule")
     # set(BUILD_EXAMPLES OFF)
@@ -51,7 +51,7 @@ endif()
 
 # LIST(APPEND libs gciwire)
 
-# FetchContent_MakeAvailable( ${libs} )
+FetchContent_MakeAvailable( ${libs} )
 
 # message(STATUS "[ Wire ]=======================")
 # message(STATUS "> POPULATED: ${gciwire_POPULATED}")
@@ -60,7 +60,7 @@ endif()
 # message(STATUS "===============================")
 
 add_library(${PROJECT_NAME} INTERFACE)
-target_include_directories(${PROJECT_NAME} INTERFACE src)
+target_include_directories(${PROJECT_NAME} INTERFACE ../src)
 # target_link_libraries(${PROJECT_NAME} INTERFACE gciwire)
 
 # Examples ====================================================================
@@ -71,8 +71,8 @@ target_include_directories(${PROJECT_NAME} INTERFACE src)
 
 # add_subdirectory(examples/pico)
 
-# message(STATUS "Building gciSensors gtests is ${BUILD_GTESTS}")
-# if (BUILD_GTESTS)
-#     add_subdirectory(gtests)
-# endif()
+message(STATUS "Building gciSensors gtests is ${BUILD_GTESTS}")
+if (BUILD_GTESTS)
+    add_subdirectory(gtests)
+endif()
 

@@ -147,14 +147,15 @@ Build Information
 
 ## Todo
 
-- [x] Breakout apple, linux and arduion implementations cleaner
+- [ ] Breakout apple, linux and arduion implementations cleaner
 - [x] LSM6DSOX Accel and gyro
 - [x] LIS3MDL Magnetometer
 - [x] BMP390 Barometer
 - [ ] DPS310 Barometer
-- [ ] Add more unit tests
+- [ ] Add unit tests
 - [ ] Add some simple filters that use these sensors
 - [ ] Update Arduino examples
+- [ ] Do a better job of cross platform dev/test (apple, linux, arduino)
 
 ## Filter
 

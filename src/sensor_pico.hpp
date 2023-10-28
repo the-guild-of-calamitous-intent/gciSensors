@@ -12,7 +12,7 @@
 #include "hardware/i2c.h"
 
 #if !defined(i2c_default)
-  #warning i2c not enabled
+  #warning "// i2c not enabled //"
 #endif
 
 constexpr uint I2C0_SDA_PIN = 4;
@@ -24,34 +24,12 @@ constexpr uint I2C1_SCL_PIN = 15;
 constexpr bool I2C_HOLD_BUS = true;
 constexpr bool I2C_RELEASE_BUS = false;
 
-class TwoWire {};
+class TwoWire {
+  public:
+  TwoWire() {}
+  ~TwoWire() {}
 
-class SensorI2C {
-  const uint8_t addr;
-  i2c_inst_t* i2c;
-  static bool initialized0;
-  static bool initialized1;
-
-public:
-  SensorI2C(uint8_t addr): addr(addr) { puts("SensorI2C"); }
-  ~SensorI2C() { i2c_deinit(i2c); }
-
-  bool init_tw(const uint baud, const uint port, const uint pin_sda, const uint pin_scl) {
-    uint ret;
-    if (port == 0) {
-      i2c = &i2c0_inst;
-      if (initialized0 == false) ret = i2c_init(i2c, baud);
-      initialized0 = true;
-    }
-    else if (port == 1) {
-      i2c = &i2c1_inst;
-      if (initialized1 == false) ret = i2c_init(i2c, baud);
-      initialized1 = true;
-    }
-    else return false;
-    printf(">> i2c instance: %u buad: %u\n", port, ret);
-    printf(">> i2c SDA: %u SCL: %u\n", pin_sda, pin_scl);
-
+  uint init(const uint port, const uint baud, const uint pin_sda, const uint pin_scl) {
     // bi_decl(bi_2pins_with_func(pin_sda, pin_scl, GPIO_FUNC_I2C));
     // bi_decl(bi_program_description("SensorI2C init_tw"));
     // bi_decl(bi_2pins_with_func(4, 5, GPIO_FUNC_I2C));
@@ -61,6 +39,53 @@ public:
     gpio_set_function(pin_scl, GPIO_FUNC_I2C);
     gpio_pull_up(pin_sda);
     gpio_pull_up(pin_scl);
+
+    // uint ret;
+    if (port == 0) return i2c_init(&i2c0_inst, baud);
+    if (port == 1) return i2c_init(&i2c1_inst, baud);
+
+    // printf(">> i2c instance: %u buad: %u\n", port, ret);
+    // printf(">> i2c SDA: %u SCL: %u\n", pin_sda, pin_scl);
+
+    return 0;
+  }
+};
+
+class SensorI2C {
+  const uint8_t addr;
+  i2c_inst_t* i2c;
+  // static bool initialized0;
+  // static bool initialized1;
+
+public:
+  SensorI2C(uint8_t addr): addr(addr) {}
+  ~SensorI2C() { /*i2c_deinit(i2c);*/ }
+
+  bool init_tw(/*const uint baud,*/ const uint port/*, const uint pin_sda, const uint pin_scl*/) {
+    uint ret;
+    if (port == 0) {
+      i2c = &i2c0_inst;
+      // if (initialized0 == false) ret = i2c_init(i2c, baud);
+      // initialized0 = true;
+    }
+    else if (port == 1) {
+      i2c = &i2c1_inst;
+      // if (initialized1 == false) ret = i2c_init(i2c, baud);
+      // initialized1 = true;
+    }
+    else return false;
+    // printf(">> i2c instance: %u buad: %u\n", port, ret);
+    // printf(">> i2c SDA: %u SCL: %u\n", pin_sda, pin_scl);
+
+    // // bi_decl(bi_2pins_with_func(pin_sda, pin_scl, GPIO_FUNC_I2C));
+    // // bi_decl(bi_program_description("SensorI2C init_tw"));
+    // // bi_decl(bi_2pins_with_func(4, 5, GPIO_FUNC_I2C));
+    // // bi_decl(bi_program_description("SensorI2C init_tw"));
+
+    // gpio_set_function(pin_sda, GPIO_FUNC_I2C);
+    // gpio_set_function(pin_scl, GPIO_FUNC_I2C);
+    // gpio_pull_up(pin_sda);
+    // gpio_pull_up(pin_scl);
 
     return true;
   }
@@ -132,5 +157,5 @@ public:
 //   TwoWire *i2c;
 };
 
-bool SensorI2C::initialized0 = false;
-bool SensorI2C::initialized1 = false;
+// bool SensorI2C::initialized0 = false;
+// bool SensorI2C::initialized1 = false;
