@@ -10,6 +10,7 @@
 // #include "i2c.hpp"
 
 #include "hardware/i2c.h"
+#include "hardware/gpio.h"
 
 #if !defined(i2c_default)
   #warning "// i2c not enabled //"
