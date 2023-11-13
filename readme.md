@@ -156,6 +156,14 @@ Build Information
 - [ ] Add some simple filters that use these sensors
 - [ ] Update Arduino examples
 - [ ] Do a better job of cross platform dev/test (apple, linux, arduino)
+- [ ] Investigate fixed point math for calibration, probably FP(16,16) would work
+      nicely since the range [-32k,+32k] is good enough for sensors
+      - accels: +/- 16 g
+      - gyros: +/- 2000 dps
+      - mags: +/- 1 unitless (every compase algorithm normalizes this first)
+      - pressure: 300-1010 hPa (only needed for converting to altitude, 0-8km (5mi))
+          - Mt Everest is around ~5.5mi high, ~313 hPa
+      - temperature: 0-100 C (no calibration to do here)
 
 ## Filter
 
