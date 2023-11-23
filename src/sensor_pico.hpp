@@ -9,8 +9,8 @@
 #include <stdint.h> // int types
 // #include "i2c.hpp"
 
-#include "hardware/i2c.h"
 #include "hardware/gpio.h"
+#include "hardware/i2c.h"
 
 #if !defined(i2c_default)
   #warning "// i2c not enabled //"
@@ -22,15 +22,16 @@ constexpr uint I2C1_SDA_PIN = 14;
 constexpr uint I2C1_SCL_PIN = 15;
 // constexpr uint I2C_100KHZ = 100 * 1000;
 // constexpr uint I2C_400KHZ = 400 * 1000;
-constexpr bool I2C_HOLD_BUS = true;
+constexpr bool I2C_HOLD_BUS    = true;
 constexpr bool I2C_RELEASE_BUS = false;
 
 class TwoWire {
-  public:
+public:
   TwoWire() {}
   ~TwoWire() {}
 
-  uint init(const uint port, const uint baud, const uint pin_sda, const uint pin_scl) {
+  uint init(const uint port, const uint baud, const uint pin_sda,
+            const uint pin_scl) {
     // bi_decl(bi_2pins_with_func(pin_sda, pin_scl, GPIO_FUNC_I2C));
     // bi_decl(bi_program_description("SensorI2C init_tw"));
     // bi_decl(bi_2pins_with_func(4, 5, GPIO_FUNC_I2C));
@@ -54,15 +55,17 @@ class TwoWire {
 
 class SensorI2C {
   const uint8_t addr;
-  i2c_inst_t* i2c;
+  i2c_inst_t *i2c;
   // static bool initialized0;
   // static bool initialized1;
 
 public:
-  SensorI2C(uint8_t addr): addr(addr) {}
-  ~SensorI2C() { /*i2c_deinit(i2c);*/ }
+  SensorI2C(uint8_t addr) : addr(addr) {}
+  ~SensorI2C() { /*i2c_deinit(i2c);*/
+  }
 
-  bool init_tw(/*const uint baud,*/ const uint port/*, const uint pin_sda, const uint pin_scl*/) {
+  bool init_tw(/*const uint baud,*/ const uint
+                   port /*, const uint pin_sda, const uint pin_scl*/) {
     uint ret;
     if (port == 0) {
       i2c = &i2c0_inst;
@@ -149,13 +152,12 @@ public:
     return 0;
   }
 
-  inline
-  size_t available() { return i2c_get_read_available(i2c); }
+  inline size_t available() { return i2c_get_read_available(i2c); }
 
   // const uint8_t addr;
 
-// protected:
-//   TwoWire *i2c;
+  // protected:
+  //   TwoWire *i2c;
 };
 
 // bool SensorI2C::initialized0 = false;

@@ -10,10 +10,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-inline
-void sleep_ms(uint32_t del) {
-  delay(del);
-}
+inline void sleep_ms(uint32_t del) { delay(del); }
 
 class SensorI2C {
 public:

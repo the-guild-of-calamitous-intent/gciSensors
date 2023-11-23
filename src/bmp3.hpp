@@ -3,8 +3,28 @@
  * Copyright (c) 2022 Kevin Walchko
  * see LICENSE for full details
 \**************************************/
-// https://www.mide.com/air-pressure-at-altitude-calculator
+/*
 
+https://www.mide.com/air-pressure-at-altitude-calculator
+
+*/
+
+/*
+
+Table 10, datasheet
+Use Case   | Mode | Res     | P   | T  | IIR | ODR | Noise RMS [cm] |
+---------------------------------------------------------------------
+Indoor Nav | Norm | Ultr Hi | x16 | x2 | 4   | 25  | 5
+Drone      | Norm | Std res | x8  | x1 | 2   | 50  | 11
+
+Table 23, datasheet
+Oversamp | P   | T  | Hz Typ |
+------------------------------
+Low Pwr  | x2  | x1 | 146 | << can set ODR 100Hz
+Std Res  | x4  | x1 | 92  | << max ODR is 50Hz
+Hi Res   | x8  | x1 | 53  |
+Ultr Hi  | x16 | x2 | 27  |
+*/
 #pragma once
 
 #include "sensor.hpp"
@@ -20,34 +40,21 @@ constexpr uint8_t OVERSAMPLING_8X      = 0x03;
 constexpr uint8_t OVERSAMPLING_16X     = 0x04;
 constexpr uint8_t OVERSAMPLING_32X     = 0x05;
 
-constexpr uint8_t IIR_FILTER_DISABLE   = 0x00; // 0000
-constexpr uint8_t IIR_FILTER_COEFF_1   = 0x02; // 0010
-constexpr uint8_t IIR_FILTER_COEFF_3   = 0x04; // 0100
-constexpr uint8_t IIR_FILTER_COEFF_7   = 0x06; // 0110
-constexpr uint8_t IIR_FILTER_COEFF_15  = 0x08; // 1000
-constexpr uint8_t IIR_FILTER_COEFF_31  = 0x0A; // 1010
-constexpr uint8_t IIR_FILTER_COEFF_63  = 0x0C; // 1100
-constexpr uint8_t IIR_FILTER_COEFF_127 = 0x0E; // 1110
+constexpr uint8_t IIR_FILTER_DISABLE   = 0x00; // 000 0
+constexpr uint8_t IIR_FILTER_COEFF_1   = 0x02; // 001 0
+constexpr uint8_t IIR_FILTER_COEFF_3   = 0x04; // 010 0
+constexpr uint8_t IIR_FILTER_COEFF_7   = 0x06; // 011 0
+constexpr uint8_t IIR_FILTER_COEFF_15  = 0x08; // 100 0
+constexpr uint8_t IIR_FILTER_COEFF_31  = 0x0A; // 101 0
+constexpr uint8_t IIR_FILTER_COEFF_63  = 0x0C; // 110 0
+constexpr uint8_t IIR_FILTER_COEFF_127 = 0x0E; // 111 0
 
-// datasheet p 26 oversample hz
-constexpr uint8_t ODR_200_HZ  = 0x00;
-constexpr uint8_t ODR_100_HZ  = 0x01;
-constexpr uint8_t ODR_50_HZ   = 0x02;
-constexpr uint8_t ODR_25_HZ   = 0x03;
-constexpr uint8_t ODR_12_5_HZ = 0x04;
-// constexpr uint8_t ODR_6_25_HZ          = 0x05;
-// constexpr uint8_t ODR_3_1_HZ           = 0x06;
-// constexpr uint8_t ODR_1_5_HZ           = 0x07;
-// constexpr uint8_t ODR_0_78_HZ          = 0x08;
-// constexpr uint8_t ODR_0_39_HZ          = 0x09;
-// constexpr uint8_t ODR_0_2_HZ           = 0x0A;
-// constexpr uint8_t ODR_0_1_HZ           = 0x0B;
-// constexpr uint8_t ODR_0_05_HZ          = 0x0C;
-// constexpr uint8_t ODR_0_02_HZ          = 0x0D;
-// constexpr uint8_t ODR_0_01_HZ          = 0x0E;
-// constexpr uint8_t ODR_0_006_HZ         = 0x0F;
-// constexpr uint8_t ODR_0_003_HZ         = 0x10;
-// constexpr uint8_t ODR_0_001_HZ         = 0x11;
+// datasheet Table 45, p 38 oversample hz
+constexpr uint8_t ODR_200_HZ     = 0x00;
+constexpr uint8_t ODR_100_HZ     = 0x01;
+constexpr uint8_t ODR_50_HZ      = 0x02;
+constexpr uint8_t ODR_25_HZ      = 0x03;
+constexpr uint8_t ODR_12_5_HZ    = 0x04;
 
 constexpr uint8_t REG_WHO_AM_I   = 0x00;
 constexpr uint8_t REG_ERR        = 0x02;
@@ -90,15 +97,6 @@ struct bmp3_reg_calib_data {
   float t_lin; // was int64_t??
 };
 
-enum OsMode : uint8_t {
-  OS_MODE_PRES_1X_TEMP_1X,
-  OS_MODE_PRES_2X_TEMP_1X,
-  OS_MODE_PRES_4X_TEMP_1X,
-  OS_MODE_PRES_8X_TEMP_1X,
-  OS_MODE_PRES_16X_TEMP_2X,
-  OS_MODE_PRES_32X_TEMP_2X
-};
-
 constexpr uint8_t ADDR_I2C     = 0x77;
 constexpr uint8_t ADDR_I2C_ALT = 0x76;
 
@@ -107,13 +105,6 @@ struct pt_t {
   // uint32_t time; // not sure value of counter
   bool ok;
 };
-
-// enum bmp_available_t: uint8_t {
-//   BMP_NONE = 0,
-//   BMP_PRESSURE = (1 << 5),
-//   BMP_TEMPERATURE = (1 << 6),
-//   BMP_PRESSURE_TEMPERATURE = BMP_PRESSURE | BMP_TEMPERATURE
-// };
 
 enum bmp_error : uint8_t {
   NO_ERROR,
@@ -128,29 +119,45 @@ enum bmp_error : uint8_t {
 
 class gciBMP390 : public SensorI2C {
 public:
-  // gciBMP390(TwoWire *i2c, const uint8_t addr = ADDR_I2C)
-  //     : SensorI2C(i2c, addr) {}
-  gciBMP390(const uint8_t addr = ADDR_I2C)
-      : SensorI2C(addr) {}
+  gciBMP390(const uint8_t addr = ADDR_I2C) : SensorI2C(addr) {}
 
-  uint8_t init(const OsMode mode = OS_MODE_PRES_2X_TEMP_1X,
-               const uint8_t iir = IIR_FILTER_COEFF_1) {
+  uint8_t init(const uint8_t odr = ODR_50_HZ,
+               const uint8_t iir = IIR_FILTER_COEFF_7) {
     bool ok;
 
     if (!(readRegister(REG_WHO_AM_I) == WHO_AM_I)) return ERROR_WHOAMI;
     if (!soft_reset()) return ERROR_RESET;
     if (!get_calib_data()) return ERROR_CAL_DATA;
-    if (!setOsMode(mode)) return ERROR_OS_MODE;
+    // if (!setOsMode(mode)) return ERROR_OS_MODE;
+    if (!setODR(odr)) return ERROR_OS_MODE;
+
+    /*
+    IIR Filter
+    Figure 6, pg 16, datasheet
+        Off:  1 step delay
+    coeff 1: 10 step delay
+    coeff 3: 20 step delay
+    coeff 7: 40 step delay
+
+    Table 6, p 14
+                OSR    Pa   1   3   7 15 31 63 127
+    ULP          x1  2.64   2 1.2 0.8
+    LP           x2  1.32 1.5 0.9 0.5
+    Standard     x4  0.66 1.1 0.7 0.4
+    High Res     x8  0.33 0.9 0.6 0.3
+    UH Res      x16  0.17
+    Highest Res x32 0.085
+    */
     if (!writeRegister(REG_IIR_FILTER, iir)) return ERROR_IIR_FILTER;
 
     // Enable interrupt pin
     // int_od: 0 = push-pull
     // int_latch: 0 = disable
-    uint8_t DRDY_EN =
-        (1 << 6); // 1 = enable pressure/temperature interrupt in INT_STATUS reg
+    // 1 = enable pressure/temperature interrupt in INT_STATUS reg
+    uint8_t DRDY_EN      = (1 << 6);
     uint8_t INT_LEVEL_HI = (1 << 1); // 1 = active high
-    uint8_t INT_LATCH_EN =
-        (1 << 2); // latch int pin and status reg ... do I need this?
+    // latch int pin and status reg ... do I need this?
+    uint8_t INT_LATCH_EN = (1 << 2);
     ok = writeRegister(REG_INT_CTRL, DRDY_EN | INT_LEVEL_HI | INT_LATCH_EN);
     if (!ok) return ERROR_INT_PIN;
 
@@ -232,83 +239,38 @@ protected:
   uint8_t buffer[LEN_CALIB_DATA];
   bmp3_reg_calib_data calib;
 
-  /*
-  Table 10, datasheet
-  Use Case   | Mode | Res     | P   | T  | IIR | ODR | Noise RMS [cm] |
-  ---------------------------------------------------------------------
-  Indoor Nav | Norm | Ultr Hi | x16 | x2 | 4   | 25  | 5
-  Drone      | Norm | Std res | x8  | x1 | 2   | 50  | 11
+  bool setODR(const uint8_t odr) {
+    uint8_t press_os, temp_os;
 
-  Table 23, datasheet
-  Oversamp | P   | T  | Hz Typ |
-  ------------------------------
-  Low Pwr  | x2  | x1 | 146 | << can set ODR 100Hz
-  Std Res  | x4  | x1 | 92  | << max ODR is 50Hz
-  Hi Res   | x8  | x1 | 53  |
-  Ultr Hi  | x16 | x2 | 27  |
-
-  IIR Filter
-  Figure 6, pg 16, datasheet
-  Off: 1 step delay
-  coeff 3: 10 step delay
-  coeff 7: 20 step delay
-  */
-  bool setOsMode(const OsMode mode) {
-    uint8_t press_os, temp_os, odr;
-
-    switch (mode) {
-    case OS_MODE_PRES_1X_TEMP_1X:
-      press_os = OVERSAMPLING_1X;
-      temp_os  = OVERSAMPLING_1X;
-      odr      = ODR_200_HZ;
+    // based oon sec 3.9.1, pg 26
+    // and pg 14, section 3.4.1
+    switch (odr) {
+    case ODR_200_HZ:              // 24 cm
+      press_os = OVERSAMPLING_1X; // 2.64 Pa
+      temp_os  = OVERSAMPLING_1X; // 0.0050 C
       break;
-
-    case OS_MODE_PRES_2X_TEMP_1X:
-      press_os = OVERSAMPLING_2X;
-      temp_os  = OVERSAMPLING_1X;
-      odr      = ODR_100_HZ;
+    case ODR_100_HZ:              // 6 cm
+      press_os = OVERSAMPLING_4X; // 0.66 Pa
+      temp_os  = OVERSAMPLING_1X; // 0.0050 C
       break;
-
-    case OS_MODE_PRES_4X_TEMP_1X:
-      press_os = OVERSAMPLING_4X;
-      temp_os  = OVERSAMPLING_1X;
-      odr      = ODR_100_HZ; // was 50
+    case ODR_50_HZ:               // 3cm
+      press_os = OVERSAMPLING_8X; // 0.33 Pa
+      temp_os  = OVERSAMPLING_1X; // 0.0050 C
       break;
-
-    case OS_MODE_PRES_8X_TEMP_1X:
-      press_os = OVERSAMPLING_8X;
-      temp_os  = OVERSAMPLING_1X;
-      odr      = ODR_50_HZ;
+    case ODR_25_HZ:
+      press_os = OVERSAMPLING_16X; // 0.17 Pa
+      temp_os  = OVERSAMPLING_2X;  // 0.0025 C
       break;
-
-    case OS_MODE_PRES_16X_TEMP_2X:
-      press_os = OVERSAMPLING_16X;
-      temp_os  = OVERSAMPLING_2X;
-      odr      = ODR_25_HZ;
-      break;
-
-    case OS_MODE_PRES_32X_TEMP_2X:
+    case ODR_12_5_HZ:
       press_os = OVERSAMPLING_32X;
       temp_os  = OVERSAMPLING_2X;
-      odr      = ODR_12_5_HZ;
       break;
     }
-
-    // if (!setOverSampling(press_os, temp_os)) return false;
-    // if (!setODR(odr)) return false;
     if (!writeRegister(REG_OSR, (temp_os << 3) | press_os)) return false;
     if (!writeRegister(REG_ODR, odr)) return false;
 
     return true;
   }
-
-  // inline
-  // bool setOverSampling(uint8_t posr, uint8_t tosr) {
-  //   return writeRegister(REG_OSR, (tosr << 3) | posr);
-  // }
-
-  // inline
-  // bool setODR(uint8_t odr) { return writeRegister(REG_ODR, odr); }
 
   float compensate_temperature(const uint32_t uncomp_temp) { // datasheet pg 55
     float pd1   = (float)uncomp_temp - calib.par_t1;
@@ -318,23 +280,23 @@ protected:
   }
 
   float compensate_pressure(const uint32_t uncomp_press) { // datasheet pg 56
-    float pd1 = calib.par_p6 * calib.t_lin;
-    float pd2 = calib.par_p7 * (calib.t_lin * calib.t_lin);
-    float pd3 = calib.par_p8 * (calib.t_lin * calib.t_lin * calib.t_lin);
-    float po1 = calib.par_p5 + pd1 + pd2 + pd3;
+    float pd1, pd2, pd3, pd4, po1, po2, comp_press;
+    const float up = (float)uncomp_press;
+    pd1 = calib.par_p6 * calib.t_lin;
+    pd2 = calib.par_p7 * (calib.t_lin * calib.t_lin);
+    pd3 = calib.par_p8 * (calib.t_lin * calib.t_lin * calib.t_lin);
+    po1 = calib.par_p5 + pd1 + pd2 + pd3;
 
-    pd1       = calib.par_p2 * calib.t_lin;
-    pd2       = calib.par_p3 * (calib.t_lin * calib.t_lin);
-    pd3       = calib.par_p4 * (calib.t_lin * calib.t_lin * calib.t_lin);
-    float po2 = (float)uncomp_press * (calib.par_p1 + pd1 + pd2 + pd3);
+    pd1 = calib.par_p2 * calib.t_lin;
+    pd2 = calib.par_p3 * (calib.t_lin * calib.t_lin);
+    pd3 = calib.par_p4 * (calib.t_lin * calib.t_lin * calib.t_lin);
+    po2 = up * (calib.par_p1 + pd1 + pd2 + pd3);
 
-    pd1       = (float)uncomp_press * (float)uncomp_press;
-    pd2       = calib.par_p9 + calib.par_p10 * calib.t_lin;
-    pd3       = pd1 * pd2;
-    float pd4 = pd3 + ((float)uncomp_press * (float)uncomp_press *
-                       (float)uncomp_press) *
-                          calib.par_p11;
-    float comp_press = po1 + po2 + pd4;
+    pd1 = up * up;
+    pd2 = calib.par_p9 + calib.par_p10 * calib.t_lin;
+    pd3 = pd1 * pd2;
+    pd4 = pd3 + up * up * up * calib.par_p11;
+    comp_press = po1 + po2 + pd4;
 
     return comp_press;
   }
@@ -384,45 +346,13 @@ protected:
       // Write the soft reset command in the sensor
       // datasheet, p 39, table 47, register ALWAYS reads 0x00
       writeRegister(REG_CMD, SOFT_RESET);
-
-      // println("wrote SOFT_RESET");
-
       sleep_ms(2); // was 2 ... too quick?
-
       // Read for command error status
       if (readRegister(REG_ERR) & REG_CMD) return false;
-
-      // print("No command errors");
-
       return true;
     }
-
-    // println("cmd_rdy_status failed CMD_RDY");
-
     return false;
   }
-
-  // struct bmp3_reg_calib_data {
-  //   float par_t1;
-  //   float par_t2;
-  //   float par_t3;
-
-  //   float par_p1;
-  //   float par_p2;
-  //   float par_p3;
-  //   float par_p4;
-  //   float par_p5;
-  //   float par_p6;
-  //   float par_p7;
-  //   float par_p8;
-  //   float par_p9;
-  //   float par_p10;
-  //   float par_p11;
-
-  //   float t_lin; // was int64_t??
-  // } calib;
-
-  // bmp3_reg_calib_data calib;
 };
 
 } // namespace BMP390

@@ -7,8 +7,8 @@
 
 #include <cmath> // isinf
 #include <cstdint>
+#include <stdio.h>  // FIXME: remove
 #include <string.h> // memcpy
-#include <stdio.h> // FIXME: remove
 
 // #if !defined(ARDUINO)
 // inline void delay(int) {} // FIXME: do a better way!
@@ -31,8 +31,8 @@
 // }
 
 #if !defined(PICO_SDK) // FIXME: handle better
-  void sleep_ms(uint32_t ms){}
-  void sleep_us(uint64_t us){}
+void sleep_ms(uint32_t ms) {}
+void sleep_us(uint64_t us) {}
 #endif
 
 namespace gci {

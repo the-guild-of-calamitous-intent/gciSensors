@@ -41,7 +41,7 @@ int main() {
 
   bmp.init_tw(i2c_port);
   while (true) {
-    uint err = bmp.init(BMP390::OS_MODE_PRES_16X_TEMP_2X);
+    uint err = bmp.init(ODR_100_HZ);
     if (err == 0) break;
     printf("BMP Error: %u\n", err);
     sleep_ms(1000);

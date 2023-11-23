@@ -12,9 +12,7 @@ class SensorI2C {
 public:
   SensorI2C(const uint8_t address) : addr(address) {}
 
-  void init_tw(const uint32_t baud) {
-    i2c = nullptr;
-  }
+  void init_tw(const uint32_t baud) { i2c = nullptr; }
 
   bool writeRegister(const uint8_t reg, const uint8_t data) {
     i2c->set(addr);

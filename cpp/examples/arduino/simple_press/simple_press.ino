@@ -18,7 +18,7 @@ void setup() {
 
   uint8_t err;
   do {
-    err = bmp.init(BMP390::OS_MODE_PRES_16X_TEMP_2X);
+    err = bmp.init(ODR_25_HZ);
     sleep_ms(1000);
     Serial.println("ERROR: gciBMP390::init()");
   } while (err != NO_ERROR);
