@@ -20,7 +20,7 @@ n ^= 1 << k;    // toggle bit
 |-------------|--------------|--------------|
 | Accels      | gravity      | g
 | Gyros       | degrees/sec  | dps
-| Mags        | micro Teslas | uT
+| Mags        | gauss        | gs
 | Temperature | Celcius      | C
 | Pressure    | Pascal       | Pa
 | Time        | seconds      | sec
@@ -39,7 +39,7 @@ n ^= 1 << k;    // toggle bit
 LSM6DSOX::gciLSM6DSOX imu;
 imu.init(ACCEL_RANGE_4_G, GYRO_RANGE_2000_DPS, RATE_208_HZ); // setup sensor
 bool ok = imu.ready(); // true when new data available
-if (ok) sox_t s = imu.read();
+if (ok) lsm6dsox_t s = imu.read();
 // s.ok => good read true/false
 // s.ax => accel x,y,z in g's
 // s.gx => gyro x,y,z in deg/sec
@@ -66,7 +66,7 @@ if (ok) sox_t s = imu.read();
 LIS3MDL::gciLIS3MDL mag;
 mag.init();
 bool ok = mag.ready(); // true when new data available
-mag_t m = mag.read();
+list3mdl_t m = mag.read();
 // m.x => mag x,y,z in uT
 // m.ok => good read true/false
 ```
@@ -86,7 +86,7 @@ mag_t m = mag.read();
 BMP390::gciBMP390 bmp;
 bmp.init();
 bool ok = bmp.ready(); // true when new data available
-pt_t pt = bmp.read();
+bmp390_t pt = bmp.read();
 // pt.ok => good read true/false
 // pt.press => 24-bit, pressure in Pa
 // pt.temp => 24-bit, temperature in C
