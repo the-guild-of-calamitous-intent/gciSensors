@@ -53,7 +53,7 @@ int main() {
     gpio_put(LED_PIN, 1);
     sleep_ms(500);
 
-    pt_t pt = bmp.read();
+    bmp390_t pt = bmp.read();
     if (pt.ok == false) continue;
 
     printf("-----------------------------\n");

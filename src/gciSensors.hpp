@@ -10,25 +10,6 @@
 #include <stdio.h>  // FIXME: remove
 #include <string.h> // memcpy
 
-// #if !defined(ARDUINO)
-// inline void delay(int) {} // FIXME: do a better way!
-
-// inline uint32_t millis() { return 0; }
-// #else
-//   #include <Arduino.h>
-// #endif
-
-// inline void sleep_ms(uint32_t ms) {
-// #if defined(ARDUINO)
-//   delay(ms);
-// #endif
-// }
-
-// inline void sleep_us(uint16_t us) {
-// #if defined(ARDUINO)
-//   delayMicroseconds(us);
-// #endif
-// }
 
 #if !defined(PICO_SDK) // FIXME: handle better
 void sleep_ms(uint32_t ms) {}
