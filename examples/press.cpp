@@ -39,7 +39,6 @@ int main() {
   gpio_init(LED_PIN);
   gpio_set_dir(LED_PIN, GPIO_OUT);
 
-  bmp.init_tw(i2c_port);
   while (true) {
     uint err = bmp.init(ODR_100_HZ);
     if (err == 0) break;

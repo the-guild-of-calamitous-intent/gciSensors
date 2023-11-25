@@ -103,7 +103,7 @@ default:
 */
 class gciLIS3MDL : public SensorI2C {
 public:
-  gciLIS3MDL(const uint8_t addr = ADDR_PRIM) : SensorI2C(addr) {}
+  gciLIS3MDL(const uint8_t addr = ADDR_PRIM, uint32_t port=0) : SensorI2C(addr, port) {}
 
   uint8_t init(const Range range = RANGE_4GAUSS, const Odr odr = ODR_155HZ) {
     if (readRegister(REG_WHO_AM_I) != WHO_AM_I) return ERROR_WHOAMI;

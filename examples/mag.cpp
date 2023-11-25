@@ -16,8 +16,8 @@ constexpr uint i2c_sda = I2C0_SDA_PIN;
 using namespace LIS3MDL;
 using namespace gci::sensors;
 
-gciLIS3MDL mag;
 TwoWire tw;
+gciLIS3MDL mag(i2c_port); // default is 0, so don't need to do this
 
 const uint LED_PIN = 25;
 
@@ -39,7 +39,6 @@ int main() {
   gpio_init(LED_PIN);
   gpio_set_dir(LED_PIN, GPIO_OUT);
 
-  mag.init_tw(i2c_port);
   while (true) {
     int err = mag.init(RANGE_4GAUSS,ODR_155HZ);
     if (err == 0) break;
@@ -53,7 +52,7 @@ int main() {
     gpio_put(LED_PIN, 1);
     sleep_ms(500);
 
-    const lis3dml_t m = mag.read_cal();
+    const lis3mdl_t m = mag.read_cal();
     if (m.ok == false) continue;
 
     // printf("-----------------------------\n");

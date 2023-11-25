@@ -47,21 +47,28 @@ class SensorI2C {
   i2c_inst_t *i2c;
 
 public:
-  SensorI2C(uint8_t addr) : addr(addr) {}
-  ~SensorI2C() {}
-
-  bool init_tw(const uint32_t port) {
-    uint ret;
+  SensorI2C(uint8_t addr, const uint32_t port) : addr(addr) {
     if (port == 0) {
       i2c = &i2c0_inst;
     }
     else if (port == 1) {
       i2c = &i2c1_inst;
     }
-    else return false;
-
-    return true;
   }
+  ~SensorI2C() {}
+
+  // bool init_tw(const uint32_t port) {
+  //   uint ret;
+  //   if (port == 0) {
+  //     i2c = &i2c0_inst;
+  //   }
+  //   else if (port == 1) {
+  //     i2c = &i2c1_inst;
+  //   }
+  //   else return false;
+
+  //   return true;
+  // }
 
   bool writeRegister(const uint8_t reg, const uint8_t data) {
     uint8_t out[2]{reg, data};
