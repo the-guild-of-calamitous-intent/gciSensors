@@ -97,9 +97,6 @@ enum mdl_error : uint8_t {
 
 /*
 This outputs a normalized magnetic field.
-
-default:
--
 */
 class gciLIS3MDL : public SensorI2C {
 public:
@@ -126,9 +123,9 @@ public:
   // bool reboot() { return writeBits(REG_CTRL_REG1, 0x01, 1, 3); } // reboot
   // memory content bool reset() { return writeBits(REG_CTRL_REG1, 0x01, 1, 2);
   // }  // reset to default
+
   bool reboot() {
     if (!writeRegister(REG_CTRL_REG3, 0x03)) return false;
-    // delay(100);
     sleep_ms(100);
     return writeRegister(REG_CTRL_REG3, 0x00);
   }
@@ -169,7 +166,6 @@ public:
     // https://github.com/STMicroelectronics/lis3mdl-pid/blob/master/lis3mdl_reg.c#L113
     // ret.temperature = (float)(raw.temperature) / 8.0f + 25.0f;
     // static_cast<float>(raw.temperature) / 8.0f + 25.0f; // pg 9, Table 4
-
     // printf(">> temp raw: %u", uint(raw.temperature));
 
     // normalize mag readings
@@ -235,25 +231,4 @@ protected:
 // case RANGE_16GAUSS:
 //   scale = 100.0f / 1711.0f;
 //   break;
-// }
-
-// switch (odr) {
-// case ODR_155HZ:
-//   reg1 |= (LIS3MDL_UHP << 5);
-//   reg4 = (LIS3MDL_UHP << 2);
-//   break;
-// case ODR_300HZ:
-//   reg1 |= (LIS3MDL_HIP << 5);
-//   reg4 = (LIS3MDL_HIP << 2);
-//   break;
-// case ODR_560HZ:
-//   reg1 |= (LIS3MDL_MP << 5);
-//   reg4 = (LIS3MDL_MP << 2);
-//   break;
-// case ODR_1000HZ:
-//   reg1 |= (LIS3MDL_LP << 5);
-//   reg4 = (LIS3MDL_LP << 2);
-//   break;
-// default:
-//   return 10;
 // }

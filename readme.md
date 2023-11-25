@@ -37,7 +37,6 @@ n ^= 1 << k;    // toggle bit
 
 ```c++
 LSM6DSOX::gciLSM6DSOX imu;
-imu.init_tw(I2C_400KHZ); // setup i2c
 imu.init(ACCEL_RANGE_4_G, GYRO_RANGE_2000_DPS, RATE_208_HZ); // setup sensor
 bool ok = imu.ready(); // true when new data available
 if (ok) sox_t s = imu.read();
@@ -65,7 +64,6 @@ if (ok) sox_t s = imu.read();
 
 ```c++
 LIS3MDL::gciLIS3MDL mag;
-mag.init_tw(I2C_400KHZ); // setup i2c
 mag.init();
 bool ok = mag.ready(); // true when new data available
 mag_t m = mag.read();
@@ -86,7 +84,6 @@ mag_t m = mag.read();
 
 ```c++
 BMP390::gciBMP390 bmp;
-bmp.init_tw(I2C_400KHZ); // setup i2c
 bmp.init();
 bool ok = bmp.ready(); // true when new data available
 pt_t pt = bmp.read();

@@ -72,3 +72,5 @@ using veci_t = vec_t<int16_t>;
 #include "bmp3.hpp"
 #include "lis3mdl.hpp"
 #include "lsm6dsox.hpp"
+#include "dps310.hpp"
+#include "gps.hpp"
