@@ -100,7 +100,7 @@ struct bmp3_reg_calib_data {
 constexpr uint8_t ADDR_I2C     = 0x77;
 constexpr uint8_t ADDR_I2C_ALT = 0x76;
 
-struct pt_t {
+struct bmp390_t {
   float press, temp;
   // uint32_t time; // not sure value of counter
   bool ok;
@@ -170,8 +170,8 @@ public:
     return NO_ERROR;
   }
 
-  const pt_t read_raw() {
-    pt_t ret = {0};
+  const bmp390_t read_raw() {
+    bmp390_t ret = {0};
     ret.ok   = false;
 
     if (!ready()) return ret;
@@ -194,7 +194,7 @@ public:
     return ret;
   }
 
-  inline const pt_t read() { return read_raw(); }
+  inline const bmp390_t read() { return read_raw(); }
 
   bool ready() {
     // constexpr uint8_t DATA_READY_BIT = BITS::b3;

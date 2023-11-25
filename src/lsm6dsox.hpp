@@ -93,14 +93,14 @@ struct sox_regs_t {
   uint8_t CTRL10_C;
 };
 
-struct sox_t {
+struct lsm6dsox_t {
   vecf_t a, g;
   float temp;
   uint32_t ts;
   bool ok;
 };
 
-struct sox_raw_t {
+struct lsm6dsox_raw_t {
   veci_t a, g;
   int16_t temp;
   uint32_t ts;
@@ -237,8 +237,8 @@ public:
   void set_acal(float cal[12]) { memcpy(acal, cal, 12 * sizeof(float)); }
   void set_gcal(float cal[12]) { memcpy(gcal, cal, 12 * sizeof(float)); }
 
-  const sox_raw_t read_raw() {
-    sox_raw_t ret{0};
+  const lsm6dsox_raw_t read_raw() {
+    lsm6dsox_raw_t ret{0};
     ret.ok = false;
 
     // Serial.println(ready());
@@ -263,9 +263,9 @@ public:
     return ret;
   }
 
-  sox_t read() { // accel - g's, gyro - dps, temp - C
-    const sox_raw_t raw = read_raw();
-    sox_t ret{0};
+  lsm6dsox_t read() { // accel - g's, gyro - dps, temp - C
+    const lsm6dsox_raw_t raw = read_raw();
+    lsm6dsox_t ret{0};
     ret.ok = false;
     if (raw.ok == false) return ret;
 
@@ -282,11 +282,11 @@ public:
     return ret;
   }
 
-  sox_t read_cal() { // accel - g's, gyro - dps, temp - C
-    const sox_t m = read();
+  lsm6dsox_t read_cal() { // accel - g's, gyro - dps, temp - C
+    const lsm6dsox_t m = read();
     if (m.ok == false) return m;
 
-    sox_t ret{0};
+    lsm6dsox_t ret{0};
     ret.ok = false;
 
     // accel = A * accel_meas - bias
@@ -364,6 +364,9 @@ private:
 };
 
 } // namespace LSM6DSOX
+
+
+
 
 // bool setGyro(uint8_t odr, uint8_t dps) {
 //   if (dps == GYRO_RANGE_125_DPS)

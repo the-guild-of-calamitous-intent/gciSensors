@@ -53,7 +53,7 @@ int main() {
     gpio_put(LED_PIN, 1);
     sleep_ms(500);
 
-    const mag_t m = mag.read_cal();
+    const lis3dml_t m = mag.read_cal();
     if (m.ok == false) continue;
 
     // printf("-----------------------------\n");

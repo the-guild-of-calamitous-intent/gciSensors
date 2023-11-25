@@ -63,7 +63,7 @@ int main() {
     gpio_put(LED_PIN, 1);
     sleep_ms(500);
 
-    sox_t i = IMU.read();
+    lsm6dsox_t i = IMU.read();
     if (i.ok == false) continue;
 
     printf("-----------------------------\n");

@@ -53,19 +53,9 @@ enum Range : uint8_t {
   RANGE_16GAUSS = 0x60
 };
 
-// enum Odr : uint8_t {
-//   ODR_155HZ,
-//   ODR_300HZ,
-//   ODR_560HZ,
-//   ODR_1000HZ
-// };
-
-// using mag_t = gci::sensors::vecf_t;
-// using mag_raw_t = gci::sensors::veci_t;
-
-struct mag_t {
+struct lis3mdl_t {
   float x, y, z;
-  float temperature;
+  // float temperature;
   bool ok;
 
   inline const float magnitude() const { return sqrt(x * x + y * y + z * z); }
@@ -82,17 +72,17 @@ struct mag_t {
   }
 };
 
-struct mag_raw_t {
+struct lis3mdl_raw_t {
   int16_t x, y, z;
   // int16_t temperature;
   bool ok;
 };
 
 enum Odr : uint8_t {
-  ODR_155HZ  = LIS3MDL_UHP,
-  ODR_300HZ  = LIS3MDL_HIP,
-  ODR_560HZ  = LIS3MDL_MP,
-  ODR_1000HZ = LIS3MDL_LP
+  ODR_155HZ  = LIS3MDL_UHP, // 3
+  ODR_300HZ  = LIS3MDL_HIP, // 2
+  ODR_560HZ  = LIS3MDL_MP,  // 1
+  ODR_1000HZ = LIS3MDL_LP   // 0
 };
 
 enum mdl_error : uint8_t {
@@ -113,18 +103,13 @@ default:
 */
 class gciLIS3MDL : public SensorI2C {
 public:
-  // gciLIS3MDL(TwoWire *i2c, const uint8_t addr = ADDR_PRIM)
-  //     : SensorI2C(i2c, addr) {}
   gciLIS3MDL(const uint8_t addr = ADDR_PRIM) : SensorI2C(addr) {}
 
   uint8_t init(const Range range = RANGE_4GAUSS, const Odr odr = ODR_155HZ) {
-    // uint8_t who = readRegister(REG_WHO_AM_I);
-    // if (who != WHO_AM_I) return who;
     if (readRegister(REG_WHO_AM_I) != WHO_AM_I) return ERROR_WHOAMI;
 
     uint8_t reg1 = LIS3MDL_FAST_ODR_EN | LIS3MDL_TEMP_EN | (odr << 5);
     uint8_t reg4 = (odr << 2);
-    // Serial.println(reg1);
 
     if (!writeRegister(REG_CTRL_REG1, reg1))
       return ERROR_REG1; // enable x/y-axis, temp
@@ -150,8 +135,8 @@ public:
 
   void set_cal(float cal[12]) { memcpy(sm, cal, 12 * sizeof(float)); }
 
-  const mag_raw_t read_raw() {
-    mag_raw_t ret{0};
+  const lis3mdl_raw_t read_raw() {
+    lis3mdl_raw_t ret{0};
     ret.ok = false;
 
     if (!ready()) return ret;
@@ -160,11 +145,6 @@ public:
 #define READ_MAG_TEMP 8
 
     if (!readRegisters(REG_OUT_X_L, READ_MAG, buff.b)) return ret;
-
-    // ret.x           = buff.s[0]; // counts
-    // ret.y           = buff.s[1];
-    // ret.z           = buff.s[2];
-    // ret.temperature = buff.s[3];
     ret.x = buff.s.x; // counts
     ret.y = buff.s.y;
     ret.z = buff.s.z;
@@ -174,15 +154,12 @@ public:
     return ret;
   }
 
-  const mag_t read() {
-    mag_t ret{0};
+  const lis3mdl_t read() {
+    lis3mdl_t ret{0};
     ret.ok              = false;
-    const mag_raw_t raw = read_raw();
+    const lis3mdl_raw_t raw = read_raw();
     if (raw.ok == false) return ret;
 
-    // ret.x = raw.x * scale; // uT
-    // ret.y = raw.y * scale;
-    // ret.z = raw.z * scale;
     ret.x = static_cast<float>(raw.x); // gauss
     ret.y = static_cast<float>(raw.y);
     ret.z = static_cast<float>(raw.z);
@@ -202,11 +179,11 @@ public:
     return ret;
   }
 
-  const mag_t read_cal() {
-    const mag_t m = read();
+  const lis3mdl_t read_cal() {
+    const lis3mdl_t m = read();
     if (m.ok == false) return m;
 
-    mag_t ret{0};
+    lis3mdl_t ret{0};
     ret.x = sm[0] * m.x + sm[1] * m.y + sm[2] * m.z - sm[3];
     ret.y = sm[4] * m.x + sm[5] * m.y + sm[6] * m.z - sm[7];
     ret.z = sm[8] * m.x + sm[9] * m.y + sm[10] * m.z - sm[11];
