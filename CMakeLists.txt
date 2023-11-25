@@ -51,21 +51,11 @@ if(PROJECT_IS_TOP_LEVEL)
 else()
     message(STATUS "-> ${PROJECT_NAME} is submodule")
     set(BUILD_EXAMPLES OFF)
-    # set(BUILD_GTESTS OFF)
 endif()
-
-# FetchContent_Declare(
-#     gciwire
-#     GIT_REPOSITORY "https://github.com/the-guild-of-calamitous-intent/gciWire.git"
-#     GIT_TAG "origin/main"
-# )
-
-# FetchContent_MakeAvailable(gciwire)
 
 LIST(APPEND pico_libs
     pico_stdlib
     hardware_i2c)
-    # gciwire)
 
 
 add_library(${PROJECT_NAME} INTERFACE)

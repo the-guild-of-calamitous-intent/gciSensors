@@ -16,9 +16,11 @@ constexpr uint i2c_sda = I2C0_SDA_PIN;
 using namespace LSM6DSOX;
 using namespace gci::sensors;
 
-// gciLSM6DSOX IMU(LSM6DSOX_ADDRESS); // if not using default address
-gciLSM6DSOX IMU;
 TwoWire tw;
+
+// if not using default address or port
+// gciLSM6DSOX IMU(LSM6DSOX_ADDRESS,i2c_port);
+gciLSM6DSOX IMU;
 
 const uint LED_PIN = 25;
 
@@ -39,13 +41,6 @@ int main() {
   gpio_set_dir(LED_PIN, GPIO_OUT);
 
   puts("/// Accel/Gyros START ///\n");
-
-  // bool ok = IMU.init_tw(I2C_400KHZ,i2c_port,I2C0_SDA_PIN, I2C0_SCL_PIN);
-  bool ok = IMU.init_tw(i2c_port);
-  while (!ok) {
-    puts("I2C initialization error");
-    sleep_ms(1000);
-  }
 
   while (true) {
     uint8_t err = IMU.init(ACCEL_RANGE_4_G, GYRO_RANGE_2000_DPS, RATE_208_HZ);

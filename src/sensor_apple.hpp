@@ -10,7 +10,7 @@
 
 class SensorI2C {
 public:
-  SensorI2C(const uint8_t address) : addr(address) {}
+  SensorI2C(const uint8_t address, uint32_t) : addr(address) {}
 
   void init_tw(const uint32_t baud) {}
 

@@ -14,7 +14,7 @@ inline void sleep_ms(uint32_t del) { delay(del); }
 
 class SensorI2C {
 public:
-  SensorI2C(const uint8_t address) : addr(address), i2c(tw) {}
+  SensorI2C(const uint8_t address, uint32_t) : addr(address), i2c(tw) {}
 
   void init_tw(const uint32_t baud) {
     Wire.begin();
