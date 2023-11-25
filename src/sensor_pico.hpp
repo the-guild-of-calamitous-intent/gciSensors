@@ -22,6 +22,17 @@ constexpr uint I2C1_SCL_PIN = 15;
 constexpr bool I2C_HOLD_BUS    = true;
 constexpr bool I2C_RELEASE_BUS = false;
 
+/*
+This is NOT meant to replicate Arduino's TwoWire/Wire library
+but do the bare minimum to setup I2C.
+
+If you use both i2c0 and i2c1, this class can initialize both
+of those with one instance if you want since it doesn't have
+any member variables.
+
+TwoWire tw;
+tw.init(0, 400000, 8, 9);
+*/
 class TwoWire {
 public:
   TwoWire() {}
@@ -57,19 +68,6 @@ public:
   }
   ~SensorI2C() {}
 
-  // bool init_tw(const uint32_t port) {
-  //   uint ret;
-  //   if (port == 0) {
-  //     i2c = &i2c0_inst;
-  //   }
-  //   else if (port == 1) {
-  //     i2c = &i2c1_inst;
-  //   }
-  //   else return false;
-
-  //   return true;
-  // }
-
   bool writeRegister(const uint8_t reg, const uint8_t data) {
     uint8_t out[2]{reg, data};
     i2c_write_blocking(i2c, addr, out, 2, I2C_RELEASE_BUS);
@@ -84,6 +82,8 @@ public:
   }
 
   // inline
+  // Don't like this because "as is" there is no way to return an error
+  // if it occurs.
   uint8_t readRegister(const uint8_t reg) {
     uint8_t value;
     // return (readRegisters(reg, 1, &value) == true) ? value : 0;
