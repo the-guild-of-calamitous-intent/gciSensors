@@ -6,14 +6,6 @@ I love Adafruit sensors with QWIIC but their drivers are geared towards hobbiest
 favor low power consumption over performace. I try to strip out unnecessary abstraction
 and enable high data rate.
 
-## Bit Stuff
-
-```c
-N |= 1 << K;    // set bit
-n &= ~(1 << k); // clear bit
-n ^= 1 << k;    // toggle bit
-```
-
 ## Units
 
 | Sensor Type | Units        | Abbreviation
@@ -67,7 +59,7 @@ LIS3MDL::gciLIS3MDL mag;
 mag.init();
 bool ok = mag.ready(); // true when new data available
 list3mdl_t m = mag.read();
-// m.x => mag x,y,z in uT
+// m.x => mag x,y,z in gauss
 // m.ok => good read true/false
 ```
 
