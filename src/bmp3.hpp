@@ -40,10 +40,11 @@ constexpr uint8_t OVERSAMPLING_8X      = 0x03;
 constexpr uint8_t OVERSAMPLING_16X     = 0x04;
 constexpr uint8_t OVERSAMPLING_32X     = 0x05;
 
-constexpr uint8_t IIR_FILTER_DISABLE   = 0x00; // 000 0
-constexpr uint8_t IIR_FILTER_COEFF_1   = 0x02; // 001 0
-constexpr uint8_t IIR_FILTER_COEFF_3   = 0x04; // 010 0
-constexpr uint8_t IIR_FILTER_COEFF_7   = 0x06; // 011 0
+constexpr uint8_t IIR_FILTER_DISABLE   = 0x00; // 000 0   1 step lag
+constexpr uint8_t IIR_FILTER_COEFF_OFF = 0x00; // 000 0   1 step lag
+constexpr uint8_t IIR_FILTER_COEFF_1   = 0x02; // 001 0  10 step lag
+constexpr uint8_t IIR_FILTER_COEFF_3   = 0x04; // 010 0  20 step lag
+constexpr uint8_t IIR_FILTER_COEFF_7   = 0x06; // 011 0  40 step lag
 constexpr uint8_t IIR_FILTER_COEFF_15  = 0x08; // 100 0
 constexpr uint8_t IIR_FILTER_COEFF_31  = 0x0A; // 101 0
 constexpr uint8_t IIR_FILTER_COEFF_63  = 0x0C; // 110 0
@@ -66,16 +67,17 @@ constexpr uint8_t REG_PWR_CTRL   = 0x1B;
 constexpr uint8_t REG_OSR        = 0x1C;
 constexpr uint8_t REG_ODR        = 0x1D;
 constexpr uint8_t REG_IIR_FILTER = 0x1F;
-constexpr uint8_t REG_SENSORTIME = 0x0C;
+constexpr uint8_t REG_TIME       = 0x0C;
 constexpr uint8_t REG_CALIB_DATA = 0x31;
 constexpr uint8_t REG_CMD        = 0x7E;
 
 constexpr uint8_t WHO_AM_I       = 0x60;
-constexpr uint8_t CMD_RDY        = 0x10;
+constexpr uint8_t CMD_RDY_BIT    = 0x10;
 constexpr uint8_t PRES_READY_BIT = (1 << 5);
 constexpr uint8_t TEMP_READY_BIT = (1 << 6);
 constexpr uint8_t SOFT_RESET     = 0xB6;
 constexpr uint8_t LEN_CALIB_DATA = 21;
+constexpr uint8_t LEN_P_T_DATA   = 6;
 
 struct bmp3_reg_calib_data {
   float par_t1;
@@ -97,12 +99,17 @@ struct bmp3_reg_calib_data {
   float t_lin; // was int64_t??
 };
 
-constexpr uint8_t ADDR_I2C     = 0x77;
-constexpr uint8_t ADDR_I2C_ALT = 0x76;
+constexpr uint8_t BMP390_ADDR     = 0x77;
+constexpr uint8_t BMP390_ADDR_ALT = 0x76;
+
+
+struct bmp390_raw_t {
+  uint32_t press, temp;
+  bool ok;
+};
 
 struct bmp390_t {
   float press, temp;
-  // uint32_t time; // not sure value of counter
   bool ok;
 };
 
@@ -111,7 +118,7 @@ enum bmp_error : uint8_t {
   ERROR_WHOAMI,
   ERROR_RESET,
   ERROR_CAL_DATA,
-  ERROR_OS_MODE,
+  ERROR_ODR,
   ERROR_IIR_FILTER,
   ERROR_INT_PIN,
   ERROR_PWR_MODE
@@ -119,17 +126,17 @@ enum bmp_error : uint8_t {
 
 class gciBMP390 : public SensorI2C {
 public:
-  gciBMP390(const uint8_t addr = ADDR_I2C, uint32_t port=0) : SensorI2C(addr, port) {}
+  gciBMP390(const uint8_t addr = BMP390_ADDR, uint32_t port=0) : SensorI2C(addr, port) {}
 
   uint8_t init(const uint8_t odr = ODR_50_HZ,
-               const uint8_t iir = IIR_FILTER_COEFF_7) {
+               const uint8_t iir = IIR_FILTER_COEFF_3) {
     bool ok;
 
     if (!(readRegister(REG_WHO_AM_I) == WHO_AM_I)) return ERROR_WHOAMI;
     if (!soft_reset()) return ERROR_RESET;
     if (!get_calib_data()) return ERROR_CAL_DATA;
     // if (!setOsMode(mode)) return ERROR_OS_MODE;
-    if (!setODR(odr)) return ERROR_OS_MODE;
+    if (!setODR(odr)) return ERROR_ODR;
 
     /*
     IIR Filter
@@ -159,24 +166,24 @@ public:
     // latch int pin and status reg ... do I need this?
     uint8_t INT_LATCH_EN = (1 << 2);
     ok = writeRegister(REG_INT_CTRL, DRDY_EN | INT_LEVEL_HI | INT_LATCH_EN);
-    if (!ok) return ERROR_INT_PIN;
+    if (ok == false) return ERROR_INT_PIN;
 
     uint8_t MODE_NORMAL = (0x03 << 4); // continous sampling
     uint8_t PRESS_EN    = 0x01;
     uint8_t TEMP_EN     = 0x02;
     ok = writeRegister(REG_PWR_CTRL, MODE_NORMAL | TEMP_EN | PRESS_EN);
-    if (!ok) return ERROR_PWR_MODE;
+    if (ok == false) return ERROR_PWR_MODE;
 
     return NO_ERROR;
   }
 
-  const bmp390_t read_raw() {
+  const bmp390_t read() {
     bmp390_t ret = {0};
     ret.ok   = false;
 
     if (!ready()) return ret;
 
-    bool ok = readRegisters(REG_DATA, 6, buffer);
+    bool ok = readRegisters(REG_DATA, LEN_P_T_DATA, buffer);
     if (!ok) return ret;
 
     uint32_t press = to_24b(buffer);
@@ -194,7 +201,7 @@ public:
     return ret;
   }
 
-  inline const bmp390_t read() { return read_raw(); }
+  // inline const bmp390_t read() { return read_raw(); }
 
   bool ready() {
     // constexpr uint8_t DATA_READY_BIT = BITS::b3;
@@ -202,7 +209,9 @@ public:
     // return true;
 
     uint8_t reg = readRegister(REG_STATUS);
-    return (PRES_READY_BIT & reg) && (TEMP_READY_BIT & reg);
+    // return (PRES_READY_BIT & reg) && (TEMP_READY_BIT & reg);
+    return ((PRES_READY_BIT | TEMP_READY_BIT) & reg) > 0;
+    // return true;
   }
 
   // bmp_available_t available() {
@@ -236,7 +245,7 @@ public:
   inline bool reset() { return soft_reset(); }
 
 protected:
-  uint8_t buffer[LEN_CALIB_DATA];
+  uint8_t buffer[LEN_P_T_DATA];
   bmp3_reg_calib_data calib;
 
   bool setODR(const uint8_t odr) {
@@ -244,13 +253,15 @@ protected:
 
     // based oon sec 3.9.1, pg 26
     // and pg 14, section 3.4.1
+    // WARNING: Double check these work if you change them,
+    //          only certain combos work
     switch (odr) {
     case ODR_200_HZ:              // 24 cm
       press_os = OVERSAMPLING_1X; // 2.64 Pa
       temp_os  = OVERSAMPLING_1X; // 0.0050 C
       break;
-    case ODR_100_HZ:              // 6 cm
-      press_os = OVERSAMPLING_4X; // 0.66 Pa
+    case ODR_100_HZ:              // 12 cm
+      press_os = OVERSAMPLING_2X; // 1.32 Pa
       temp_os  = OVERSAMPLING_1X; // 0.0050 C
       break;
     case ODR_50_HZ:               // 3cm
@@ -265,6 +276,8 @@ protected:
       press_os = OVERSAMPLING_32X;
       temp_os  = OVERSAMPLING_2X;
       break;
+    default:
+      return false;
     }
     if (!writeRegister(REG_OSR, (temp_os << 3) | press_os)) return false;
     if (!writeRegister(REG_ODR, odr)) return false;
@@ -302,37 +315,38 @@ protected:
   }
 
   bool get_calib_data() {
-    bool ok = readRegisters(REG_CALIB_DATA, LEN_CALIB_DATA, buffer);
+    uint8_t tmp[LEN_CALIB_DATA];
+    bool ok = readRegisters(REG_CALIB_DATA, LEN_CALIB_DATA, tmp);
     if (!ok) return false;
 
-    calib.par_t1 = (float)to_16b(buffer[1], buffer[0]) / powf(2, -8);
-    calib.par_t2 = (float)to_16b(buffer[3], buffer[2]) / powf(2, 30);
-    calib.par_t3 = (float)buffer[4] / powf(2, 48);
+    calib.par_t1 = (float)to_16b(tmp[1], tmp[0]) / powf(2, -8);
+    calib.par_t2 = (float)to_16b(tmp[3], tmp[2]) / powf(2, 30);
+    calib.par_t3 = (float)tmp[4] / powf(2, 48);
 
     calib.par_p1 =
-        ((float)to_16b(buffer[6], buffer[5]) - powf(2, 14)) / powf(2, 20);
+        ((float)to_16b(tmp[6], tmp[5]) - powf(2, 14)) / powf(2, 20);
     calib.par_p2 =
-        ((float)to_16b(buffer[8], buffer[7]) - powf(2, 14)) / powf(2, 29);
-    calib.par_p3  = (float)buffer[9] / powf(2, 32);
-    calib.par_p4  = (float)buffer[10] / powf(2, 37);
-    calib.par_p5  = (float)to_16b(buffer[12], buffer[11]) / powf(2, -3);
-    calib.par_p6  = (float)to_16b(buffer[14], buffer[13]) / powf(2, 6);
-    calib.par_p7  = (float)buffer[15] / powf(2, 8);
-    calib.par_p8  = (float)buffer[16] / powf(2, 15);
-    calib.par_p9  = (float)to_16b(buffer[18], buffer[17]) / powf(2, 48);
-    calib.par_p10 = (float)buffer[19] / powf(2, 48);
-    calib.par_p11 = (float)buffer[20] / powf(2, 65);
+        ((float)to_16b(tmp[8], tmp[7]) - powf(2, 14)) / powf(2, 29);
+    calib.par_p3  = (float)tmp[9] / powf(2, 32);
+    calib.par_p4  = (float)tmp[10] / powf(2, 37);
+    calib.par_p5  = (float)to_16b(tmp[12], tmp[11]) / powf(2, -3);
+    calib.par_p6  = (float)to_16b(tmp[14], tmp[13]) / powf(2, 6);
+    calib.par_p7  = (float)tmp[15] / powf(2, 8);
+    calib.par_p8  = (float)tmp[16] / powf(2, 15);
+    calib.par_p9  = (float)to_16b(tmp[18], tmp[17]) / powf(2, 48);
+    calib.par_p10 = (float)tmp[19] / powf(2, 48);
+    calib.par_p11 = (float)tmp[20] / powf(2, 65);
 
     return true;
   }
 
-  bool sleep() {
-    // uint8_t op_mode = readRegister(REG_PWR_CTRL);
-    // keep bits 0-1, temp/press enable, mode = 00 (sleep)
-    // op_mode = op_mode & (0x01 | 0x02);
-    // return writeRegister(REG_PWR_CTRL, op_mode);
-    return writeRegister(REG_PWR_CTRL, 0x00); // sleep, disable temp/press
-  }
+  // bool sleep() {
+  //   // uint8_t op_mode = readRegister(REG_PWR_CTRL);
+  //   // keep bits 0-1, temp/press enable, mode = 00 (sleep)
+  //   // op_mode = op_mode & (0x01 | 0x02);
+  //   // return writeRegister(REG_PWR_CTRL, op_mode);
+  //   return writeRegister(REG_PWR_CTRL, 0x00); // sleep, disable temp/press
+  // }
 
   bool soft_reset() {
     bool ok;
@@ -341,12 +355,12 @@ protected:
     uint8_t cmd_rdy_status = readRegister(REG_STATUS);
 
     // Device is ready to accept new command
-    if (cmd_rdy_status & CMD_RDY) {
+    if (cmd_rdy_status & CMD_RDY_BIT) {
       // println("cmd_rdy_status is CMD_RDY");
       // Write the soft reset command in the sensor
       // datasheet, p 39, table 47, register ALWAYS reads 0x00
       writeRegister(REG_CMD, SOFT_RESET);
-      sleep_ms(2); // was 2 ... too quick?
+      sleep_ms(10); // was 2 ... too quick?
       // Read for command error status
       if (readRegister(REG_ERR) & REG_CMD) return false;
       return true;

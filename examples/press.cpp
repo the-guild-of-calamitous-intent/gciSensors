@@ -16,8 +16,8 @@ constexpr uint i2c_sda = I2C0_SDA_PIN;
 using namespace BMP390;
 using namespace gci::sensors;
 
-gciBMP390 bmp;
 TwoWire tw;
+gciBMP390 bmp;
 
 const uint LED_PIN = 25;
 
@@ -40,23 +40,32 @@ int main() {
   gpio_set_dir(LED_PIN, GPIO_OUT);
 
   while (true) {
-    uint err = bmp.init(ODR_100_HZ);
+    uint err = bmp.init(
+      ODR_100_HZ,
+      IIR_FILTER_COEFF_127);
     if (err == 0) break;
     printf("BMP Error: %u\n", err);
     sleep_ms(1000);
   }
 
   while (1) {
-    gpio_put(LED_PIN, 0);
-    sleep_ms(500);
-    gpio_put(LED_PIN, 1);
-    sleep_ms(500);
+    // gpio_put(LED_PIN, 0);
+    // sleep_ms(500);
+    // gpio_put(LED_PIN, 1);
+    // sleep_ms(500);
 
     bmp390_t pt = bmp.read();
-    if (pt.ok == false) continue;
+    if (pt.ok == false) {
+      printf("oops ...\n");
+      sleep_ms(100);
+      continue;
+    }
 
     printf("-----------------------------\n");
     printf("Pressure: %f Pa\n", pt.press);
     printf("Temperature: %f C\n", pt.temp);
+    printf("Altitude: %6.2f m\n", bmp.altitude(pt.press));
+
+    sleep_ms(10);
   }
 }

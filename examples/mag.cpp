@@ -17,7 +17,7 @@ using namespace LIS3MDL;
 using namespace gci::sensors;
 
 TwoWire tw;
-gciLIS3MDL mag(i2c_port); // default is 0, so don't need to do this
+gciLIS3MDL mag(ADDR_PRIM, i2c_port); // default is 0, so don't need to do this
 
 const uint LED_PIN = 25;
 
@@ -42,7 +42,7 @@ int main() {
   while (true) {
     int err = mag.init(RANGE_4GAUSS,ODR_155HZ);
     if (err == 0) break;
-    puts("mag error");
+    printf("mag error: %d\n", err);
     sleep_ms(1000);
   }
 
