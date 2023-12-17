@@ -17,10 +17,10 @@ constexpr uint8_t COEF          = 0x10; // coefficients
 constexpr uint8_t PRODID        = 0x0D; // Register that contains the part ID
 constexpr uint8_t TMP_COEF_SRCE = 0x28; // Temperature calibration src
 
-constexpr uint8_t SAMPLE_5_2 = 1; // 5.2 msec 1 Pa_rms, 2x os
-constexpr uint8_t SAMPLE_8_4 = 2; // 8.4 msec 0.5 Pa_rms, 4x os
-constexpr uint8_t SAMPLE_14_8 = 3; // 14.8 msec 0.4 Pa_rms, 8x os
-constexpr uint8_t SAMPLE_27_6 = 4; // 27.6 msec 0.35 Pa_rms, 16x os
+// constexpr uint8_t SAMPLE_5_2 = 1; // 5.2 msec 1 Pa_rms, 2x os
+// constexpr uint8_t SAMPLE_8_4 = 2; // 8.4 msec 0.5 Pa_rms, 4x os
+// constexpr uint8_t SAMPLE_14_8 = 3; // 14.8 msec 0.4 Pa_rms, 8x os
+// constexpr uint8_t SAMPLE_27_6 = 4; // 27.6 msec 0.35 Pa_rms, 16x os
 
 constexpr uint8_t DPS_128HZ = 7;
 constexpr uint8_t DPS_64HZ = 6;
