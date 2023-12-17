@@ -9,6 +9,9 @@ using namespace std;
 
 #include <gciSensors.hpp>
 
+using namespace std;
+using namespace DPS310;
+
 constexpr uint i2c_port = 0;
 constexpr uint i2c_scl = I2C0_SCL_PIN;
 constexpr uint i2c_sda = I2C0_SDA_PIN;
@@ -28,7 +31,25 @@ int main() {
   printf(">> i2c SDA: %u SCL: %u\n", i2c_sda, i2c_scl);
   bi_decl(bi_2pins_with_func(i2c_sda, i2c_scl, GPIO_FUNC_I2C)); // compile info
 
+  gciDPS310 press;
+
+  bool ok = false;
+  while (ok == false) {
+    ok = press.init(DPS_32HZ);
+    sleep_ms(100);
+  }
+
   printf("/// Press/Temp Started ///\n");
 
-  while (1) { sleep_ms(1000); }
+  while (1) {
+    dps310_t ans = press.read();
+    if (ans.ok == false) {
+      sleep_ms(5);
+      continue;
+    }
+
+    float alt = press.altitude(ans.pressure);
+    printf("Press: %8.1f Pa  Temp: %5.2f C  Alt: %10.1f m\n", ans.pressure, ans.temperature, alt);
+    sleep_ms(33);
+  }
 }

@@ -6,6 +6,7 @@
 
 namespace DPS310 {
 
+// pg 25, Table 15
 constexpr uint8_t PRS_B2        = 0x00; // Highest byte of pressure data
 constexpr uint8_t TMP_B2        = 0x03; // Highest byte of temperature data
 constexpr uint8_t PRS_CFG       = 0x06; // Pressure configuration
@@ -17,30 +18,39 @@ constexpr uint8_t COEF          = 0x10; // coefficients
 constexpr uint8_t PRODID        = 0x0D; // Register that contains the part ID
 constexpr uint8_t TMP_COEF_SRCE = 0x28; // Temperature calibration src
 
-// constexpr uint8_t SAMPLE_5_2 = 1; // 5.2 msec 1 Pa_rms, 2x os
-// constexpr uint8_t SAMPLE_8_4 = 2; // 8.4 msec 0.5 Pa_rms, 4x os
-// constexpr uint8_t SAMPLE_14_8 = 3; // 14.8 msec 0.4 Pa_rms, 8x os
-// constexpr uint8_t SAMPLE_27_6 = 4; // 27.6 msec 0.35 Pa_rms, 16x os
+// for pressure and temperature, but pressure determines the
+// overall datarate
+constexpr uint8_t DPS_128HZ_ALT = 8; // alternate 128Hz, max speed
+constexpr uint8_t DPS_128HZ     = 7;
+constexpr uint8_t DPS_64HZ      = 6;
+constexpr uint8_t DPS_32HZ      = 5;
+constexpr uint8_t DPS_16HZ      = 4;
+constexpr uint8_t DPS_8HZ       = 3;
 
-constexpr uint8_t DPS_128HZ = 7;
-constexpr uint8_t DPS_64HZ  = 6;
-constexpr uint8_t DPS_32HZ  = 5;
-// constexpr uint8_t DPS_16HZ = 1;
-// constexpr uint8_t DPS_8HZ = 1;
+// pg 15, Table 9, for pressure and temperature
+constexpr uint32_t OVERSAMPLE_1X_SF   = 524288;
+constexpr uint32_t OVERSAMPLE_2X_SF   = 1572864;
+constexpr uint32_t OVERSAMPLE_4X_SF   = 3670016;
+constexpr uint32_t OVERSAMPLE_8X_SF   = 7864320;
+constexpr uint32_t OVERSAMPLE_16X_SF  = 253952;
+constexpr uint32_t OVERSAMPLE_32X_SF  = 516096;
+constexpr uint32_t OVERSAMPLE_64X_SF  = 1040384;
+constexpr uint32_t OVERSAMPLE_128X_SF = 2088960;
 
-constexpr uint32_t OVERSAMPLE_1X_SF = 524288;
-constexpr uint32_t OVERSAMPLE_2X_SF = 1572864;
-constexpr uint32_t OVERSAMPLE_4X_SF = 3670016;
-constexpr uint32_t OVERSAMPLE_8X_SF = 7864320;
+// appears to be straight averaging, nothing fancy
+constexpr uint32_t OVERSAMPLE_1X   = 0;
+constexpr uint32_t OVERSAMPLE_2X   = 1;
+constexpr uint32_t OVERSAMPLE_4X   = 2;
+constexpr uint32_t OVERSAMPLE_8X   = 3;
+constexpr uint32_t OVERSAMPLE_16X  = 4;
+constexpr uint32_t OVERSAMPLE_32X  = 5;
+constexpr uint32_t OVERSAMPLE_64X  = 6;
+constexpr uint32_t OVERSAMPLE_128X = 7;
 
-constexpr uint32_t OVERSAMPLE_1X    = 0;
-constexpr uint32_t OVERSAMPLE_2X    = 1;
-constexpr uint32_t OVERSAMPLE_4X    = 2;
-constexpr uint32_t OVERSAMPLE_8X    = 3;
+// wish they had a WHO_AM_I like EVERYONE else???
+constexpr uint8_t PROD_ID     = 0x00;
 
-constexpr uint8_t PROD_ID           = 0x00;
-
-constexpr uint8_t DPS310_ADDR       = 0x77; // default
+constexpr uint8_t DPS310_ADDR = 0x77; // default
 
 struct dps310_t {
   float pressure;
@@ -60,42 +70,43 @@ public:
 
     reset();
     do {
-      sleep_ms(15);
+      sleep_ms(15); // pg 10, Table 8
     } while (sensor_ready() == false);
 
-    writeRegister(MEAS_CFG, 0x00); // idle/stop
+    writeRegister(MEAS_CFG, 0x00); // set to idle/stop
 
     uint8_t pos;
     uint8_t prate;
     uint8_t tos;
     uint8_t trate;
 
-    // switch (sample_rate) {
-    //   case SAMPLE_5_2: // 2x, 96.2hz
-    //     scale = 1572864;
-    //     os = 1;
-    //     rate = 7 << 4;
-    //     break;
-    //   case SAMPLE_8_4:  // 4x oversample, 61hz
-    //     scale = 3670016;
-    //     os = 2;
-    //     rate = 7 << 4;
-    //     break;
-    //   case SAMPLE_14_8:  // 8x oversample, 33.8hz
-    //     scale = 7864320;
-    //     os = 3;
-    //     rate = 7 << 4;
-    //     break;
-    //   case SAMPLE_27_6:  // 16x oversample, 18.2hz
-    //     scale = 253952;
-    //     os = 4;
-    //     rate = 7 << 4;
-    //     break;
-    //   default:
-    //     return false;
-    // }
+    /*
+    OK, there are a lot of ways you can mix and match how
+    you oversample and set your datarate, so I picked some
+    that seemed good.
+    pg 30, Table 16
+    Rate_temp * MeasTime_temp + Rate_pres * MeasTime_pres < 1 second
+    |    | Press   | Temp    |     |     |
+    |    |----|----|----|----| Pa  |  cm |
+    | Hz | OS | Hz | OS | Hz | RMS | RMS |
+    |----|----|----|----|----|-----|-----|
+    |128F| 1  | 128| 1  | 128| 2.5 | 20.8|
+    | 128| 2  | 128| 2  | 64 | 1.0 | 8.3 |
+    | 64 | 4  | 64 | 2  | 64 | 0.5 | 4.2 |
+    | 32 | 8  | 32 | 4  | 32 | 0.4 | 3.3 |
+    | 16 | 16 | 16 | 16 | 16 | 0.35| 2.9 |
+    |  8 | 32 |  8 | 32 |  8 | 0.3 | 2.5 |
+    */
     switch (sample_rate) {
-    case DPS_128HZ: // 2x, rms 2.5
+    case DPS_128HZ_ALT:
+      pscale = OVERSAMPLE_1X_SF;
+      tscale = OVERSAMPLE_1X_SF;
+      pos    = OVERSAMPLE_1X;
+      tos    = OVERSAMPLE_1X;
+      prate  = DPS_128HZ << 4;
+      trate  = DPS_128HZ << 4;
+      break;
+    case DPS_128HZ:
       pscale = OVERSAMPLE_2X_SF;
       tscale = OVERSAMPLE_2X_SF;
       pos    = OVERSAMPLE_2X;
@@ -103,7 +114,7 @@ public:
       prate  = DPS_128HZ << 4;
       trate  = DPS_64HZ << 4;
       break;
-    case DPS_64HZ: // 4x oversample, rms 1
+    case DPS_64HZ:
       pscale = OVERSAMPLE_4X_SF;
       tscale = OVERSAMPLE_2X_SF;
       pos    = OVERSAMPLE_4X;
@@ -111,7 +122,7 @@ public:
       prate  = DPS_64HZ << 4;
       trate  = DPS_64HZ << 4;
       break;
-    case DPS_32HZ: // 8x oversample, rms .5
+    case DPS_32HZ:
       pscale = OVERSAMPLE_8X_SF;
       tscale = OVERSAMPLE_8X_SF;
       pos    = OVERSAMPLE_8X;
@@ -119,21 +130,39 @@ public:
       prate  = DPS_32HZ << 4;
       trate  = DPS_32HZ << 4;
       break;
+    case DPS_16HZ:
+      pscale = OVERSAMPLE_16X_SF;
+      tscale = OVERSAMPLE_16X_SF;
+      pos    = OVERSAMPLE_16X;
+      tos    = OVERSAMPLE_16X;
+      prate  = DPS_16HZ << 4;
+      trate  = DPS_16HZ << 4;
+      break;
+    case DPS_8HZ:
+      pscale = OVERSAMPLE_32X_SF;
+      tscale = OVERSAMPLE_32X_SF;
+      pos    = OVERSAMPLE_32X;
+      tos    = OVERSAMPLE_32X;
+      prate  = DPS_8HZ << 4;
+      trate  = DPS_8HZ << 4;
+      break;
     default:
       return false;
     }
 
-    uint8_t ext = readRegister(TMP_COEF_SRCE); // already shifted
+    uint8_t ext = readRegister(TMP_COEF_SRCE); // ext already shifted
 
     writeRegister(TMP_CFG, ext | trate | tos);
     writeRegister(PRS_CFG, prate | pos);
 
     do {
-      sleep_ms(45);
-    } while (coeffs_ready());
+      sleep_ms(45); // pg 10, Table 8
+    } while (coeffs_ready() == false);
     read_coeffs();
 
     writeRegister(MEAS_CFG, 0x07); // continous press/temp
+
+    return true;
   }
 
   // press ready to read: [TMP_RDY, PRS_RDY]
@@ -152,6 +181,10 @@ public:
   bool coeffs_ready() {
     uint8_t rdy = readRegister(MEAS_CFG);
     return rdy & 0x80;
+  }
+
+  bool stop() {
+    return writeRegister(MEAS_CFG, 0x00); // set to idle/stop
   }
 
   dps310_t read() {
