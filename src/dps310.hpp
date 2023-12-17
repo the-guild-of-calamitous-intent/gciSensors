@@ -28,14 +28,14 @@ constexpr uint8_t DPS_16HZ      = 4;
 constexpr uint8_t DPS_8HZ       = 3;
 
 // pg 15, Table 9, for pressure and temperature
-constexpr uint32_t OVERSAMPLE_1X_SF   = 524288;
-constexpr uint32_t OVERSAMPLE_2X_SF   = 1572864;
-constexpr uint32_t OVERSAMPLE_4X_SF   = 3670016;
-constexpr uint32_t OVERSAMPLE_8X_SF   = 7864320;
-constexpr uint32_t OVERSAMPLE_16X_SF  = 253952;
-constexpr uint32_t OVERSAMPLE_32X_SF  = 516096;
-constexpr uint32_t OVERSAMPLE_64X_SF  = 1040384;
-constexpr uint32_t OVERSAMPLE_128X_SF = 2088960;
+constexpr float OVERSAMPLE_1X_SF   = 524288;
+constexpr float OVERSAMPLE_2X_SF   = 1572864;
+constexpr float OVERSAMPLE_4X_SF   = 3670016;
+constexpr float OVERSAMPLE_8X_SF   = 7864320;
+constexpr float OVERSAMPLE_16X_SF  = 253952;
+constexpr float OVERSAMPLE_32X_SF  = 516096;
+constexpr float OVERSAMPLE_64X_SF  = 1040384;
+constexpr float OVERSAMPLE_128X_SF = 2088960;
 
 // appears to be straight averaging, nothing fancy
 constexpr uint32_t OVERSAMPLE_1X   = 0;
@@ -48,7 +48,7 @@ constexpr uint32_t OVERSAMPLE_64X  = 6;
 constexpr uint32_t OVERSAMPLE_128X = 7;
 
 // wish they had a WHO_AM_I like EVERYONE else???
-constexpr uint8_t PROD_ID     = 0x00;
+// constexpr uint8_t PROD_ID     = 0x00;
 
 constexpr uint8_t DPS310_ADDR = 0x77; // default
 
@@ -65,15 +65,13 @@ public:
   ~gciDPS310() {}
 
   bool init(uint8_t sample_rate) {
-    uint8_t id = readRegister(PRODID);
-    if ((id & 0x0F) == PROD_ID) return false;
-
     reset();
     do {
       sleep_ms(15); // pg 10, Table 8
     } while (sensor_ready() == false);
 
     writeRegister(MEAS_CFG, 0x00); // set to idle/stop
+    sleep_ms(50); // how long?
 
     uint8_t pos;
     uint8_t prate;
@@ -106,7 +104,7 @@ public:
       prate  = DPS_128HZ << 4;
       trate  = DPS_128HZ << 4;
       break;
-    case DPS_128HZ:
+    case DPS_128HZ: // mix datarate here
       pscale = OVERSAMPLE_2X_SF;
       tscale = OVERSAMPLE_2X_SF;
       pos    = OVERSAMPLE_2X;
@@ -114,7 +112,7 @@ public:
       prate  = DPS_128HZ << 4;
       trate  = DPS_64HZ << 4;
       break;
-    case DPS_64HZ:
+    case DPS_64HZ: // mix OS here
       pscale = OVERSAMPLE_4X_SF;
       tscale = OVERSAMPLE_2X_SF;
       pos    = OVERSAMPLE_4X;
@@ -130,7 +128,7 @@ public:
       prate  = DPS_32HZ << 4;
       trate  = DPS_32HZ << 4;
       break;
-    case DPS_16HZ:
+    case DPS_16HZ: // FIXME: enable pres/temp shift for higher OS
       pscale = OVERSAMPLE_16X_SF;
       tscale = OVERSAMPLE_16X_SF;
       pos    = OVERSAMPLE_16X;
@@ -150,7 +148,7 @@ public:
       return false;
     }
 
-    uint8_t ext = readRegister(TMP_COEF_SRCE); // ext already shifted
+    uint8_t ext = readRegister(TMP_COEF_SRCE) & 0x80; // ext already shifted
 
     writeRegister(TMP_CFG, ext | trate | tos);
     writeRegister(PRS_CFG, prate | pos);
@@ -158,17 +156,17 @@ public:
     do {
       sleep_ms(45); // pg 10, Table 8
     } while (coeffs_ready() == false);
-    read_coeffs();
+    if (get_coeffs() == false) return false;
 
     writeRegister(MEAS_CFG, 0x07); // continous press/temp
 
     return true;
   }
 
-  // press ready to read: [TMP_RDY, PRS_RDY]
+  // press ready to read: [TMP_RDY-2, PRS_RDY-1]
   bool ready() {
     uint8_t rdy = readRegister(MEAS_CFG);
-    return (rdy & 0x10);
+    return (bool)(rdy & 0x10);
   }
 
   // sensor init from reboot is ready
@@ -188,35 +186,29 @@ public:
   }
 
   dps310_t read() {
-    uint8_t buf[6];
-    int32_t raw;
+    uint8_t buf[6]{0};
+    int32_t t_raw, p_raw;
     float temp{0.0f};
-    float pres{0.f};
+    float pres{0.0f};
     float A, B;
 
     dps310_t ret{0};
     ret.ok = false;
-    // uint8_t pt = ready();
     if (ready() == false) return ret;
     if (readRegisters(PRS_B2, 6, buf) == false) return ret;
-    // FIXME: I think this is out of order!!!
 
     // 4.9.2
-    // if (pt & 0x02) {
-    raw  = (buf[3] << 16) | (buf[4] << 8) | buf[5];
-    temp = c0Half + c1 * (float)raw / tscale;
-    // last_temp = temp;
-    // }
-    // else temp = last_temp;
+    t_raw  = ((int32_t)buf[3] << 16) | ((int32_t)buf[4] << 8) | buf[5]; // MSB first???
+    t_raw = twosComplement(t_raw, 24);
+    temp = c0 * 0.5f + c1 * (float)t_raw / tscale;
 
     // 4.9.1
-    // if (pt & 0x01) {
-    raw  = (buf[0] << 16) | (buf[1] << 8) | buf[2];
-    pres = (float)raw / pscale;
+    p_raw  = (buf[0] << 16) | (buf[1] << 8) | buf[2]; // MSB first???
+    p_raw = twosComplement(p_raw, 24);
+    pres = (float)p_raw / pscale;
     A    = pres * (c10 + pres * (c20 + pres * c30));
-    B    = temp * (c01 + pres * (c11 + pres * c21));
+    B    = (t_raw / tscale) * (c01 + pres * (c11 + pres * c21));
     pres = c00 + A + B;
-    // }
 
     ret.temperature = temp;
     ret.pressure    = pres;
@@ -235,7 +227,6 @@ public:
 
 private:
   // coefficients
-  int32_t c0Half;
   int32_t c0;
   int32_t c1;
   int32_t c00;
@@ -246,62 +237,20 @@ private:
   int32_t c21;
   int32_t c30;
 
-  // float last_temp; // if temp is a lower sample rate
-
   float pscale;
   float tscale;
 
-  void read_coeffs() {
-    // TODO: remove magic number
-    uint8_t buffer[18];
-    // read COEF registers to buffer
-    int16_t ret = readRegisters(COEF, 18, buffer);
-
-    // compose coefficients from buffer content
-    c0Half = ((uint32_t)buffer[0] << 4) | (((uint32_t)buffer[1] >> 4) & 0x0F);
-    getTwosComplement(&c0Half, 12);
-    // c0 is only used as c0*0.5, so c0_half is calculated immediately
-    c0Half = c0Half / 2U;
-
-    // now do the same thing for all other coefficients
-    c1 = (((uint32_t)buffer[1] & 0x0F) << 8) | (uint32_t)buffer[2];
-    getTwosComplement(&c1, 12);
-    c00 = ((uint32_t)buffer[3] << 12) | ((uint32_t)buffer[4] << 4) |
-          (((uint32_t)buffer[5] >> 4) & 0x0F);
-    getTwosComplement(&c00, 20);
-    c10 = (((uint32_t)buffer[5] & 0x0F) << 16) | ((uint32_t)buffer[6] << 8) |
-          (uint32_t)buffer[7];
-    getTwosComplement(&c10, 20);
-
-    c01 = ((uint32_t)buffer[8] << 8) | (uint32_t)buffer[9];
-    getTwosComplement(&c01, 16);
-
-    c11 = ((uint32_t)buffer[10] << 8) | (uint32_t)buffer[11];
-    getTwosComplement(&c11, 16);
-    c20 = ((uint32_t)buffer[12] << 8) | (uint32_t)buffer[13];
-    getTwosComplement(&c20, 16);
-    c21 = ((uint32_t)buffer[14] << 8) | (uint32_t)buffer[15];
-    getTwosComplement(&c21, 16);
-    c30 = ((uint32_t)buffer[16] << 8) | (uint32_t)buffer[17];
-    getTwosComplement(&c30, 16);
-    // return DPS__SUCCEEDED;
-  }
-
-  void getTwosComplement(int32_t *raw, uint8_t length) {
-    if (*raw & ((uint32_t)1 << (length - 1))) {
-      *raw -= (uint32_t)1 << length;
-    }
-  }
-
-  void coeffs_alt() {
+  bool get_coeffs() {
 
     uint8_t coeffs[18];
-    int16_t ret = readRegisters(COEF, 18, coeffs);
+    bool ret = readRegisters(COEF, 18, coeffs);
+    if (ret == false) return false;
 
     c0  = ((uint16_t)coeffs[0] << 4) | (((uint16_t)coeffs[1] >> 4) & 0x0F);
     c0  = twosComplement(c0, 12);
 
-    c1  = twosComplement((((uint16_t)coeffs[1] & 0x0F) << 8) | coeffs[2], 12);
+    c1  = (((uint16_t)coeffs[1] & 0x0F) << 8) | coeffs[2];
+    c1  = twosComplement(c1, 12);
 
     c00 = ((uint32_t)coeffs[3] << 12) | ((uint32_t)coeffs[4] << 4) |
           (((uint32_t)coeffs[5] >> 4) & 0x0F);
@@ -320,11 +269,13 @@ private:
         twosComplement(((uint16_t)coeffs[14] << 8) | (uint16_t)coeffs[15], 16);
     c30 =
         twosComplement(((uint16_t)coeffs[16] << 8) | (uint16_t)coeffs[17], 16);
+
+    return true;
   }
 
   int32_t twosComplement(int32_t val, uint8_t bits) {
-    if (val & ((uint32_t)1 << (bits - 1))) {
-      val -= (uint32_t)1 << bits;
+    if (val > ((1U << bits-1)-1)) {
+      val -= 1U << bits;
     }
     return val;
   }
