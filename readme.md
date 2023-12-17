@@ -2,7 +2,7 @@
 
 ## Why?
 
-I love Adafruit sensors with QWIIC but their drivers are geared towards hobbiest and
+I love Adafruit sensors with QWIIC but their drivers are geared towards hobbyists and
 favor low power consumption over performace. I try to strip out unnecessary abstraction
 and enable high data rate.
 
@@ -15,6 +15,9 @@ and enable high data rate.
 | Mags        | gauss        | gs
 | Temperature | Celcius      | C
 | Pressure    | Pascal       | Pa
+| Altitude    | meter        | m
+| Lat/Lon     | decimal degrees | deg
+| Rate        | hertz        | Hz
 | Time        | seconds      | sec
 
 ## LSM6DSOX
@@ -23,9 +26,9 @@ and enable high data rate.
 - Gyroscope: ±125/±250/±500/±1000/±2000 dps at 12.5 Hz to 6.7 KHz
 - 32 bit timer at 25 usec resolution
 - I2C Address `0x6A` or `0x6B`
-- ``init()``:
-    - set accel to ``RATE_104_HZ`` ``ACCEL_RANGE_4_G``
-    - sets gyro to ``RATE_104_HZ`` ``GYRO_RANGE_2000_DPS``
+- `init()`:
+    - set accel to `RATE_104_HZ` `ACCEL_RANGE_4_G`
+    - sets gyro to `RATE_104_HZ` `GYRO_RANGE_2000_DPS`
 
 ```c++
 LSM6DSOX::gciLSM6DSOX imu;
@@ -50,9 +53,9 @@ if (ok) lsm6dsox_t s = imu.read();
 - Interrupt generator
 - I2C Address `0x1C` or `0x1E`
 - 400 kHz max
-- ``init()``:
-    - set range to ``RANGE_4GS``
-    - set ODR to ``ODR_155HZ``
+- `init()`:
+    - set range to `RANGE_4GS`
+    - set ODR to `ODR_155HZ`
 
 ```c++
 LIS3MDL::gciLIS3MDL mag;
@@ -65,14 +68,14 @@ list3mdl_t m = mag.read();
 
 ## BMP390
 
-- ``init()``: sets up the sensor
+- `init()`: sets up the sensor
     - Does a soft reset of sensor
     - Enables both pressure and temperature
         - pressure oversample 2x
         - temperature oversample 1x
-    - Sets power mode to ``MODE_NORMAL`` or continous reading
-    - ODR set to ``ODR_100_HZ``
-    - IIR filter set to ``IIR_FILTER_COEFF_1``
+    - Sets power mode to `MODE_NORMAL` or continous reading
+    - ODR set to `ODR_100_HZ`
+    - IIR filter set to `IIR_FILTER_COEFF_1`
 
 ```c++
 BMP390::gciBMP390 bmp;
@@ -82,6 +85,85 @@ bmp390_t pt = bmp.read();
 // pt.ok => good read true/false
 // pt.press => 24-bit, pressure in Pa
 // pt.temp => 24-bit, temperature in C
+```
+
+## DPS310
+
+- Pressure: 300-1200 hPa
+    - Precision: ±0.002 hPa / ±2 cm
+    - Accuracy:
+        - Relative: ±0.06 hPa / ±50 cm
+        - Absolute: ± 1 hPa / ±8 m
+    - Sensitivity: ±0.5 Pa/K
+- Temperature: -40-85 C
+    - Accuracy: ±0.5 C
+- Address: `0x77`
+
+```cpp
+gciDPS310 press;
+
+bool ok = false;
+while (ok == false) {
+    ok = press.init(DPS_32HZ);
+    sleep_ms(100);
+}
+
+printf("/// Press/Temp Started ///\n");
+
+while (1) {
+    dps310_t ans = press.read();
+    if (ans.ok == false) {
+        sleep_ms(5);
+        continue;
+    }
+
+    float alt = press.altitude(ans.pressure);
+    printf("Press: %8.1f Pa  Temp: %5.2f C  Alt: %10.1f m\n", ans.pressure, ans.temperature, alt);
+    sleep_ms(32);
+}
+```
+
+OK, there are a lot of ways you can mix and match how
+you oversample and set your datarate, so I picked some
+that seemed good.
+
+```
+pg 30, Table 16
+
+Rate_temp * MeasTime_temp + Rate_pres * MeasTime_pres < 1 second
+
+|    | Press   | Temp    |     |     |
+|    |----|----|----|----| Pa  |  cm |
+| Hz | OS | Hz | OS | Hz | RMS | RMS |
+|----|----|----|----|----|-----|-----|
+|128A| 1  | 128| 1  | 128| 2.5 | 20.8|
+| 128| 2  | 128| 2  | 64 | 1.0 | 8.3 |
+| 64 | 4  | 64 | 2  | 64 | 0.5 | 4.2 |
+| 32 | 8  | 32 | 4  | 32 | 0.4 | 3.3 |
+| 16 | 16 | 16 | 16 | 16 | 0.35| 2.9 |
+|  8 | 32 |  8 | 32 |  8 | 0.3 | 2.5 |
+```
+
+## PA1010D GPS
+
+This library just returns NEMA strings from the GPS. I have another library
+`gciGPS` that takes NEMA strings from any GPS and parses them to get the
+information. I don't want to complicate this library with that one, so
+you will need to use `gciGPS` or parse the NEMA strings on your own.
+
+```cpp
+PA1010D gps(PA_ADDR, i2c_port); // default is i2c0
+char init_command[] = "$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n";
+gps.write(init_command, sizeof(init_command));
+
+printf("/// GPS Started ///\n");
+
+char nema[250];
+
+while (1) {
+    gps.read(nema);
+    printf("GPS: %s\n", nema);
+}
 ```
 
 ## Filters
@@ -141,6 +223,7 @@ Build Information
 - [x] LIS3MDL Magnetometer
 - [x] BMP390 Barometer
 - [ ] DPS310 Barometer
+- [ ] PA1010D GPS
 - [ ] Add unit tests
 - [ ] Add some simple filters that use these sensors
 - [ ] Update Arduino examples

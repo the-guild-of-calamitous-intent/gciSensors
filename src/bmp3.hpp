@@ -102,7 +102,6 @@ struct bmp3_reg_calib_data {
 constexpr uint8_t BMP390_ADDR     = 0x77;
 constexpr uint8_t BMP390_ADDR_ALT = 0x76;
 
-
 struct bmp390_raw_t {
   uint32_t press, temp;
   bool ok;
@@ -126,7 +125,8 @@ enum bmp_error : uint8_t {
 
 class gciBMP390 : public SensorI2C {
 public:
-  gciBMP390(const uint8_t addr = BMP390_ADDR, uint32_t port=0) : SensorI2C(addr, port) {}
+  gciBMP390(const uint8_t addr = BMP390_ADDR, uint32_t port = 0)
+      : SensorI2C(addr, port) {}
 
   uint8_t init(const uint8_t odr = ODR_50_HZ,
                const uint8_t iir = IIR_FILTER_COEFF_3) {
@@ -179,7 +179,7 @@ public:
 
   const bmp390_t read() {
     bmp390_t ret = {0};
-    ret.ok   = false;
+    ret.ok       = false;
 
     if (!ready()) return ret;
 
@@ -295,21 +295,21 @@ protected:
   float compensate_pressure(const uint32_t uncomp_press) { // datasheet pg 56
     float pd1, pd2, pd3, pd4, po1, po2, comp_press;
     const float up = (float)uncomp_press;
-    pd1 = calib.par_p6 * calib.t_lin;
-    pd2 = calib.par_p7 * (calib.t_lin * calib.t_lin);
-    pd3 = calib.par_p8 * (calib.t_lin * calib.t_lin * calib.t_lin);
-    po1 = calib.par_p5 + pd1 + pd2 + pd3;
+    pd1            = calib.par_p6 * calib.t_lin;
+    pd2            = calib.par_p7 * (calib.t_lin * calib.t_lin);
+    pd3            = calib.par_p8 * (calib.t_lin * calib.t_lin * calib.t_lin);
+    po1            = calib.par_p5 + pd1 + pd2 + pd3;
 
-    pd1 = calib.par_p2 * calib.t_lin;
-    pd2 = calib.par_p3 * (calib.t_lin * calib.t_lin);
-    pd3 = calib.par_p4 * (calib.t_lin * calib.t_lin * calib.t_lin);
-    po2 = up * (calib.par_p1 + pd1 + pd2 + pd3);
+    pd1            = calib.par_p2 * calib.t_lin;
+    pd2            = calib.par_p3 * (calib.t_lin * calib.t_lin);
+    pd3            = calib.par_p4 * (calib.t_lin * calib.t_lin * calib.t_lin);
+    po2            = up * (calib.par_p1 + pd1 + pd2 + pd3);
 
-    pd1 = up * up;
-    pd2 = calib.par_p9 + calib.par_p10 * calib.t_lin;
-    pd3 = pd1 * pd2;
-    pd4 = pd3 + up * up * up * calib.par_p11;
-    comp_press = po1 + po2 + pd4;
+    pd1            = up * up;
+    pd2            = calib.par_p9 + calib.par_p10 * calib.t_lin;
+    pd3            = pd1 * pd2;
+    pd4            = pd3 + up * up * up * calib.par_p11;
+    comp_press     = po1 + po2 + pd4;
 
     return comp_press;
   }
@@ -319,14 +319,12 @@ protected:
     bool ok = readRegisters(REG_CALIB_DATA, LEN_CALIB_DATA, tmp);
     if (!ok) return false;
 
-    calib.par_t1 = (float)to_16b(tmp[1], tmp[0]) / powf(2, -8);
-    calib.par_t2 = (float)to_16b(tmp[3], tmp[2]) / powf(2, 30);
-    calib.par_t3 = (float)tmp[4] / powf(2, 48);
+    calib.par_t1  = (float)to_16b(tmp[1], tmp[0]) / powf(2, -8);
+    calib.par_t2  = (float)to_16b(tmp[3], tmp[2]) / powf(2, 30);
+    calib.par_t3  = (float)tmp[4] / powf(2, 48);
 
-    calib.par_p1 =
-        ((float)to_16b(tmp[6], tmp[5]) - powf(2, 14)) / powf(2, 20);
-    calib.par_p2 =
-        ((float)to_16b(tmp[8], tmp[7]) - powf(2, 14)) / powf(2, 29);
+    calib.par_p1  = ((float)to_16b(tmp[6], tmp[5]) - powf(2, 14)) / powf(2, 20);
+    calib.par_p2  = ((float)to_16b(tmp[8], tmp[7]) - powf(2, 14)) / powf(2, 29);
     calib.par_p3  = (float)tmp[9] / powf(2, 32);
     calib.par_p4  = (float)tmp[10] / powf(2, 37);
     calib.par_p5  = (float)to_16b(tmp[12], tmp[11]) / powf(2, -3);

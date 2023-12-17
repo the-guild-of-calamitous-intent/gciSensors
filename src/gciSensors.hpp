@@ -10,7 +10,6 @@
 #include <stdio.h>  // FIXME: remove
 #include <string.h> // memcpy
 
-
 #if !defined(PICO_SDK) // FIXME: handle better
 void sleep_ms(uint32_t ms) {}
 void sleep_us(uint64_t us) {}
@@ -70,7 +69,7 @@ using veci_t = vec_t<int16_t>;
 
 // sensor drivers
 #include "bmp3.hpp"
+#include "dps310.hpp"
 #include "lis3mdl.hpp"
 #include "lsm6dsox.hpp"
-#include "dps310.hpp"
-#include "gps.hpp"
+#include "pa1010d.hpp"
