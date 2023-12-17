@@ -89,6 +89,7 @@ bmp390_t pt = bmp.read();
 
 ## DPS310
 
+- `init(DPS_XXX)` where `XXX` is `128_ALT`, `128`, `64` or `32`
 - Pressure: 300-1200 hPa
     - Precision: ±0.002 hPa / ±2 cm
     - Accuracy:
