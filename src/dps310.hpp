@@ -17,6 +17,27 @@ constexpr uint8_t COEF          = 0x10; // coefficients
 constexpr uint8_t PRODID        = 0x0D; // Register that contains the part ID
 constexpr uint8_t TMP_COEF_SRCE = 0x28; // Temperature calibration src
 
+constexpr uint8_t SAMPLE_5_2 = 1; // 5.2 msec 1 Pa_rms, 2x os
+constexpr uint8_t SAMPLE_8_4 = 2; // 8.4 msec 0.5 Pa_rms, 4x os
+constexpr uint8_t SAMPLE_14_8 = 3; // 14.8 msec 0.4 Pa_rms, 8x os
+constexpr uint8_t SAMPLE_27_6 = 4; // 27.6 msec 0.35 Pa_rms, 16x os
+
+constexpr uint8_t DPS_128HZ = 7;
+constexpr uint8_t DPS_64HZ = 6;
+constexpr uint8_t DPS_32HZ = 5;
+// constexpr uint8_t DPS_16HZ = 1;
+// constexpr uint8_t DPS_8HZ = 1;
+
+constexpr uint32_t OVERSAMPLE_1X_SF = 524288;
+constexpr uint32_t OVERSAMPLE_2X_SF = 1572864;
+constexpr uint32_t OVERSAMPLE_4X_SF = 3670016;
+constexpr uint32_t OVERSAMPLE_8X_SF = 7864320;
+
+constexpr uint32_t OVERSAMPLE_1X = 0;
+constexpr uint32_t OVERSAMPLE_2X = 1;
+constexpr uint32_t OVERSAMPLE_4X = 2;
+constexpr uint32_t OVERSAMPLE_8X = 3;
+
 constexpr uint8_t PROD_ID       = 0x00;
 
 constexpr uint8_t DPS310_ADDR   = 0x77; // default
@@ -33,40 +54,93 @@ public:
       : SensorI2C(addr, port) {}
   ~gciDPS310() {}
 
-  bool init() {
+  bool init(uint8_t sample_rate) {
     uint8_t id = readRegister(PRODID);
     if ((id & 0x0F) == PROD_ID) return false;
 
     reset();
-    sleep_ms(100); // ??
+    do { sleep_ms(15); }
+    while(sensor_ready() == false);
 
-    // standby MSR_CTRL
+    writeRegister(MEAS_CFG, 0x00); // idle/stop
 
-    writeRegister(MEAS_CFG, 0x07); // continous press/temp
+    uint8_t pos;
+    uint8_t prate;
+    uint8_t tos;
+    uint8_t trate;
 
-    scale        = 3670016; // 4x oversample
+    // switch (sample_rate) {
+    //   case SAMPLE_5_2: // 2x, 96.2hz
+    //     scale = 1572864;
+    //     os = 1;
+    //     rate = 7 << 4;
+    //     break;
+    //   case SAMPLE_8_4:  // 4x oversample, 61hz
+    //     scale = 3670016;
+    //     os = 2;
+    //     rate = 7 << 4;
+    //     break;
+    //   case SAMPLE_14_8:  // 8x oversample, 33.8hz
+    //     scale = 7864320;
+    //     os = 3;
+    //     rate = 7 << 4;
+    //     break;
+    //   case SAMPLE_27_6:  // 16x oversample, 18.2hz
+    //     scale = 253952;
+    //     os = 4;
+    //     rate = 7 << 4;
+    //     break;
+    //   default:
+    //     return false;
+    // }
+    switch (sample_rate) {
+      case DPS_128HZ: // 2x, rms 2.5
+        pscale = OVERSAMPLE_2X_SF;
+        tscale = OVERSAMPLE_2X_SF;
+        pos = OVERSAMPLE_2X;
+        tos = OVERSAMPLE_2X;
+        prate = DPS_128HZ << 4;
+        trate = DPS_64HZ << 4;
+        break;
+      case DPS_64HZ:  // 4x oversample, rms 1
+        pscale = OVERSAMPLE_4X_SF;
+        tscale = OVERSAMPLE_2X_SF;
+        pos = OVERSAMPLE_4X;
+        tos = OVERSAMPLE_2X;
+        prate = DPS_64HZ << 4;
+        trate = DPS_64HZ << 4;
+        break;
+      case DPS_32HZ:  // 8x oversample, rms .5
+        pscale = OVERSAMPLE_8X_SF;
+        tscale = OVERSAMPLE_8X_SF;
+        pos = OVERSAMPLE_8X;
+        tos = OVERSAMPLE_8X;
+        prate = DPS_32HZ << 4;
+        trate = DPS_32HZ << 4;
+        break;
+      default:
+        return false;
+    }
 
-    uint8_t os   = 2; // 4x oversample, 8.4 msec
-    uint8_t rate = 7 << 4;
     uint8_t ext  = readRegister(TMP_COEF_SRCE); // already shifted
 
-    writeRegister(TMP_CFG, ext | rate | os);
+    writeRegister(TMP_CFG, ext | trate | tos);
+    writeRegister(PRS_CFG, prate | pos);
 
-    os   = 2; // 4x oversample, 8.4 msec
-    rate = 7 << 4;
-    writeRegister(PRS_CFG, rate | os);
-
-    uint8_t src = readRegister(TMP_COEF_SRCE) >> 7;
+    do { sleep_ms(45); }
+    while(coeffs_ready());
     read_coeffs();
+
+    writeRegister(MEAS_CFG, 0x07); // continous press/temp
   }
 
-  // temp/press ready to read
+  // press ready to read: [TMP_RDY, PRS_RDY]
   bool ready() {
     uint8_t rdy = readRegister(MEAS_CFG);
-    return rdy & 0x30;
+    return (rdy & 0x10);
   }
 
-  // sensor reboot is ready
+  // sensor init from reboot is ready
   bool sensor_ready() {
     uint8_t rdy = readRegister(MEAS_CFG);
     return rdy & 0x40;
@@ -81,23 +155,33 @@ public:
   dps310_t read() {
     uint8_t buf[6];
     int32_t raw;
+    float temp{0.0f};
+    float pres{0.f};
+    float A, B;
 
     dps310_t ret{0};
     ret.ok = false;
-
+    // uint8_t pt = ready();
+    if (ready() == false) return ret;
     if (readRegisters(PRS_B2, 6, buf) == false) return ret;
     // FIXME: I think this is out of order!!!
 
     // 4.9.2
-    raw        = (buf[3] << 16) | (buf[4] << 8) | buf[5];
-    float temp = c0Half + c1 * (float)raw / scale;
+    // if (pt & 0x02) {
+    raw  = (buf[3] << 16) | (buf[4] << 8) | buf[5];
+    temp = c0Half + c1 * (float)raw / tscale;
+    // last_temp = temp;
+    // }
+    // else temp = last_temp;
 
     // 4.9.1
-    raw             = (buf[0] << 16) | (buf[1] << 8) | buf[2];
-    float pres      = (float)raw / scale;
-    float A         = pres * (c10 + pres * (c20 + pres * c30));
-    float B         = temp * (c01 + pres * (c11 + pres * c21));
-    pres            = c00 + A + B;
+    // if (pt & 0x01) {
+    raw   = (buf[0] << 16) | (buf[1] << 8) | buf[2];
+    pres      = (float)raw / pscale;
+    A         = pres * (c10 + pres * (c20 + pres * c30));
+    B         = temp * (c01 + pres * (c11 + pres * c21));
+    pres = c00 + A + B;
+    // }
 
     ret.temperature = temp;
     ret.pressure    = pres;
@@ -110,13 +194,12 @@ public:
 
   // returns altitude in meters
   float altitude(float pressure, float seaLevelhPa = 1013.25) {
-    float altitude =
-        44330 * (1.0 - pow((pressure / 100) / seaLevelhPa, 0.1903));
-    return altitude;
+    float alt = 44330 * (1.0 - pow((pressure / 100) / seaLevelhPa, 0.1903));
+    return alt;
   }
 
 private:
-  // compensation coefficients
+  // coefficients
   int32_t c0Half;
   int32_t c0;
   int32_t c1;
@@ -128,22 +211,10 @@ private:
   int32_t c21;
   int32_t c30;
 
-  uint32_t scale;
+  // float last_temp; // if temp is a lower sample rate
 
-  float calc_temp(int32_t raw) {
-    // FIXME: I think this is out of order!!!
-
-    // 4.9.2
-    float temp = c0Half + c1 * (float)raw / scale;
-
-    // 4.9.1
-    float pres = (float)raw / scale;
-    float A    = pres * (c10 + pres * (c20 + pres * c30));
-    float B    = temp * (c01 + pres * (c11 + pres * c21));
-    pres       = c00 + A + B;
-
-    return pres;
-  }
+  float pscale;
+  float tscale;
 
   void read_coeffs() {
     // TODO: remove magic number
@@ -215,6 +286,7 @@ private:
     c30 =
         twosComplement(((uint16_t)coeffs[16] << 8) | (uint16_t)coeffs[17], 16);
   }
+
   int32_t twosComplement(int32_t val, uint8_t bits) {
     if (val & ((uint32_t)1 << (bits - 1))) {
       val -= (uint32_t)1 << bits;
