@@ -237,6 +237,7 @@ private:
   int32_t c21;
   int32_t c30;
 
+  // scaling
   float pscale;
   float tscale;
 
