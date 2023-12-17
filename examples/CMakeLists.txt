@@ -4,6 +4,8 @@ list(APPEND examples
     press
     dummy
     scan_bus
+    gps
+    press_dsp310
 )
 
 foreach(app ${examples})

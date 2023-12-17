@@ -139,7 +139,8 @@ enum sox_error : uint8_t {
 
 class gciLSM6DSOX : public SensorI2C {
 public:
-  gciLSM6DSOX(uint8_t addr = LSM6DSOX_ADDRESS, uint32_t port=0) : SensorI2C(addr, port) {
+  gciLSM6DSOX(uint8_t addr = LSM6DSOX_ADDRESS, uint32_t port = 0)
+      : SensorI2C(addr, port) {
     puts("SOX");
   }
 
@@ -364,9 +365,6 @@ private:
 };
 
 } // namespace LSM6DSOX
-
-
-
 
 // bool setGyro(uint8_t odr, uint8_t dps) {
 //   if (dps == GYRO_RANGE_125_DPS)

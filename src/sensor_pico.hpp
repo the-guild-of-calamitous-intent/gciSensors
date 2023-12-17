@@ -5,9 +5,9 @@
 \**************************************/
 #pragma once
 
-#include <cstdint> // int types
 #include "hardware/gpio.h"
 #include "hardware/i2c.h"
+#include <cstdint> // int types
 
 #if !defined(i2c_default)
   #warning "// i2c not enabled //"
@@ -54,6 +54,7 @@ public:
 };
 
 class SensorI2C {
+protected:
   const uint8_t addr;
   i2c_inst_t *i2c;
 
@@ -84,7 +85,8 @@ public:
   // inline
   // Don't like this because "as is" there is no way to return an error
   // if it occurs.
-  uint8_t readRegister(const uint8_t reg) {
+  // int16_t readRegister(const uint8_t reg) {
+  int8_t readRegister(const uint8_t reg) {
     uint8_t value;
     // return (readRegisters(reg, 1, &value) == true) ? value : 0;
     if (readRegisters(reg, 1, &value)) return value;
@@ -93,4 +95,3 @@ public:
 
   inline size_t available() { return i2c_get_read_available(i2c); }
 };
-
