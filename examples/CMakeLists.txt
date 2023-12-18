@@ -5,7 +5,7 @@ list(APPEND examples
     dummy
     scan_bus
     gps
-    press_dsp310
+    press_dps310
 )
 
 foreach(app ${examples})

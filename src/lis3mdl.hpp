@@ -5,7 +5,7 @@
 \**************************************/
 #pragma once
 
-#include "sensor.hpp"
+#include "sensor/sensor.hpp"
 #include <string.h> // memcpy
 
 #include <stdio.h>

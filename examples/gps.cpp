@@ -14,7 +14,7 @@ constexpr uint i2c_scl = I2C0_SCL_PIN;
 constexpr uint i2c_sda = I2C0_SDA_PIN;
 
 using namespace gci::sensors;
-
+using namespace PA1010D;
 
 int main() {
   stdio_init_all();
@@ -30,7 +30,7 @@ int main() {
   printf(">> i2c SDA: %u SCL: %u\n", i2c_sda, i2c_scl);
   bi_decl(bi_2pins_with_func(i2c_sda, i2c_scl, GPIO_FUNC_I2C)); // compile info
 
-  PA1010D gps(PA_ADDR, i2c_port); // default is 0, so don't need to do this
+  gciPA1010D gps(PA_ADDR, i2c_port); // default is 0, so don't need to do this
   char init_command[] = "$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n";
   gps.write(init_command, sizeof(init_command));
 

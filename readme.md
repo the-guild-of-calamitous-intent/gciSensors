@@ -219,6 +219,8 @@ Build Information
 
 ## Todo
 
+- [ ] Investigate `readRegister()` returns `int16_t` instead of `uint8_t`
+      so -1 on error can be returned
 - [ ] Breakout apple, linux and arduion implementations cleaner
 - [x] LSM6DSOX Accel and gyro
 - [x] LIS3MDL Magnetometer

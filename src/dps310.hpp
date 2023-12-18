@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "sensor.hpp"
+#include "sensor/sensor.hpp"
 #include <cstdint>
 
 namespace DPS310 {
@@ -71,7 +71,7 @@ public:
     } while (sensor_ready() == false);
 
     writeRegister(MEAS_CFG, 0x00); // set to idle/stop
-    sleep_ms(50); // how long?
+    sleep_ms(50);                  // how long?
 
     uint8_t pos;
     uint8_t prate;
@@ -198,17 +198,18 @@ public:
     if (readRegisters(PRS_B2, 6, buf) == false) return ret;
 
     // 4.9.2
-    t_raw  = ((int32_t)buf[3] << 16) | ((int32_t)buf[4] << 8) | buf[5]; // MSB first???
+    t_raw = ((int32_t)buf[3] << 16) | ((int32_t)buf[4] << 8) |
+            buf[5]; // MSB first???
     t_raw = twosComplement(t_raw, 24);
-    temp = c0 * 0.5f + c1 * (float)t_raw / tscale;
+    temp  = c0 * 0.5f + c1 * (float)t_raw / tscale;
 
     // 4.9.1
-    p_raw  = (buf[0] << 16) | (buf[1] << 8) | buf[2]; // MSB first???
-    p_raw = twosComplement(p_raw, 24);
-    pres = (float)p_raw / pscale;
-    A    = pres * (c10 + pres * (c20 + pres * c30));
-    B    = (t_raw / tscale) * (c01 + pres * (c11 + pres * c21));
-    pres = c00 + A + B;
+    p_raw           = (buf[0] << 16) | (buf[1] << 8) | buf[2]; // MSB first???
+    p_raw           = twosComplement(p_raw, 24);
+    pres            = (float)p_raw / pscale;
+    A               = pres * (c10 + pres * (c20 + pres * c30));
+    B               = (t_raw / tscale) * (c01 + pres * (c11 + pres * c21));
+    pres            = c00 + A + B;
 
     ret.temperature = temp;
     ret.pressure    = pres;
@@ -275,7 +276,7 @@ private:
   }
 
   int32_t twosComplement(int32_t val, uint8_t bits) {
-    if (val > ((1U << bits-1)-1)) {
+    if (val > ((1U << bits - 1) - 1)) {
       val -= 1U << bits;
     }
     return val;
