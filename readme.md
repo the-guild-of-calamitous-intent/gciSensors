@@ -223,7 +223,7 @@ Build Information
 - [x] LSM6DSOX Accel and gyro
 - [x] LIS3MDL Magnetometer
 - [x] BMP390 Barometer
-- [ ] DPS310 Barometer
+- [x] DPS310 Barometer
 - [ ] PA1010D GPS
 - [ ] Add unit tests
 - [ ] Add some simple filters that use these sensors
