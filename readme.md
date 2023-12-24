@@ -2,9 +2,21 @@
 
 ## Why?
 
-I love Adafruit sensors with QWIIC but their drivers are geared towards hobbyists and
-favor low power consumption over performace. I try to strip out unnecessary abstraction
-and enable high data rate.
+I love Adafruit sensors with QWIIC but their drivers are geared towards
+hobbyists and favor low power consumption over performace. I try to
+strip out unnecessary abstraction and enable high data rate.
+
+This library is primarily just drivers for I2C sensors I use.
+
+- Accelerometers/Gyroscopes:
+    - LSM6DSOX
+- Magnetometers:
+    - LIS3MDL
+- Pressure/Temperature
+    - BMP380
+    - DPS310
+- GPS:
+    - PA1010D
 
 ## Units
 
@@ -125,8 +137,9 @@ while (1) {
 ```
 
 OK, there are a lot of ways you can mix and match how
-you oversample and set your datarate, so I picked some
-that seemed good.
+you oversample (OS) and set your datarate, so I picked some
+that seemed good to me. I prefer to go fast, but have
+some level of OS
 
 ```
 pg 30, Table 16
@@ -137,7 +150,7 @@ Rate_temp * MeasTime_temp + Rate_pres * MeasTime_pres < 1 second
 |    |----|----|----|----| Pa  |  cm |
 | Hz | OS | Hz | OS | Hz | RMS | RMS |
 |----|----|----|----|----|-----|-----|
-|128A| 1  | 128| 1  | 128| 2.5 | 20.8|
+|128A| 1  | 128| 1  | 128| 2.5 | 20.8| << this is an alternative 128Hz
 | 128| 2  | 128| 2  | 64 | 1.0 | 8.3 |
 | 64 | 4  | 64 | 2  | 64 | 0.5 | 4.2 |
 | 32 | 8  | 32 | 4  | 32 | 0.4 | 3.3 |
