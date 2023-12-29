@@ -8,6 +8,7 @@ using namespace std;
 #include "tusb.h" // wait for USB
 
 #include <gciSensors.hpp>
+#include "two_wire.hpp"
 
 constexpr uint i2c_port = 0;
 constexpr uint i2c_scl = I2C0_SCL_PIN;

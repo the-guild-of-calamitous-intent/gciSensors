@@ -8,6 +8,7 @@ using namespace std;
 #include "tusb.h" // wait for USB
 
 #include <gciSensors.hpp>
+#include "two_wire.hpp"
 
 using namespace std;
 using namespace DPS310;

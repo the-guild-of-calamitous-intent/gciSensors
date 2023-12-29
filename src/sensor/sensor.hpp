@@ -7,8 +7,8 @@
 
 #include <stdint.h> // int types
 
-constexpr uint32_t I2C_100KHZ = 100 * 1000UL;
-constexpr uint32_t I2C_400KHZ = 400 * 1000UL;
+// constexpr uint32_t I2C_100KHZ = 100 * 1000UL;
+// constexpr uint32_t I2C_400KHZ = 400 * 1000UL;
 
 inline uint32_t to_24b(uint8_t *b) {
   return (uint32_t)b[0] | (uint32_t)b[1] << 8 | (uint32_t)b[2] << 16;
