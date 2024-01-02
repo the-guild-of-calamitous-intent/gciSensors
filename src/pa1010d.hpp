@@ -6,57 +6,100 @@
 #pragma once
 
 #include "sensor/sensor.hpp"
-// #include "hardware/i2c.h"
-// #include "pico/binary_info.h"
-// #include "pico/stdlib.h"
-// #include "string.h"
-#include <cstdio>
+#include "pmtk.hpp"
 #include <cstring>
 
 namespace PA1010D {
 
+constexpr bool ascii_nema(const char c) {
+  return (c >= '0' && c <= '9') || (c>='A' && c<='Z') || c == '*' || c == ',';
+}
+
 constexpr uint8_t PA_ADDR   = 0x10;
-constexpr uint32_t MAX_READ = 250;
+constexpr uint32_t I2C_BUFFER_SIZE = 32;
+constexpr uint32_t MAX_NEMA_SIZE = 82;
+
+// struct BufferI2C {
+//   static constexpr uint32_t BUFFER_SIZE{32};
+//   uint8_t buffer[BUFFER_SIZE]{0};
+//   uint32_t i{0};
+
+//   char next(const uint8_t addr) {
+//     if (i == BUFFER_SIZE) {
+//       i = 0;
+//       i2c_read_blocking(i2c_default, addr, buffer, BUFFER_SIZE, false);
+//     }
+//     return buffer[i++];
+//   }
+// };
 
 class gciPA1010D : public SensorI2C {
-  // const int addr = 0x10;
-  // const uint32_t MAX_READ{250};
-  uint8_t buffer[MAX_READ]{0};
+  uint8_t buffer[I2C_BUFFER_SIZE]{0};
+  static constexpr uint8_t LOOP_FAIL{5};
 
 public:
   gciPA1010D(const uint8_t addr = PA_ADDR, uint32_t port = 0)
       : SensorI2C(addr, port) {}
 
-  void write(const char command[], int com_length) {
-    // Convert character array to bytes for writing
-    uint8_t int_command[com_length];
-
-    for (int i = 0; i < com_length; ++i) {
-      int_command[i] = command[i];
-      i2c_write_blocking(i2c_default, addr, &int_command[i], 1, true);
-    }
+  inline
+  int write(char command[], uint32_t cmd_size) {
+    return i2c_write_blocking(i2c, addr, (uint8_t*)command, cmd_size, false);
   }
 
-  uint32_t read(char numcommand[]) {
+  inline
+  int write(const uint8_t* command, uint32_t cmd_size) {
+    return i2c_write_blocking(i2c, addr, command, cmd_size, false);
+  }
 
-    uint32_t i    = 0;
-    bool complete = false;
+  // Get message from GPS and return the message string
+  // with '\0' appended to end
+  uint32_t read(char buff[], const uint32_t buff_size) {
+    uint32_t i = 10000;
+    uint32_t iw = 0;
+    uint32_t start = 0;
+    uint32_t end = 0;
+    uint8_t loop_fail = 0;
+    char c = 0;
 
-    i2c_read_blocking(i2c_default, addr, buffer, MAX_READ, false);
-
-    // Convert bytes to characters
-    while (i < (MAX_READ - 1) && complete == false) {
-      numcommand[i] = buffer[i];
-      // Stop converting at end of message
-      if (buffer[i] == 10 && buffer[i + 1] == 10) {
-        complete = true;
+    while (c != '$') {
+      if (i >= I2C_BUFFER_SIZE) {
+        // if we do this too many time fail
+        if (loop_fail++ >= LOOP_FAIL) return 0;
+        i = 0;
+        memset(buffer, 0, I2C_BUFFER_SIZE);
+        i2c_read_blocking(i2c, addr, buffer, I2C_BUFFER_SIZE, false);
       }
-      i++;
+      c = buffer[i++];
     }
+    buff[iw++] = c; // save
+    loop_fail = 0;
 
-    return i;
+    // find end char '\r' and '\n'
+    while (iw < buff_size-1) {
+      if (i >= I2C_BUFFER_SIZE) {
+        // if we do this too many time fail
+        if (loop_fail++ >= LOOP_FAIL) return 0;
+        i = 0;
+        memset(buffer, 0, I2C_BUFFER_SIZE);
+        i2c_read_blocking(i2c, addr, buffer, I2C_BUFFER_SIZE, false);
+      }
+      c = buffer[i++];
+
+      if (c == '$') return 0; // BAD
+      else if (c == '\r') { // end chars
+        buff[iw++] = c;
+        c = buffer[i++];
+        if (c != '\n') {
+          return 0;
+        }
+        buff[iw++] = c;
+        buff[iw] = '\0';
+        return iw;
+      }
+      else if (ascii_nema(c)) buff[iw++] = c;
+    }
+    return 0; // how get here?
   }
-
 };
 
 } // end namespace

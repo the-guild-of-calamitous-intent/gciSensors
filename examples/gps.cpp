@@ -32,15 +32,18 @@ int main() {
   bi_decl(bi_2pins_with_func(i2c_sda, i2c_scl, GPIO_FUNC_I2C)); // compile info
 
   gciPA1010D gps(PA_ADDR, i2c_port); // default is 0, so don't need to do this
-  char init_command[] = "$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n";
-  gps.write(init_command, sizeof(init_command));
 
-  printf("/// GPS Started ///\n");
+  gps.write(PMTK::FULL_POWER, sizeof(PMTK::FULL_POWER));
+  gps.write(PMTK::RMCGGAGSA, sizeof(PMTK::RMCGGAGSA));
+
+  printf("///--- GPS Started ---///\n");
 
   char nema[250];
 
   while (1) {
-    gps.read(nema);
-    printf("GPS: %s\n", nema);
+    uint32_t num = gps.read(nema,250);
+    if (num > 0) printf("GPS[%d]: %s\n", num, nema);
+    else printf("*** Bad read ***\n");
+    sleep_ms(100);
   }
 }
