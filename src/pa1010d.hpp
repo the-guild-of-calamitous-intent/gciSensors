@@ -5,7 +5,7 @@
 \**************************************/
 #pragma once
 
-#include "sensor/sensor.hpp"
+#include "sensor.hpp"
 #include "pmtk.hpp"
 #include <cstring>
 

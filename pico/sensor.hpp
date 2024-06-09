@@ -8,6 +8,15 @@
 #include "hardware/gpio.h"
 #include "hardware/i2c.h"
 #include <cstdint> // int types
+// #include <cstdint> // int types
+
+// inline uint32_t to_24b(uint8_t *b) {
+//   return (uint32_t)b[0] | (uint32_t)b[1] << 8 | (uint32_t)b[2] << 16;
+// }
+
+// inline uint16_t to_16b(uint8_t msb, uint8_t lsb) {
+//   return ((uint16_t)msb << 8) | (uint16_t)lsb;
+// }
 
 #if !defined(i2c_default)
   #warning "// i2c not enabled //"

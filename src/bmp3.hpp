@@ -27,7 +27,7 @@ Ultr Hi  | x16 | x2 | 27  |
 */
 #pragma once
 
-#include "sensor/sensor.hpp"
+#include "sensor.hpp"
 #include <math.h>
 #include <string.h> // memcpy
 

@@ -67,6 +67,14 @@ using veci_t = vec_t<int16_t>;
 } // namespace sensors
 } // namespace gci
 
+inline uint32_t to_24b(uint8_t *b) {
+  return (uint32_t)b[0] | (uint32_t)b[1] << 8 | (uint32_t)b[2] << 16;
+}
+
+inline uint16_t to_16b(uint8_t msb, uint8_t lsb) {
+  return ((uint16_t)msb << 8) | (uint16_t)lsb;
+}
+
 // sensor drivers
 #include "bmp3.hpp"
 #include "dps310.hpp"

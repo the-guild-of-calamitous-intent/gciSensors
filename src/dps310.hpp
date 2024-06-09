@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "sensor/sensor.hpp"
+#include "sensor.hpp"
 #include <cstdint>
 
 namespace DPS310 {

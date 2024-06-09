@@ -5,20 +5,24 @@
 \**************************************/
 #pragma once
 
+#include <Wire.hpp>
 #include <stdint.h> // int types
-// #include <Wire.hpp>
 
 class SensorI2C {
 public:
   SensorI2C(const uint8_t address, uint32_t) : addr(address) {}
 
-  void init_tw(const uint32_t baud) {}
+  void init_tw(const uint32_t baud) { i2c = nullptr; }
 
-  bool writeRegister(const uint8_t reg, const uint8_t data) { return true; }
+  bool writeRegister(const uint8_t reg, const uint8_t data) {
+    i2c->set(addr);
+    return i2c->write(reg, data);
+  }
 
   bool readRegisters(const uint8_t reg, const uint8_t count,
                      uint8_t *const data) {
-    return true;
+    i2c->set(addr);
+    return i2c->read(reg, count, data);
   }
 
   uint8_t readRegister(uint8_t reg) {
@@ -28,4 +32,7 @@ public:
   }
 
   const uint8_t addr;
+
+protected:
+  TwoWire *i2c;
 };
