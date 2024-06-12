@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.20)
 
 set(PROJECT gcisensors)
-set(PICO_BOARD pico) # pico or pico_w
-set(PICO_SDK_PATH "$ENV{HOME}/github/pico-sdk")
-set(ENV{PATH} "$ENV{HOME}/github/gcc-arm/bin:$ENV{PATH}")
-set(PICO_SDK_PATH "${PICO_SDK_PATH}" CACHE PATH "Path to the PICO SDK")
-include(${PICO_SDK_PATH}/pico_sdk_init.cmake)
+# set(PICO_BOARD pico) # pico or pico_w
+# set(PICO_SDK_PATH "$ENV{HOME}/github/pico-sdk")
+# set(ENV{PATH} "$ENV{HOME}/github/gcc-arm/bin:$ENV{PATH}")
+# set(PICO_SDK_PATH "${PICO_SDK_PATH}" CACHE PATH "Path to the PICO SDK")
+# include(${PICO_SDK_PATH}/pico_sdk_init.cmake)
 
 include(FetchContent)
 
@@ -22,13 +22,13 @@ string(PREPEND CMAKE_EXE_LINKER_FLAGS " -Wl,--print-memory-usage ")
 
 
 # Initialize the SDK
-pico_sdk_init()
+# pico_sdk_init()
 
 message(STATUS ">> test: ${PICO_SDK}  ${PICO_BOARD} ${ARDUINO}")
 
-if(PICO_SDK)
-    add_definitions(-DPICO_SDK=1)
-endif()
+# if(PICO_SDK)
+#     add_definitions(-DPICO_SDK=1)
+# endif()
 
 if(PROJECT_IS_TOP_LEVEL)
     cmake_host_system_information(RESULT HOST QUERY HOSTNAME)
@@ -53,14 +53,14 @@ else()
     set(BUILD_EXAMPLES OFF)
 endif()
 
-LIST(APPEND pico_libs
-    pico_stdlib
-    hardware_i2c)
+# LIST(APPEND pico_libs
+#     pico_stdlib
+#     hardware_i2c)
 
 
 add_library(${PROJECT_NAME} INTERFACE)
 target_include_directories(${PROJECT_NAME} INTERFACE src)
-target_link_libraries(${PROJECT_NAME} INTERFACE ${pico_libs})
+# target_link_libraries(${PROJECT_NAME} INTERFACE ${pico_libs})
 
 if (BUILD_EXAMPLES)
     add_subdirectory(examples)
