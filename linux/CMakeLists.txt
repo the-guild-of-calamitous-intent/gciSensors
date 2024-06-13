@@ -37,7 +37,9 @@ else()
 endif()
 
 add_library(${PROJECT_NAME} INTERFACE)
-target_include_directories(${PROJECT_NAME} INTERFACE src .)
+target_include_directories(${PROJECT_NAME} INTERFACE
+    ${CMAKE_SOURCE_DIR}/../src
+    ${CMAKE_SOURCE_DIR})
 target_link_libraries(${PROJECT_NAME} INTERFACE i2c)
 
 if (BUILD_EXAMPLES)
