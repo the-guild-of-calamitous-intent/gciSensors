@@ -9,6 +9,7 @@ set(CMAKE_CXX_STANDARD 20)
 include(FetchContent)
 
 
+add_compile_options(-Wall -Wextra -Wpedantic)
 string (APPEND CMAKE_CXX_FLAGS_RELEASE " -O3 ")
 string (APPEND CMAKE_C_FLAGS_RELEASE " -O3 ")
 # string(PREPEND CMAKE_EXE_LINKER_FLAGS " -Wl,--print-memory-usage ")

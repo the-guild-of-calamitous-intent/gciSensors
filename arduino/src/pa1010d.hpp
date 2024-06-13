@@ -56,8 +56,8 @@ public:
   uint32_t read(char buff[], const uint32_t buff_size) {
     uint32_t i = 10000;
     uint32_t iw = 0;
-    uint32_t start = 0;
-    uint32_t end = 0;
+    // uint32_t start = 0;
+    // uint32_t end = 0;
     uint8_t loop_fail = 0;
     char c = 0;
 

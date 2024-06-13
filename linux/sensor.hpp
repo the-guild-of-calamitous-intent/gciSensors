@@ -197,10 +197,10 @@ public:
   //   }
   // }
 
-  int i2c_write_blocking (i2c_inst_t *i2c, uint8_t addr, const uint8_t *src, size_t len, bool nostop) {
+  int i2c_write_blocking (i2c_inst_t*, uint8_t, const uint8_t*, size_t, bool) {
     return 0;
   }
-  int i2c_read_blocking (i2c_inst_t *i2c, uint8_t addr, uint8_t *dst, size_t len, bool nostop) {
+  int i2c_read_blocking (i2c_inst_t*, uint8_t, uint8_t*, size_t, bool) {
     return 0;
   }
 

@@ -178,7 +178,7 @@ public:
   }
 
   const bmp390_t read() {
-    bmp390_t ret = {0};
+    bmp390_t ret = {0.0f,0.0f,false};
     ret.ok       = false;
 
     if (!ready()) return ret;
@@ -347,7 +347,7 @@ protected:
   // }
 
   bool soft_reset() {
-    bool ok;
+    // bool ok;
 
     // Check for command ready status
     uint8_t cmd_rdy_status = readRegister(REG_STATUS);

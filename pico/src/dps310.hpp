@@ -192,7 +192,7 @@ public:
     float pres{0.0f};
     float A, B;
 
-    dps310_t ret{0};
+    dps310_t ret;
     ret.ok = false;
     if (ready() == false) return ret;
     if (readRegisters(PRS_B2, 6, buf) == false) return ret;
@@ -275,8 +275,8 @@ private:
     return true;
   }
 
-  int32_t twosComplement(int32_t val, uint8_t bits) {
-    if (val > ((1U << bits - 1) - 1)) {
+  int32_t twosComplement(uint32_t val, uint8_t bits) {
+    if (val > ((1U << (bits - 1)) - 1)) {
       val -= 1U << bits;
     }
     return val;

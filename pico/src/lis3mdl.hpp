@@ -58,7 +58,7 @@ struct lis3mdl_t {
   // float temperature;
   bool ok;
 
-  inline const float magnitude() const { return sqrt(x * x + y * y + z * z); }
+  inline float magnitude() const { return sqrt(x * x + y * y + z * z); }
 
   bool normalize() {
     float n = 1.0 / magnitude();
@@ -134,7 +134,7 @@ public:
   void set_cal(float cal[12]) { memcpy(sm, cal, 12 * sizeof(float)); }
 
   const lis3mdl_raw_t read_raw() {
-    lis3mdl_raw_t ret{0};
+    lis3mdl_raw_t ret;
     ret.ok = false;
 
     if (!ready()) return ret;
@@ -153,7 +153,7 @@ public:
   }
 
   const lis3mdl_t read() {
-    lis3mdl_t ret{0};
+    lis3mdl_t ret;
     ret.ok                  = false;
     const lis3mdl_raw_t raw = read_raw();
     if (raw.ok == false) return ret;
@@ -180,7 +180,7 @@ public:
     const lis3mdl_t m = read();
     if (m.ok == false) return m;
 
-    lis3mdl_t ret{0};
+    lis3mdl_t ret;
     ret.x = sm[0] * m.x + sm[1] * m.y + sm[2] * m.z - sm[3];
     ret.y = sm[4] * m.x + sm[5] * m.y + sm[6] * m.z - sm[7];
     ret.z = sm[8] * m.x + sm[9] * m.y + sm[10] * m.z - sm[11];

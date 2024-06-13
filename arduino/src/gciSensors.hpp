@@ -11,8 +11,9 @@
 #include <string.h> // memcpy
 
 #if !defined(PICO_SDK) // FIXME: handle better
-void sleep_ms(uint32_t ms) {}
-void sleep_us(uint64_t us) {}
+#include <unistd.h>
+void sleep_ms(uint32_t ms) { usleep(ms*1000); }
+void sleep_us(uint64_t us) { usleep(us); }
 #endif
 
 namespace gci {
