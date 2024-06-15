@@ -67,8 +67,8 @@ constexpr uint8_t WHO_AM_I     = 0x6C; // 01101100
 constexpr uint8_t IF_INC       = 0x04;
 constexpr uint8_t XL_FS_MODE   = 0x02; // new mode, default 0
 constexpr uint8_t TIMESTAMP_EN = 0x20;
-constexpr uint8_t LPF2_XL_EN =
-    0x02; // output from LPF2 second filtering stage selected (not default)
+constexpr uint8_t LPF2_XL_EN   = 0x02; // output from LPF2 second filtering
+                                       // stage selected (not default)
 constexpr uint8_t INT_DRDY_XL   = 0x01; // accel data ready INT pin
 constexpr uint8_t INT_DRDY_G    = 0x02; // gyro data ready INT pin
 constexpr uint8_t INT_DRDY_TEMP = 0x04; // temperature data ready INT pin
@@ -106,6 +106,13 @@ struct lsm6dsox_raw_t {
   uint32_t ts;
   bool ok;
 };
+
+
+struct lsm6dsox_reg_t {
+  uint16_t temperature; // 2b
+  veci_t g;             // 2*3 = 6b
+  veci_t a;             // 2*3 = 6b
+};                      // 14b
 
 // TDA: temperature
 // GDA: gyro
@@ -247,13 +254,13 @@ public:
 
     if (!readRegisters(REG_OUT_TEMP_L, sizeof(block.b), block.b)) return ret;
 
-    ret.a.x  = block.a.x;
-    ret.a.y  = block.a.y;
-    ret.a.z  = block.a.z;
-    ret.g.x  = block.g.x;
-    ret.g.y  = block.g.y;
-    ret.g.z  = block.g.z;
-    ret.temp = block.temperature; // 52Hz, pg13, Table 4
+    ret.a.x  = block.reg.a.x;
+    ret.a.y  = block.reg.a.y;
+    ret.a.z  = block.reg.a.z;
+    ret.g.x  = block.reg.g.x;
+    ret.g.y  = block.reg.g.y;
+    ret.g.z  = block.reg.g.z;
+    ret.temp = block.reg.temperature; // 52Hz, pg13, Table 4
 
     if (!readRegisters(REG_TIMESTAMP0, 4, block.b)) return ret;
 
@@ -354,17 +361,31 @@ private:
   // float gcal[12]{1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0};
 
   union {
-    struct {
-      uint16_t temperature; // 2b
-      veci_t g;             // 2*3 = 6b
-      veci_t a;             // 2*3 = 6b
-    };                      // 14b
-    uint32_t timestamp;
+    // struct {
+    //   uint16_t temperature; // 2b
+    //   veci_t g;             // 2*3 = 6b
+    //   veci_t a;             // 2*3 = 6b
+    // };                      // 14b
+    lsm6dsox_reg_t reg; // 14b
+    uint32_t timestamp; // 4b
     uint8_t b[14];
   } block;
 };
 
 } // namespace LSM6DSOX
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // bool setGyro(uint8_t odr, uint8_t dps) {
 //   if (dps == GYRO_RANGE_125_DPS)

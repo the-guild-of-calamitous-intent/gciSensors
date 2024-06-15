@@ -19,14 +19,25 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 
+set(SDK_SRC "${CMAKE_SOURCE_DIR}/..")
 
 add_executable(main
     "${CMAKE_SOURCE_DIR}/src/main.cpp")
 target_include_directories(main PRIVATE
-    "${CMAKE_SOURCE_DIR}/../linux/"
-    "${CMAKE_SOURCE_DIR}/../linux/src/")
-ament_target_dependencies(main rclcpp std_msgs)
+    "${SDK_SRC}/linux/"
+    "${SDK_SRC}/src/")
+ament_target_dependencies(main rclcpp std_msgs sensor_msgs geometry_msgs)
+
+# you NEED this so setup.bash can find the binary
+install(
+  TARGETS
+    main
+  DESTINATION
+    "lib/${PROJECT_NAME}"
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
