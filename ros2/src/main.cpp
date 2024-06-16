@@ -6,6 +6,8 @@
 #include "sensor_msgs/msg/temperature.hpp"
 
 #include <gciSensors.hpp>
+#include <squaternion.hpp>
+#include <quaternion_filters.hpp>
 
 using namespace std::chrono_literals;  // cpp_std s,ms,etc
 
@@ -23,9 +25,10 @@ namespace gci_imu {
 
 class gciImu : public rclcpp::Node {
 public:
-  gciImu(): Node("gci_mu") {
+  gciImu(): Node("gci_mu"), qcf(0.1) {
     RCLCPP_INFO(this->get_logger(), "gci_imu: CTRL+C to exit!");
 
+    // Setup sensors --------------------------------------
     int err = mag.init(RANGE_4GAUSS,ODR_155HZ);
     if (err == 0) mag_ok = true;
     else RCLCPP_ERROR(this->get_logger(), "LIS3MDL failed");
@@ -38,14 +41,15 @@ public:
     if (err == 0) bmp_ok = true;
     else RCLCPP_ERROR(this->get_logger(), "BMP390 failed");
 
+    // Setup publishers -----------------------------------
     pub_imu = this->create_publisher<sensor_msgs::msg::Imu>("imu", 10);
     pub_mag = this->create_publisher<sensor_msgs::msg::MagneticField>("mag", 10);
     pub_press = this->create_publisher<sensor_msgs::msg::FluidPressure>("press", 10);
     pub_temp = this->create_publisher<sensor_msgs::msg::Temperature>("temp", 10);
 
+    // Setup timers for publishers ------------------------
     auto interval = std::chrono::milliseconds(1000/pub_rate_agm);
     timer_agm = this->create_wall_timer(interval, std::bind(&gciImu::cb_agm, this));
-
     interval = std::chrono::milliseconds(1000/pub_rate_pt);
     timer_pt = this->create_wall_timer(interval, std::bind(&gciImu::cb_pt, this));
   }
@@ -117,10 +121,20 @@ public:
       lsm6dsox_t m = imu.read_cal();
       if (m.ok == false) imu_ok = false;
       else {
-        imu_msg.orientation.w = 1.0;
-        imu_msg.orientation.x = 0.0;
-        imu_msg.orientation.y = 0.0;
-        imu_msg.orientation.z = 0.0;
+        // filter data and calculate quaternion
+        vect_t<double> a;
+        a.x = m.a.x;
+        a.y = m.a.y;
+        a.z = m.a.z;
+        vect_t<double> w;
+        qcf.update(a,w,0.01);
+        q = qcf.q;
+
+        // generate message and publish
+        imu_msg.orientation.w = q.w;
+        imu_msg.orientation.x = q.x;
+        imu_msg.orientation.y = q.y;
+        imu_msg.orientation.z = q.z;
         imu_msg.orientation_covariance[0] = -1;
 
         imu_msg.linear_acceleration.x = m.a.x;
@@ -162,6 +176,10 @@ public:
   rclcpp::Publisher<sensor_msgs::msg::MagneticField>::SharedPtr pub_mag;
   rclcpp::Publisher<sensor_msgs::msg::FluidPressure>::SharedPtr pub_press;
   rclcpp::Publisher<sensor_msgs::msg::Temperature>::SharedPtr pub_temp;
+
+  // squaternions
+  QuaternionT<double> q;
+  QCF<double> qcf;
 };
 
 } // namespace gciImu

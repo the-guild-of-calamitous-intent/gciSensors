@@ -15,6 +15,18 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+
+include(FetchContent)
+
+# squaterion ------------
+FetchContent_Declare(squaternion
+    GIT_REPOSITORY "https://github.com/MomsFriendlyRobotCompany/squaternion.git"
+    GIT_TAG "origin/master"
+    SOURCE_SUBDIR "cpp"
+)
+
+FetchContent_MakeAvailable( squaternion )
+
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -29,6 +41,8 @@ add_executable(main
 target_include_directories(main PRIVATE
     "${SDK_SRC}/linux/"
     "${SDK_SRC}/src/")
+target_link_libraries(main squaternion)
+
 ament_target_dependencies(main rclcpp std_msgs sensor_msgs geometry_msgs)
 
 # you NEED this so setup.bash can find the binary
