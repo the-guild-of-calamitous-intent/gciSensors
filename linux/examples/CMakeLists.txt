@@ -1,11 +1,11 @@
 list(APPEND examples
     accel
-    # mag
-    # press_bmp390
-    # dummy
-    # scan_bus
-    # gps
-    # press_dps310
+    mag
+    press_bmp390
+    dummy
+    scan_bus
+    gps
+    press_dps310
 )
 
 foreach(app ${examples})

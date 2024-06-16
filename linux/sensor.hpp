@@ -74,17 +74,14 @@ extern "C" {
 #include <unistd.h>    // file read/write
 
 struct i2c_inst_t {
-  i2c_inst_t(int port) {
-    if (port == 1)      open("/dev/i2c-1");
-    else if (port == 2) open("/dev/i2c-2");
-    else if (port == 3) open("/dev/i2c-3");
-    else                open("/dev/i2c-0");
+  i2c_inst_t(const std::string& dev) {
+    open(dev);
   }
 
-  void open(std::string device) {
+  void open(const std::string& device) {
     if ((fd = ::open(device.c_str(), O_RDWR)) < 0) {
       fd = 0;
-      printf("Fail open %s\n", device.c_str());
+      printf("*** i2c_inst_t failed to open %s ***\n", device.c_str());
     }
   }
 
@@ -98,19 +95,24 @@ struct i2c_inst_t {
   int fd;
 };
 
-static i2c_inst_t i2c0_inst(0);
-static i2c_inst_t i2c1_inst(1);
+// static i2c_inst_t i2c0_inst("/dev/i2c-0");
+static i2c_inst_t i2c1_inst("/dev/i2c-1");
+// static i2c_inst_t i2c2_inst("/dev/i2c-2");
+// static i2c_inst_t i2c3_inst("/dev/i2c-3");
 
 
 constexpr uint8_t I2C_MAX_BUFFER_SIZE = 32;
 
 class SensorI2C {
 public:
-  SensorI2C(const uint8_t address, uint32_t port) : addr(address) {
-    if (port == 1) i2c = &i2c1_inst;
+  SensorI2C(const uint8_t address, uint32_t) : addr(address) {
+    i2c = &i2c1_inst; // rpi ONLY has this i2c available
+
+    // if (port == 1) i2c = &i2c1_inst;
+    // else if (port == 0) i2c = &i2c0_inst;
     // else if (port == 2) i2c = &i2c2_inst;
     // else if (port == 3) i2c = &i2c3_inst;
-    else i2c = &i2c0_inst;
+    // else printf("*** SensorI2C failed, %u is invalid port\n", port);
 
     // i2c = new i2c_inst_t;
 

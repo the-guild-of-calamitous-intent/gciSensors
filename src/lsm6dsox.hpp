@@ -146,7 +146,7 @@ enum sox_error : uint8_t {
 
 class gciLSM6DSOX : public SensorI2C {
 public:
-  gciLSM6DSOX(uint8_t addr = LSM6DSOX_ADDRESS, uint32_t port = 0)
+  gciLSM6DSOX(uint8_t addr = LSM6DSOX_ADDRESS, uint32_t port = 1)
       : SensorI2C(addr, port) {
     printf("SOX\n");
   }

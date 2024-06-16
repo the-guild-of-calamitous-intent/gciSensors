@@ -220,11 +220,11 @@ public:
 
   void reset() { writeRegister(RESET, 0x09); }
 
-  // returns altitude in meters
-  float altitude(float pressure, float seaLevelhPa = 1013.25) {
-    float alt = 44330 * (1.0 - pow((pressure / 100) / seaLevelhPa, 0.1903));
-    return alt;
-  }
+  // // returns altitude in meters
+  // float altitude(float pressure, float seaLevelhPa = 1013.25) {
+  //   float alt = 44330 * (1.0 - pow((pressure / 100) / seaLevelhPa, 0.1903));
+  //   return alt;
+  // }
 
 private:
   // coefficients

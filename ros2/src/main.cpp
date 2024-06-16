@@ -166,8 +166,8 @@ public:
   bool imu_ok{false}, mag_ok{false}, bmp_ok{false};
 
   // callback timers
-  int pub_rate_agm{1}; // Hz
-  int pub_rate_pt{1};  // Hz
+  int pub_rate_agm{100}; // Hz
+  int pub_rate_pt{10};  // Hz
   rclcpp::TimerBase::SharedPtr timer_agm; // 100Hz
   rclcpp::TimerBase::SharedPtr timer_pt;  // 25Hz
 
