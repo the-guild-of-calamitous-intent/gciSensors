@@ -130,7 +130,7 @@ while (1) {
         continue;
     }
 
-    float alt = press.altitude(ans.pressure);
+    float alt = altitude(ans.pressure);
     printf("Press: %8.1f Pa  Temp: %5.2f C  Alt: %10.1f m\n", ans.pressure, ans.temperature, alt);
     sleep_ms(32);
 }
@@ -217,6 +217,15 @@ Build Information
 -------------------------------------
 ```
 
+## Linux (really Raspberry Pi)
+
+This is hard coded to access `/dev/i2c-1` which is the only `i2c` you should
+use. The other (`i2c-0`) is used for camera control.
+
+## Arduino
+
+Need to fix this.
+
 ## Other Stuff
 
 - KF code, look at: /Users/kevin/tmp/inertial-navigation
@@ -234,12 +243,13 @@ Build Information
 
 - [ ] Investigate `readRegister()` returns `int16_t` instead of `uint8_t`
       so -1 on error can be returned
-- [ ] Breakout apple, linux and arduion implementations cleaner
+- [x] Breakout apple, linux and arduion implementations cleaner
 - [x] LSM6DSOX Accel and gyro
 - [x] LIS3MDL Magnetometer
 - [x] BMP390 Barometer
 - [x] DPS310 Barometer
-- [ ] PA1010D GPS
+- [x] PA1010D GPS
+- [ ] PA1010D GPS, fix linux `i2c_write_bytes()`
 - [ ] Add unit tests
 - [ ] Add some simple filters that use these sensors
 - [ ] Update Arduino examples

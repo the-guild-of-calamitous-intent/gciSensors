@@ -199,7 +199,7 @@ public:
     float pres{0.0f};
     float A, B;
 
-    dps310_t ret{0};
+    dps310_t ret;
     ret.ok = false;
     if (ready() == false) return ret;
     if (readRegisters(PRS_B2, 6, buf) == false) return ret;

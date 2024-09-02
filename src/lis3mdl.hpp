@@ -43,8 +43,8 @@ constexpr uint8_t LIS3MDL_MP          = 0x01;
 constexpr uint8_t LIS3MDL_HIP         = 0x02;
 constexpr uint8_t LIS3MDL_UHP         = 0x03;
 
-constexpr uint8_t ADDR_PRIM           = 0x1C;
-constexpr uint8_t ADDR_ALT            = 0x1E;
+constexpr uint8_t LIS3MDL_ADDR        = 0x1C;
+constexpr uint8_t LIS3MDL_ADDR_ALT    = 0x1E;
 
 enum Range : uint8_t {
   RANGE_4GAUSS  = 0x00, // default
@@ -103,8 +103,8 @@ This outputs a normalized magnetic field.
 */
 class gciLIS3MDL : public SensorI2C {
 public:
-  gciLIS3MDL(const uint8_t addr = ADDR_PRIM, uint32_t port = 0)
-      : SensorI2C(addr, port) {}
+  gciLIS3MDL(const uint8_t addr = LIS3MDL_ADDR)
+      : SensorI2C(addr,1) {}
 
   uint8_t init(const Range range = RANGE_4GAUSS, const Odr odr = ODR_155HZ) {
     uint8_t id{0};
@@ -139,7 +139,7 @@ public:
   void set_cal(float cal[12]) { memcpy(sm, cal, 12 * sizeof(float)); }
 
   const lis3mdl_raw_t read_raw() {
-    lis3mdl_raw_t ret{0};
+    lis3mdl_raw_t ret;
     ret.ok = false;
 
     if (!ready()) return ret;
@@ -158,7 +158,7 @@ public:
   }
 
   const lis3mdl_t read() {
-    lis3mdl_t ret{0};
+    lis3mdl_t ret;
     ret.ok                  = false;
     const lis3mdl_raw_t raw = read_raw();
     if (raw.ok == false) return ret;
@@ -185,7 +185,7 @@ public:
     const lis3mdl_t m = read();
     if (m.ok == false) return m;
 
-    lis3mdl_t ret{0};
+    lis3mdl_t ret;
     ret.x = sm[0] * m.x + sm[1] * m.y + sm[2] * m.z - sm[3];
     ret.y = sm[4] * m.x + sm[5] * m.y + sm[6] * m.z - sm[7];
     ret.z = sm[8] * m.x + sm[9] * m.y + sm[10] * m.z - sm[11];

@@ -139,9 +139,9 @@ enum sox_error : uint8_t {
 
 class gciLSM6DSOX : public SensorI2C {
 public:
-  gciLSM6DSOX(uint8_t addr = LSM6DSOX_ADDRESS, uint32_t port = 0)
+  gciLSM6DSOX(uint8_t addr = LSM6DSOX_ADDRESS, uint32_t port = 1)
       : SensorI2C(addr, port) {
-    puts("SOX");
+    printf("SOX\n");
   }
 
   // gciLSM6DSOX(TwoWire *wire, uint8_t addr = LSM6DSOX_ADDRESS)
@@ -297,7 +297,7 @@ public:
   void set_gcal(float cal[12]) { memcpy(gcal, cal, 12 * sizeof(float)); }
 
   const lsm6dsox_raw_t read_raw() {
-    lsm6dsox_raw_t ret{0};
+    lsm6dsox_raw_t ret;
     ret.ok = false;
 
     // Serial.println(ready());
@@ -324,7 +324,7 @@ public:
 
   lsm6dsox_t read() { // accel - g's, gyro - dps, temp - C
     const lsm6dsox_raw_t raw = read_raw();
-    lsm6dsox_t ret{0};
+    lsm6dsox_t ret;
     ret.ok = false;
     if (raw.ok == false) return ret;
 
@@ -345,7 +345,7 @@ public:
     const lsm6dsox_t m = read();
     if (m.ok == false) return m;
 
-    lsm6dsox_t ret{0};
+    lsm6dsox_t ret;
     ret.ok = false;
 
     // accel = A * accel_meas - bias
@@ -429,3 +429,16 @@ private:
 };
 
 } // namespace LSM6DSOX
+
+
+
+
+
+
+
+
+
+
+
+
+
