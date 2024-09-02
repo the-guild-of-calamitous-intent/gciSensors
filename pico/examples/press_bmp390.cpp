@@ -18,7 +18,7 @@ using namespace BMP390;
 using namespace gci::sensors;
 
 TwoWire tw;
-gciBMP390 bmp;
+gciBMP390 bmp(0);
 
 const uint LED_PIN = 25;
 

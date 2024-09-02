@@ -11,14 +11,15 @@ using namespace std;
 #include "two_wire.hpp"
 
 constexpr uint i2c_port = 0;
-constexpr uint i2c_scl = I2C0_SCL_PIN;
-constexpr uint i2c_sda = I2C0_SDA_PIN;
+constexpr uint i2c_scl = 1;
+constexpr uint i2c_sda = 0;
 
 using namespace LIS3MDL;
 using namespace gci::sensors;
 
 TwoWire tw;
-gciLIS3MDL mag(ADDR_PRIM, i2c_port); // default is 0, so don't need to do this
+// gciLIS3MDL mag(ADDR_PRIM, i2c_port); // default is 0, so don't need to do this
+gciLIS3MDL mag(i2c_port);
 
 const uint LED_PIN = 25;
 

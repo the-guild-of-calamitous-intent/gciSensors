@@ -41,7 +41,7 @@ int main() {
 
 #if !defined(I2C_PORT) || !defined(SDA_PIN) || !defined(SCL_PIN)
 #warning i2c/bus_scan example requires a board with I2C pins
-    puts("Default I2C pins were not defined");
+    printf("Default I2C pins were not defined\n");
     return 1;
 #endif
 
@@ -56,7 +56,7 @@ int main() {
     printf("\nI2C Bus Scan\n");
     printf("   0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F\n");
 
-    for (int addr = 0; addr < (1 << 7); ++addr) {
+    for (uint8_t addr = 0; addr < (1 << 7); ++addr) {
         if (addr % 16 == 0) {
             printf("%02x ", addr);
         }

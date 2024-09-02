@@ -128,7 +128,7 @@ enum bmp_error : uint8_t {
 
 class gciBMP390 : public SensorI2C {
 public:
-  gciBMP390(const uint8_t addr = BMP390_ADDR, uint32_t port = 0)
+  gciBMP390(const uint32_t port, const uint8_t addr = BMP390_ADDR)
       : SensorI2C(addr, port) {}
 
   uint8_t init(const uint8_t odr = ODR_50_HZ,

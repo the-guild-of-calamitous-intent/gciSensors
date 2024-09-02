@@ -82,13 +82,13 @@ inline uint16_t to_16b(uint8_t msb, uint8_t lsb) {
   return ((uint16_t)msb << 8) | (uint16_t)lsb;
 }
 
-// returns altitude in meters
-float altitude(float pressure, float seaLevelhPa = 1013.25) {
-  float alt = 44330 * (1.0 - pow((pressure / 100) / seaLevelhPa, 0.1903));
-  return alt;
-}
+// // returns altitude in meters
+// float altitude(float pressure, float seaLevelhPa = 1013.25) {
+//   float alt = 44330 * (1.0 - pow((pressure / 100) / seaLevelhPa, 0.1903));
+//   return alt;
+// }
 
-float altitude2(const float p) {
+float altitude(const float p) {
   // Probably best not to run here ... very computational.
   // pre compute some of this?
   // call atmospalt() ... like matlab?
@@ -108,7 +108,7 @@ float altitude2(const float p) {
   constexpr float scale  = Tb / Lb;
   constexpr float inv_Pb = 1.0f / Pb;
 
-  return scale * (pow(p * inv_Pb, exp) - 1.0);
+  return scale * (powf(p * inv_Pb, exp) - 1.0f);
 }
 
 // sensor drivers

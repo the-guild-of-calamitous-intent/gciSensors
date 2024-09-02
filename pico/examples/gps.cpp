@@ -27,11 +27,11 @@ int main() {
   TwoWire tw;
   uint speed = tw.init(i2c_port, I2C_400KHZ, i2c_sda, i2c_scl);
 
-  printf(">> i2c instance: %u buad: %u\n", i2c_port, speed);
+  printf(">> i2c instance: %u baud: %u\n", i2c_port, speed);
   printf(">> i2c SDA: %u SCL: %u\n", i2c_sda, i2c_scl);
   bi_decl(bi_2pins_with_func(i2c_sda, i2c_scl, GPIO_FUNC_I2C)); // compile info
 
-  gciPA1010D gps(PA_ADDR, i2c_port); // default is 0, so don't need to do this
+  gciPA1010D gps(0, PA_ADDR); // default is 0, so don't need to do this
 
   gps.write(PMTK::FULL_POWER, sizeof(PMTK::FULL_POWER));
   gps.write(PMTK::RMCGGAGSA, sizeof(PMTK::RMCGGAGSA));

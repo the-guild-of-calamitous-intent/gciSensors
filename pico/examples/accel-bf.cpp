@@ -10,7 +10,6 @@ using namespace std;
 #include "pico/binary_info.h"
 #include "hardware/gpio.h"
 #include "tusb.h" // wait for USB
-
 #include <gciSensors.hpp>
 #include "two_wire.hpp"
 
@@ -22,12 +21,7 @@ using namespace LSM6DSOX;
 using namespace gci::sensors;
 
 TwoWire tw;
-
-// if not using default address or port
-// gciLSM6DSOX IMU(LSM6DSOX_ADDRESS,i2c_port);
-gciLSM6DSOX IMU;
-
-const uint LED_PIN = 25;
+gciLSM6DSOX IMU(i2c_port);
 
 void average(lsm6dsox_t ave, lsm6dsox_t d, uint8_t window, uint8_t cnt) {
   for (size_t i=0; i<3; ++i) {
@@ -81,12 +75,10 @@ int main() {
   printf(">> i2c SDA: %u SCL: %u\n", i2c_sda, i2c_scl);
   bi_decl(bi_2pins_with_func(i2c_sda, i2c_scl, GPIO_FUNC_I2C)); // compile info
 
-  gpio_init(LED_PIN);
-  gpio_set_dir(LED_PIN, GPIO_OUT);
-
-  puts("/// Accel/Gyros START ///\n");
+  printf("/// Accel/Gyros START ///\n");
 
   while (true) {
+    printf("Configure IMU\n");
     // Betaflight values
     // Accel:
     //   833Hz ODR, 16G, use LPF1 output
@@ -100,8 +92,9 @@ int main() {
     printf("imu error %d\n", (int)err);
     sleep_ms(1000);
   }
+  printf("IMU configured\n");
 
-  uint8_t cnt=1;
+  // uint8_t cnt=1;
   lsm6dsox_t ave;
 
   LowPassFilter lpfx;

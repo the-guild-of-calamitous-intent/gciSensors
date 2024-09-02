@@ -60,7 +60,7 @@ struct dps310_t {
 
 class gciDPS310 : public SensorI2C {
 public:
-  gciDPS310(const uint8_t addr = DPS310_ADDR, uint32_t port = 0)
+  gciDPS310(const uint32_t port, const uint8_t addr = DPS310_ADDR)
       : SensorI2C(addr, port) {}
   ~gciDPS310() {}
 

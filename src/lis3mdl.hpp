@@ -103,8 +103,8 @@ This outputs a normalized magnetic field.
 */
 class gciLIS3MDL : public SensorI2C {
 public:
-  gciLIS3MDL(const uint8_t addr = LIS3MDL_ADDR)
-      : SensorI2C(addr,1) {}
+  gciLIS3MDL(const uint32_t port, const uint8_t addr = LIS3MDL_ADDR)
+      : SensorI2C(addr, port) {}
 
   uint8_t init(const Range range = RANGE_4GAUSS, const Odr odr = ODR_155HZ) {
     uint8_t id{0};

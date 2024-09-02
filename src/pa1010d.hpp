@@ -19,26 +19,13 @@ constexpr uint8_t PA_ADDR   = 0x10;
 constexpr uint32_t I2C_BUFFER_SIZE = 32;
 constexpr uint32_t MAX_NEMA_SIZE = 82;
 
-// struct BufferI2C {
-//   static constexpr uint32_t BUFFER_SIZE{32};
-//   uint8_t buffer[BUFFER_SIZE]{0};
-//   uint32_t i{0};
-
-//   char next(const uint8_t addr) {
-//     if (i == BUFFER_SIZE) {
-//       i = 0;
-//       i2c_read_blocking(i2c_default, addr, buffer, BUFFER_SIZE, false);
-//     }
-//     return buffer[i++];
-//   }
-// };
 
 class gciPA1010D : public SensorI2C {
   uint8_t buffer[I2C_BUFFER_SIZE]{0};
   static constexpr uint8_t LOOP_FAIL{5};
 
 public:
-  gciPA1010D(const uint8_t addr = PA_ADDR, uint32_t port = 0)
+  gciPA1010D(const uint32_t port, const uint8_t addr = PA_ADDR)
       : SensorI2C(addr, port) {}
 
   inline

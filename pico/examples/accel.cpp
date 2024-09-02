@@ -11,19 +11,15 @@ using namespace std;
 #include "two_wire.hpp"
 
 constexpr uint i2c_port = 0;
-constexpr uint i2c_scl = 1; // I2C0_SCL_PIN;
-constexpr uint i2c_sda = 0; // I2C0_SDA_PIN;
+constexpr uint i2c_scl  = 1; // I2C0_SCL_PIN;
+constexpr uint i2c_sda  = 0; // I2C0_SDA_PIN;
+constexpr uint LED_PIN  = 25;
 
 using namespace LSM6DSOX;
 using namespace gci::sensors;
 
 TwoWire tw;
-
-// if not using default address or port
-// gciLSM6DSOX IMU(LSM6DSOX_ADDRESS,i2c_port);
-gciLSM6DSOX IMU;
-
-const uint LED_PIN = 25;
+gciLSM6DSOX IMU(i2c_port);
 
 int main() {
   stdio_init_all();
@@ -41,15 +37,12 @@ int main() {
   gpio_init(LED_PIN);
   gpio_set_dir(LED_PIN, GPIO_OUT);
 
-  puts("/// Accel/Gyros START ///\n");
+  printf("/// Accel/Gyros START ///\n");
 
   while (true) {
     uint8_t err = IMU.init(ACCEL_RANGE_4_G, GYRO_RANGE_2000_DPS, RATE_208_HZ);
     if (err == 0) break;
-    char msg[32];
-    snprintf(msg, 32, "imu error %d", int(err));
-    msg[31] = '\0';
-    puts(msg);
+    printf("imu error %d\n", (int)err);
     sleep_ms(1000);
   }
 

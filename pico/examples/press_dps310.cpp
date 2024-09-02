@@ -14,8 +14,8 @@ using namespace std;
 using namespace DPS310;
 
 constexpr uint i2c_port = 0;
-constexpr uint i2c_scl = I2C0_SCL_PIN;
-constexpr uint i2c_sda = I2C0_SDA_PIN;
+constexpr uint i2c_scl = 1;
+constexpr uint i2c_sda = 0;
 
 TwoWire tw;
 
@@ -32,7 +32,7 @@ int main() {
   printf(">> i2c SDA: %u SCL: %u\n", i2c_sda, i2c_scl);
   bi_decl(bi_2pins_with_func(i2c_sda, i2c_scl, GPIO_FUNC_I2C)); // compile info
 
-  gciDPS310 press;
+  gciDPS310 press(0);
 
   bool ok = false;
   while (ok == false) {
