@@ -11,8 +11,8 @@ using namespace std;
 #include "two_wire.hpp"
 
 constexpr uint i2c_port = 0;
-constexpr uint i2c_scl = I2C0_SCL_PIN;
-constexpr uint i2c_sda = I2C0_SDA_PIN;
+constexpr uint i2c_scl = 1;
+constexpr uint i2c_sda = 0;
 
 using namespace BMP390;
 using namespace gci::sensors;
@@ -55,17 +55,18 @@ int main() {
     // gpio_put(LED_PIN, 1);
     // sleep_ms(500);
 
-    bmp390_t pt = bmp.read();
-    if (pt.ok == false) {
+    bmp390_t ans = bmp.read();
+    if (ans.ok == false) {
       printf("oops ...\n");
       sleep_ms(100);
       continue;
     }
 
-    printf("-----------------------------\n");
-    printf("Pressure: %f Pa\n", pt.press);
-    printf("Temperature: %f C\n", pt.temp);
-    printf("Altitude: %6.2f m\n", bmp.altitude(pt.press));
+    float alt = pressure_altitude(ans.pressure);
+    printf("Press: %8.1f Pa  Temp: %5.2f C  Alt: %7.1f m\n",
+      ans.pressure,
+      ans.temperature,
+      alt);
 
     sleep_ms(10);
   }

@@ -5,8 +5,8 @@
 \**************************************/
 #pragma once
 
-#include <Wire.hpp>
-#include <stdint.h> // int types
+// #include <Wire.hpp>
+// #include <stdint.h> // int types
 
 class SensorI2C {
 public:
@@ -34,5 +34,5 @@ public:
   const uint8_t addr;
 
 protected:
-  TwoWire *i2c;
+  // TwoWire *i2c;
 };

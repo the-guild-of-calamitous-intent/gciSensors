@@ -7,7 +7,7 @@
 
 #include <cmath> // isinf
 #include <cstdint>
-#include <stdio.h>  // FIXME: remove
+// #include <stdio.h>  // FIXME: remove
 #include <string.h> // memcpy
 
 #if !defined(PICO_SDK) // FIXME: handle better
@@ -15,57 +15,63 @@ void sleep_ms(uint32_t ms) {}
 void sleep_us(uint64_t us) {}
 #endif
 
-namespace gci {
+// namespace gci {
 
-namespace sensors {
-template <typename T> struct vec_t {
-  T x, y, z;
-  // bool ok;  // error?
+// namespace sensors {
+// template <typename T> struct vec_t {
+//   T x, y, z;
+//   bool ok;  // error?
 
-  inline const T magnitude() const { return sqrt(x * x + y * y + z * z); }
+//   inline const T magnitude() const { return sqrt(x * x + y * y + z * z); }
 
-  bool normalize() {
-    T n = 1.0 / magnitude();
-    if (std::isinf(n)) return false;
+//   bool normalize() {
+//     T n = 1.0 / magnitude();
+//     if (std::isinf(n)) return false;
 
-    x *= n;
-    y *= n;
-    z *= n;
+//     x *= n;
+//     y *= n;
+//     z *= n;
 
-    return true;
-  }
-};
-
-using vecf_t = vec_t<float>;
-using vecd_t = vec_t<double>;
-using veci_t = vec_t<int16_t>;
-
-// class Hertz {
-// public:
-//   Hertz(uint32_t v = 300) : threshold(v), epoch(millis()) {}
-
-//   bool check() {
-//     if (++count % threshold == 0) {
-//       uint32_t now = millis();
-//       hertz        = 1000.0f * float(count) / float(now - epoch);
-//       epoch        = now;
-//       count        = 0;
-//       return true;
-//     }
-
-//     return false;
+//     return true;
 //   }
 
-//   float hertz{0.0f};
-
-// protected:
-//   uint32_t epoch;
-//   uint32_t count{0};
-//   const uint32_t threshold;
+//   T operator[](size_t i) {
+//     return (i == 0) ? x : (i == 1) ? y : z;
+//   }
 // };
 
-} // namespace sensors
-} // namespace gci
+// using vecf_t = vec_t<float>;
+// using vecd_t = vec_t<double>;
+// using veci_t = vec_t<int16_t>;
+
+// // class Hertz {
+// // public:
+// //   Hertz(uint32_t v = 300) : threshold(v), epoch(millis()) {}
+
+// //   bool check() {
+// //     if (++count % threshold == 0) {
+// //       uint32_t now = millis();
+// //       hertz        = 1000.0f * float(count) / float(now - epoch);
+// //       epoch        = now;
+// //       count        = 0;
+// //       return true;
+// //     }
+
+// //     return false;
+// //   }
+
+// //   float hertz{0.0f};
+
+// // protected:
+// //   uint32_t epoch;
+// //   uint32_t count{0};
+// //   const uint32_t threshold;
+// // };
+
+// } // namespace sensors
+// } // namespace gci
+
+#include "common.hpp"
 
 inline uint32_t to_24b(uint8_t *b) {
   return (uint32_t)b[0] | (uint32_t)b[1] << 8 | (uint32_t)b[2] << 16;

@@ -11,8 +11,8 @@ using namespace std;
 #include "two_wire.hpp"
 
 constexpr uint i2c_port = 0;
-constexpr uint i2c_scl = I2C0_SCL_PIN;
-constexpr uint i2c_sda = I2C0_SDA_PIN;
+constexpr uint i2c_scl = 1; // I2C0_SCL_PIN;
+constexpr uint i2c_sda = 0; // I2C0_SDA_PIN;
 
 using namespace LSM6DSOX;
 using namespace gci::sensors;
@@ -64,9 +64,9 @@ int main() {
 
     printf("-----------------------------\n");
     printf("Accels: %f %f %f g\n", i.a.x, i.a.y, i.a.z);
-    printf("Gyros: %f %f %f rps\n", i.g.x, i.g.y, i.g.z);
-    printf("Temperature: %f C\n", i.temp);
-    printf("Timestamp: %u msec\n", i.ts);
+    printf("Gyros: %f %f %f dps\n", i.g.x, i.g.y, i.g.z);
+    printf("Temperature: %f C\n", i.temperature);
+    printf("Timestamp: %lu msec\n", i.ts);
 
   }
 }

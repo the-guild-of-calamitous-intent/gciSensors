@@ -53,30 +53,33 @@ enum Range : uint8_t {
   RANGE_16GAUSS = 0x60
 };
 
-struct lis3mdl_t {
-  float x, y, z;
-  // float temperature;
-  bool ok;
+using lis3mdl_t = gci::sensors::vec_msg_t;
+using lis3mdl_raw_t = gci::sensors::vec_msg_raw_t;
 
-  inline const float magnitude() const { return sqrt(x * x + y * y + z * z); }
+// struct lis3mdl_t {
+//   float x, y, z;
+//   // float temperature;
+//   bool ok;
 
-  bool normalize() {
-    float n = 1.0 / magnitude();
-    if (std::isinf(n)) return false;
+//   inline const float magnitude() const { return sqrt(x * x + y * y + z * z); }
 
-    x *= n;
-    y *= n;
-    z *= n;
+//   bool normalize() {
+//     float n = 1.0f / magnitude();
+//     if (std::isinf(n)) return false;
 
-    return true;
-  }
-};
+//     x *= n;
+//     y *= n;
+//     z *= n;
 
-struct lis3mdl_raw_t {
-  int16_t x, y, z;
-  // int16_t temperature;
-  bool ok;
-};
+//     return true;
+//   }
+// };
+
+// struct lis3mdl_raw_t {
+//   int16_t x, y, z;
+//   // int16_t temperature;
+//   bool ok;
+// };
 
 enum Odr : uint8_t {
   ODR_155HZ  = LIS3MDL_UHP, // 3
@@ -104,7 +107,9 @@ public:
       : SensorI2C(addr, port) {}
 
   uint8_t init(const Range range = RANGE_4GAUSS, const Odr odr = ODR_155HZ) {
-    if (readRegister(REG_WHO_AM_I) != WHO_AM_I) return ERROR_WHOAMI;
+    uint8_t id{0};
+    readRegister(REG_WHO_AM_I, &id);
+    if (id != WHO_AM_I) return ERROR_WHOAMI;
 
     uint8_t reg1 = LIS3MDL_FAST_ODR_EN | LIS3MDL_TEMP_EN | (odr << 5);
     uint8_t reg4 = (odr << 2);
@@ -195,7 +200,9 @@ public:
 
     // uint8_t val             = readRegister(REG_STATUS_REG);
     // return val & ZYXDA;
-    return (readRegister(REG_STATUS_REG) & STATUS_ZYXDA) > 0;
+    uint8_t val{0};
+    readRegister(REG_STATUS_REG, &val);
+    return (val & STATUS_ZYXDA) > 0;
   }
 
 protected:

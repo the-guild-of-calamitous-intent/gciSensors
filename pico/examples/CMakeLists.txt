@@ -1,8 +1,8 @@
 list(APPEND examples
     accel
+    accel-bf
     mag
     press_bmp390
-    dummy
     scan_bus
     gps
     press_dps310

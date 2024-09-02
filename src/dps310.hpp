@@ -148,13 +148,17 @@ public:
       return false;
     }
 
-    uint8_t ext = readRegister(TMP_COEF_SRCE) & 0x80; // ext already shifted
+    uint8_t ext{0};
+    readRegister(TMP_COEF_SRCE, &ext);
+    ext &= 0x80; // ext already shifted
 
     writeRegister(TMP_CFG, ext | trate | tos);
     writeRegister(PRS_CFG, prate | pos);
 
+    int32_t incr = 10;
     do {
       sleep_ms(45); // pg 10, Table 8
+      if (incr-- == 0) return false;
     } while (coeffs_ready() == false);
     if (get_coeffs() == false) return false;
 
@@ -165,19 +169,22 @@ public:
 
   // press ready to read: [TMP_RDY-2, PRS_RDY-1]
   bool ready() {
-    uint8_t rdy = readRegister(MEAS_CFG);
+    uint8_t rdy{0};
+    readRegister(MEAS_CFG,&rdy);
     return (bool)(rdy & 0x10);
   }
 
   // sensor init from reboot is ready
   bool sensor_ready() {
-    uint8_t rdy = readRegister(MEAS_CFG);
+    uint8_t rdy{0};
+    readRegister(MEAS_CFG,&rdy);
     return rdy & 0x40;
   }
 
   // coefficients ready to read
   bool coeffs_ready() {
-    uint8_t rdy = readRegister(MEAS_CFG);
+    uint8_t rdy{0};
+    readRegister(MEAS_CFG,&rdy);
     return rdy & 0x80;
   }
 
@@ -200,15 +207,15 @@ public:
     // 4.9.2
     t_raw = ((int32_t)buf[3] << 16) | ((int32_t)buf[4] << 8) |
             buf[5]; // MSB first???
-    t_raw = twosComplement(t_raw, 24);
+    t_raw = twosComplement((uint32_t)t_raw, 24); // CHANGED ... OK?
     temp  = c0 * 0.5f + c1 * (float)t_raw / tscale;
 
     // 4.9.1
     p_raw           = (buf[0] << 16) | (buf[1] << 8) | buf[2]; // MSB first???
-    p_raw           = twosComplement(p_raw, 24);
+    p_raw           = twosComplement((uint32_t)p_raw, 24); // CHANGED ... OK
     pres            = (float)p_raw / pscale;
     A               = pres * (c10 + pres * (c20 + pres * c30));
-    B               = (t_raw / tscale) * (c01 + pres * (c11 + pres * c21));
+    B               = (static_cast<float>(t_raw) / tscale) * (c01 + pres * (c11 + pres * c21));
     pres            = c00 + A + B;
 
     ret.temperature = temp;
@@ -220,66 +227,137 @@ public:
 
   void reset() { writeRegister(RESET, 0x09); }
 
-  // returns altitude in meters
-  float altitude(float pressure, float seaLevelhPa = 1013.25) {
-    float alt = 44330 * (1.0 - pow((pressure / 100) / seaLevelhPa, 0.1903));
-    return alt;
-  }
+  // // returns altitude in meters
+  // float altitude(float pressure, float seaLevelhPa = 1013.25f) {
+  //   float alt = 44330.0f * (1.0f - powf((pressure / 100.0f) / seaLevelhPa, 0.1903f));
+  //   return alt;
+  // }
 
 private:
-  // coefficients
-  int32_t c0;
-  int32_t c1;
-  int32_t c00;
-  int32_t c10;
-  int32_t c01;
-  int32_t c11;
-  int32_t c20;
-  int32_t c21;
-  int32_t c30;
+  // // coefficients
+  // int32_t c0;
+  // int32_t c1;
+  // int32_t c00;
+  // int32_t c10;
+  // int32_t c01;
+  // int32_t c11;
+  // int32_t c20;
+  // int32_t c21;
+  // int32_t c30;
+  float c0;
+  float c1;
+  float c00;
+  float c10;
+  float c01;
+  float c11;
+  float c20;
+  float c21;
+  float c30;
 
   // scaling
   float pscale;
   float tscale;
 
   bool get_coeffs() {
-
     uint8_t coeffs[18];
-    bool ret = readRegisters(COEF, 18, coeffs);
-    if (ret == false) return false;
+    if (!readRegisters(COEF, 18, coeffs)) return false;
 
-    c0  = ((uint16_t)coeffs[0] << 4) | (((uint16_t)coeffs[1] >> 4) & 0x0F);
-    c0  = twosComplement(c0, 12);
+    int32_t ic0;
+    int32_t ic1;
+    int32_t ic00;
+    int32_t ic10;
+    int32_t ic01;
+    int32_t ic11;
+    int32_t ic20;
+    int32_t ic21;
+    int32_t ic30;
 
-    c1  = (((uint16_t)coeffs[1] & 0x0F) << 8) | coeffs[2];
-    c1  = twosComplement(c1, 12);
+    // ic0  = ((uint16_t)coeffs[0] << 4) | (((uint16_t)coeffs[1] >> 4) & 0x0F);
+    // ic0  = twosComplement(ic0, 12);
 
-    c00 = ((uint32_t)coeffs[3] << 12) | ((uint32_t)coeffs[4] << 4) |
-          (((uint32_t)coeffs[5] >> 4) & 0x0F);
-    c00 = twosComplement(c00, 20);
+    // ic1  = (((uint16_t)coeffs[1] & 0x0F) << 8) | coeffs[2];
+    // ic1  = twosComplement(ic1, 12);
 
-    c10 = (((uint32_t)coeffs[5] & 0x0F) << 16) | ((uint32_t)coeffs[6] << 8) |
-          (uint32_t)coeffs[7];
-    c10 = twosComplement(c10, 20);
+    // ic00 = ((uint32_t)coeffs[3] << 12) | ((uint32_t)coeffs[4] << 4) |
+    //       (((uint32_t)coeffs[5] >> 4) & 0x0F);
+    // ic00 = twosComplement(ic00, 20);
 
-    c01 = twosComplement(((uint16_t)coeffs[8] << 8) | (uint16_t)coeffs[9], 16);
-    c11 =
-        twosComplement(((uint16_t)coeffs[10] << 8) | (uint16_t)coeffs[11], 16);
-    c20 =
-        twosComplement(((uint16_t)coeffs[12] << 8) | (uint16_t)coeffs[13], 16);
-    c21 =
-        twosComplement(((uint16_t)coeffs[14] << 8) | (uint16_t)coeffs[15], 16);
-    c30 =
-        twosComplement(((uint16_t)coeffs[16] << 8) | (uint16_t)coeffs[17], 16);
+    // ic10 = (((uint32_t)coeffs[5] & 0x0F) << 16) | ((uint32_t)coeffs[6] << 8) |
+    //       (uint32_t)coeffs[7];
+    // ic10 = twosComplement(ic10, 20);
+
+    // ic01 = twosComplement(((uint16_t)coeffs[8] << 8) | (uint16_t)coeffs[9], 16);
+    // ic11 =
+    //     twosComplement(((uint16_t)coeffs[10] << 8) | (uint16_t)coeffs[11], 16);
+    // ic20 =
+    //     twosComplement(((uint16_t)coeffs[12] << 8) | (uint16_t)coeffs[13], 16);
+    // ic21 =
+    //     twosComplement(((uint16_t)coeffs[14] << 8) | (uint16_t)coeffs[15], 16);
+    // ic30 =
+    //     twosComplement(((uint16_t)coeffs[16] << 8) | (uint16_t)coeffs[17], 16);
+
+
+    // See section 8.11, Calibration Coefficients (COEF), of datasheet
+
+    // 0x11 c0 [3:0] + 0x10 c0 [11:4]
+    ic0 = twosComplement(((uint32_t)coeffs[0] << 4) | (((uint32_t)coeffs[1] >> 4) & 0x0F), 12);
+
+    // 0x11 c1 [11:8] + 0x12 c1 [7:0]
+    ic1 = twosComplement((((uint32_t)coeffs[1] & 0x0F) << 8) | (uint32_t)coeffs[2], 12);
+
+    // 0x13 c00 [19:12] + 0x14 c00 [11:4] + 0x15 c00 [3:0]
+    ic00 = twosComplement(((uint32_t)coeffs[3] << 12) | ((uint32_t)coeffs[4] << 4) | (((uint32_t)coeffs[5] >> 4) & 0x0F), 20);
+
+    // 0x15 c10 [19:16] + 0x16 c10 [15:8] + 0x17 c10 [7:0]
+    ic10 = twosComplement((((uint32_t)coeffs[5] & 0x0F) << 16) | ((uint32_t)coeffs[6] << 8) | (uint32_t)coeffs[7], 20);
+
+    // 0x18 c01 [15:8] + 0x19 c01 [7:0]
+    ic01 = twosComplement(((uint32_t)coeffs[8] << 8) | (uint32_t)coeffs[9], 16);
+
+    // 0x1A c11 [15:8] + 0x1B c11 [7:0]
+    ic11 = twosComplement(((uint32_t)coeffs[10] << 8) | (uint32_t)coeffs[11], 16);
+
+    // 0x1C c20 [15:8] + 0x1D c20 [7:0]
+    ic20 = twosComplement(((uint32_t)coeffs[12] << 8) | (uint32_t)coeffs[13], 16);
+
+    // 0x1E c21 [15:8] + 0x1F c21 [7:0]
+    ic21 = twosComplement(((uint32_t)coeffs[14] << 8) | (uint32_t)coeffs[15], 16);
+
+    // 0x20 c30 [15:8] + 0x21 c30 [7:0]
+    ic30 = twosComplement(((uint32_t)coeffs[16] << 8) | (uint32_t)coeffs[17], 16);
+
+    c0 = static_cast<float>(ic0);
+    c1 = static_cast<float>(ic1);
+    c00 = static_cast<float>(ic00);
+    c10 = static_cast<float>(ic10);
+    c01 = static_cast<float>(ic01);
+    c11 = static_cast<float>(ic11);
+    c20 = static_cast<float>(ic20);
+    c21 = static_cast<float>(ic21);
+    c30 = static_cast<float>(ic30);
 
     return true;
   }
 
-  int32_t twosComplement(int32_t val, uint8_t bits) {
-    if (val > ((1U << bits - 1) - 1)) {
-      val -= 1U << bits;
+  // int32_t twosComplement(int32_t val, uint8_t bits) {
+  //   // // before
+  //   // if (val > ((1U << (bits - 1)) - 1)) { // double check, put paraenthese around (bits-1)
+  //   //   val -= (1U << bits);
+  //   // }
+
+  //   if (val > ((1U << (bits - 1)) - 1)) { // double check, put paraenthese around (bits-1)
+  //     val -= static_cast<int32_t>(1U << bits);
+  //   }
+
+  //   return val;
+  // }
+
+  // was uint32_t raw -> int32_t
+  int32_t twosComplement(uint32_t raw, const uint8_t length) {
+    if (raw & ((int)1 << (length - 1))) {
+      return ((int32_t)raw) - ((int32_t)1 << length);
     }
-    return val;
+    return (int32_t)raw;
   }
 };
 

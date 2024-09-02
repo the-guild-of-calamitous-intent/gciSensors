@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.20)
 set(PROJECT gcisensors)
 set(PICO_BOARD pico) # pico or pico_w
 set(PICO_SDK_PATH "$ENV{HOME}/github/pico-sdk")
-set(ENV{PATH} "$ENV{HOME}/github/gcc-arm/bin:$ENV{PATH}")
+# set(ENV{PATH} "$ENV{HOME}/github/gcc-arm/bin:$ENV{PATH}")
 set(PICO_SDK_PATH "${PICO_SDK_PATH}" CACHE PATH "Path to the PICO SDK")
 include(${PICO_SDK_PATH}/pico_sdk_init.cmake)
 
@@ -16,10 +16,14 @@ project(${PROJECT}
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_CXX_STANDARD 20)
 
+# string (APPEND CMAKE_CXX_FLAGS " -Wdeprecated-enum-enum-conversion ")
 string (APPEND CMAKE_CXX_FLAGS_RELEASE " -O3 ")
 string (APPEND CMAKE_C_FLAGS_RELEASE " -O3 ")
-string(PREPEND CMAKE_EXE_LINKER_FLAGS " -Wl,--print-memory-usage ")
-
+string(PREPEND CMAKE_EXE_LINKER_FLAGS " -Wdeprecated-enum-enum-conversion -Wl,--print-memory-usage ")
+add_compile_options( -Wall -Wconversion -Wsign-conversion -Wall )
+# cmake_cxx_flags( -Wdeprecated-enum-enum-conversion )
+# add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-Wdeprecated-enum-enum-conversion>)
+# add_compile_options($<$<COMPILE_LANGUAGE:C>:-Wdeprecated-enum-enum-conversion>)
 
 # Initialize the SDK
 pico_sdk_init()
@@ -59,7 +63,7 @@ LIST(APPEND pico_libs
 
 
 add_library(${PROJECT_NAME} INTERFACE)
-target_include_directories(${PROJECT_NAME} INTERFACE src .)
+target_include_directories(${PROJECT_NAME} INTERFACE ../src .)
 target_link_libraries(${PROJECT_NAME} INTERFACE ${pico_libs})
 
 if (BUILD_EXAMPLES)

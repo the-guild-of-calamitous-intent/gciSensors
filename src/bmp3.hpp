@@ -102,15 +102,18 @@ struct bmp3_reg_calib_data {
 constexpr uint8_t BMP390_ADDR     = 0x77;
 constexpr uint8_t BMP390_ADDR_ALT = 0x76;
 
-struct bmp390_raw_t {
-  uint32_t press, temp;
-  bool ok;
-};
+// struct bmp390_raw_t {
+//   uint32_t press, temp;
+//   bool ok;
+// };
 
-struct bmp390_t {
-  float press, temp;
-  bool ok;
-};
+// struct bmp390_t {
+//   float press, temp;
+//   bool ok;
+// };
+
+using bmp390_t = gci::sensors::pt_t;
+using bmp390_raw_t = gci::sensors::pt_raw_t;
 
 enum bmp_error : uint8_t {
   NO_ERROR,
@@ -131,8 +134,10 @@ public:
   uint8_t init(const uint8_t odr = ODR_50_HZ,
                const uint8_t iir = IIR_FILTER_COEFF_3) {
     bool ok;
+    uint8_t id;
+    ok = readRegister(REG_WHO_AM_I, &id);
 
-    if (!(readRegister(REG_WHO_AM_I) == WHO_AM_I)) return ERROR_WHOAMI;
+    if (!(id == WHO_AM_I) && ok) return ERROR_WHOAMI;
     if (!soft_reset()) return ERROR_RESET;
     if (!get_calib_data()) return ERROR_CAL_DATA;
     // if (!setOsMode(mode)) return ERROR_OS_MODE;
@@ -189,8 +194,8 @@ public:
     uint32_t press = to_24b(buffer);
     uint32_t temp  = to_24b(&buffer[3]);
 
-    ret.temp       = compensate_temperature(temp); // do temp 1st!!!
-    ret.press      = compensate_pressure(press);
+    ret.temperature = compensate_temperature(temp); // do temp 1st!!!
+    ret.pressure    = compensate_pressure(press);
 
     // value?
     // bool ok  = readRegisters(REG_SENSORTIME, 3, buffer);
@@ -208,7 +213,8 @@ public:
     // if (((readRegister(REG_INT_STATUS) & DATA_READY_BIT) == 0)) return false;
     // return true;
 
-    uint8_t reg = readRegister(REG_STATUS);
+    uint8_t reg;
+    if (!readRegister(REG_STATUS, &reg)) return false;
     // return (PRES_READY_BIT & reg) && (TEMP_READY_BIT & reg);
     return ((PRES_READY_BIT | TEMP_READY_BIT) & reg) > 0;
     // return true;
@@ -219,28 +225,28 @@ public:
   //   return static_cast<bmp_available_t>(val);
   // }
 
-  float altitude(const float p) {
-    // Probably best not to run here ... very computational.
-    // pre compute some of this?
-    // call atmospalt() ... like matlab?
-    // same as mean sea level (MSL) altitude
-    // Altitude from pressure:
-    // https://www.mide.com/air-pressure-at-altitude-calculator
-    // const float Tb = 15; // temperature at sea level [C] - doesn't work
-    // const float Lb = -0.0098; // lapse rate [C/m] - doesn't work ... pow?
-    constexpr float Tb  = 288.15f;           // temperature at sea level [K]
-    constexpr float Lb  = -0.0065f;          // lapse rate [K/m]
-    constexpr float Pb  = 101325.0f;         // pressure at sea level [Pa]
-    constexpr float R   = 8.31446261815324f; // universal gas const [Nm/(mol K)]
-    constexpr float M   = 0.0289644f; // molar mass of Earth's air [kg/mol]
-    constexpr float g0  = 9.80665f;   // gravitational const [m/s^2]
+  // float altitude(const float p) {
+  //   // Probably best not to run here ... very computational.
+  //   // pre compute some of this?
+  //   // call atmospalt() ... like matlab?
+  //   // same as mean sea level (MSL) altitude
+  //   // Altitude from pressure:
+  //   // https://www.mide.com/air-pressure-at-altitude-calculator
+  //   // const float Tb = 15; // temperature at sea level [C] - doesn't work
+  //   // const float Lb = -0.0098; // lapse rate [C/m] - doesn't work ... pow?
+  //   constexpr float Tb  = 288.15f;           // temperature at sea level [K]
+  //   constexpr float Lb  = -0.0065f;          // lapse rate [K/m]
+  //   constexpr float Pb  = 101325.0f;         // pressure at sea level [Pa]
+  //   constexpr float R   = 8.31446261815324f; // universal gas const [Nm/(mol K)]
+  //   constexpr float M   = 0.0289644f; // molar mass of Earth's air [kg/mol]
+  //   constexpr float g0  = 9.80665f;   // gravitational const [m/s^2]
 
-    constexpr float exp = -R * Lb / (g0 * M);
-    constexpr float scale  = Tb / Lb;
-    constexpr float inv_Pb = 1.0f / Pb;
+  //   constexpr float exp = -R * Lb / (g0 * M);
+  //   constexpr float scale  = Tb / Lb;
+  //   constexpr float inv_Pb = 1.0f / Pb;
 
-    return scale * (pow(p * inv_Pb, exp) - 1.0);
-  }
+  //   return scale * (powf(p * inv_Pb, exp) - 1.0f);
+  // }
 
   inline bool reset() { return soft_reset(); }
 
@@ -347,10 +353,11 @@ protected:
   // }
 
   bool soft_reset() {
-    bool ok;
+    // bool ok;
 
     // Check for command ready status
-    uint8_t cmd_rdy_status = readRegister(REG_STATUS);
+    uint8_t cmd_rdy_status{0};
+    if(!readRegister(REG_STATUS, &cmd_rdy_status)) return false;
 
     // Device is ready to accept new command
     if (cmd_rdy_status & CMD_RDY_BIT) {
@@ -360,7 +367,9 @@ protected:
       writeRegister(REG_CMD, SOFT_RESET);
       sleep_ms(10); // was 2 ... too quick?
       // Read for command error status
-      if (readRegister(REG_ERR) & REG_CMD) return false;
+      uint8_t reg_err{0};
+      if(!readRegister(REG_ERR, &reg_err)) return false;
+      if (reg_err & REG_CMD) return false;
       return true;
     }
     return false;

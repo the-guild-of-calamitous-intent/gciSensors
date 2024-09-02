@@ -75,6 +75,11 @@ protected:
   i2c_inst_t *i2c;
 
 public:
+  // TwoWire class in picolib (gci_pico) setups the i2c0/1 so this
+  // class doesn't have to.
+  //
+  // addr: address of sensor
+  // port: using i2c bus 0 or 1
   SensorI2C(uint8_t addr, const uint32_t port) : addr(addr) {
     if (port == 0) {
       i2c = &i2c0_inst;
@@ -102,11 +107,16 @@ public:
   // Don't like this because "as is" there is no way to return an error
   // if it occurs.
   // int16_t readRegister(const uint8_t reg) {
-  int8_t readRegister(const uint8_t reg) {
-    uint8_t value;
-    // return (readRegisters(reg, 1, &value) == true) ? value : 0;
-    if (readRegisters(reg, 1, &value)) return value;
-    return 0;
+  // int8_t readRegister(const uint8_t reg) {
+  //   uint8_t value;
+  //   // return (readRegisters(reg, 1, &value) == true) ? value : 0;
+  //   if (readRegisters(reg, 1, &value)) return value;
+  //   return 0;
+  // }
+
+  inline
+  bool readRegister(const uint8_t reg, uint8_t *data) {
+    return readRegisters(reg, 1, data);
   }
 
   inline size_t available() { return i2c_get_read_available(i2c); }

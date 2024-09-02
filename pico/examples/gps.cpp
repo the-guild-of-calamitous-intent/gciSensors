@@ -11,8 +11,8 @@ using namespace std;
 #include "two_wire.hpp"
 
 constexpr uint i2c_port = 0;
-constexpr uint i2c_scl = I2C0_SCL_PIN;
-constexpr uint i2c_sda = I2C0_SDA_PIN;
+constexpr uint i2c_scl = 1;
+constexpr uint i2c_sda = 0;
 
 using namespace gci::sensors;
 using namespace PA1010D;
@@ -41,8 +41,8 @@ int main() {
   char nema[250];
 
   while (1) {
-    uint32_t num = gps.read(nema,250);
-    if (num > 0) printf("GPS[%d]: %s\n", num, nema);
+    uint32_t num = gps.read(nema,sizeof(nema));
+    if (num > 0) printf("GPS[%ld]: %s\n", num, nema);
     else printf("*** Bad read ***\n");
     sleep_ms(100);
   }

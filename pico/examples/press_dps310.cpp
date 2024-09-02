@@ -52,8 +52,11 @@ int main() {
     }
     printf("\n");
 
-    float alt = press.altitude(ans.pressure);
-    printf("Press: %8.1f Pa  Temp: %5.2f C  Alt: %7.1f m ", ans.pressure, ans.temperature, alt);
+    float alt = pressure_altitude(ans.pressure);
+    printf("Press: %8.1f Pa  Temp: %5.2f C  Alt: %7.1f m ",
+      ans.pressure,
+      ans.temperature,
+      alt);
     sleep_ms(33);
   }
 }
