@@ -20,7 +20,7 @@ constexpr uint i2c_sda = 0; // I2C0_SDA_PIN;
 using namespace LSM6DSOX;
 using namespace gci::sensors;
 
-TwoWire tw;
+// TwoWire tw;
 gciLSM6DSOX IMU(i2c_port);
 
 void average(lsm6dsox_t ave, lsm6dsox_t d, uint8_t window, uint8_t cnt) {
@@ -69,7 +69,8 @@ int main() {
     sleep_ms(100);
   }
 
-  uint speed = tw.init(i2c_port, I2C_400KHZ, i2c_sda, i2c_scl);
+  // uint speed = tw.init(i2c_port, I2C_400KHZ, i2c_sda, i2c_scl);
+  uint speed = i2c_bus_init(i2c_port, I2C_1MHZ, i2c_sda, i2c_scl);
 
   printf(">> i2c instance: %u baud: %u\n", i2c_port, speed);
   printf(">> i2c SDA: %u SCL: %u\n", i2c_sda, i2c_scl);
@@ -87,15 +88,21 @@ int main() {
     //   6664Hz ODR, 2000dps
     //   LPF1 cutoff 335.5Hz
     //
-    uint8_t err = IMU.init(ACCEL_RANGE_16_G, GYRO_RANGE_2000_DPS, RATE_833_HZ);
+    // This seems to top out around ~1900Hz in this loop
+    //
+    uint8_t err = IMU.init(ACCEL_RANGE_16_G, GYRO_RANGE_2000_DPS, RATE_416_HZ);
+    // uint8_t err = IMU.init(ACCEL_RANGE_16_G, GYRO_RANGE_2000_DPS, RATE_833_HZ);
+    // uint8_t err = IMU.init(ACCEL_RANGE_16_G, GYRO_RANGE_2000_DPS, RATE_1_66_KHZ);
+    // uint8_t err = IMU.init(ACCEL_RANGE_16_G, GYRO_RANGE_2000_DPS, RATE_3_33_KHZ);
+    // uint8_t err = IMU.init(ACCEL_RANGE_16_G, GYRO_RANGE_2000_DPS, RATE_6_66_KHZ);
     if (err == 0) break;
     printf("imu error %d\n", (int)err);
     sleep_ms(1000);
   }
   printf("IMU configured\n");
 
-  // uint8_t cnt=1;
   lsm6dsox_t ave;
+  Hertz hz(1000);
 
   LowPassFilter lpfx;
   initLowPassFilter(&lpfx, 100, 833);
@@ -117,8 +124,12 @@ int main() {
     ave.a.y = filterSample(&lpfy, i.a.y);
     ave.a.z = filterSample(&lpfz, i.a.z);
 
+    hz.check();
+
+    // sleep_ms(10);
+
     // printf("-----------------------------\n");
-    printf("Accels: %6.3f %6.3f %6.3f\r", ave.a.x, ave.a.y, ave.a.z);
+    printf("Accels: %6.3f %6.3f %6.3f Hz: %.2f\r", ave.a.x, ave.a.y, ave.a.z, hz.hertz);
     // printf("Gyros: %f %f %f dps\n", i.g.x, i.g.y, i.g.z);
     // printf("Temperature: %f C\n", i.temperature);
     // printf("Timestamp: %lu msec\n", i.ts);

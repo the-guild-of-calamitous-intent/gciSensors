@@ -215,13 +215,9 @@ public:
   inline size_t available() { return 0; }
 
 protected:
-  // int *i2c;
   i2c_inst_t *i2c{nullptr};
-  // TwoWire *i2c;
-  // int fd{0};
   const uint8_t addr;
   uint8_t outbuf[2];
   struct i2c_msg msgs[2];
   struct i2c_rdwr_ioctl_data i2c_data;
-  // uint8_t addr;
 };

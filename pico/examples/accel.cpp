@@ -6,7 +6,6 @@ using namespace std;
 #include "pico/binary_info.h"
 #include "hardware/gpio.h"
 #include "tusb.h" // wait for USB
-
 #include <gciSensors.hpp>
 #include "two_wire.hpp"
 
@@ -18,7 +17,6 @@ constexpr uint LED_PIN  = 25;
 using namespace LSM6DSOX;
 using namespace gci::sensors;
 
-TwoWire tw;
 gciLSM6DSOX IMU(i2c_port);
 
 int main() {
@@ -28,7 +26,7 @@ int main() {
     sleep_ms(100);
   }
 
-  uint speed = tw.init(i2c_port, I2C_400KHZ, i2c_sda, i2c_scl);
+  uint speed = i2c_bus_init(i2c_port, I2C_400KHZ, i2c_sda, i2c_scl);
 
   printf(">> i2c instance: %u baud: %u\n", i2c_port, speed);
   printf(">> i2c SDA: %u SCL: %u\n", i2c_sda, i2c_scl);

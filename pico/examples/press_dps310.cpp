@@ -17,7 +17,6 @@ constexpr uint i2c_port = 0;
 constexpr uint i2c_scl = 1;
 constexpr uint i2c_sda = 0;
 
-TwoWire tw;
 
 int main() {
   stdio_init_all();
@@ -26,13 +25,13 @@ int main() {
     sleep_ms(100);
   }
 
-  uint speed = tw.init(i2c_port, I2C_400KHZ, i2c_sda, i2c_scl);
+  uint speed = i2c_bus_init(i2c_port, I2C_400KHZ, i2c_sda, i2c_scl);
 
   printf(">> i2c instance: %u buad: %u\n", i2c_port, speed);
   printf(">> i2c SDA: %u SCL: %u\n", i2c_sda, i2c_scl);
   bi_decl(bi_2pins_with_func(i2c_sda, i2c_scl, GPIO_FUNC_I2C)); // compile info
 
-  gciDPS310 press(0);
+  gciDPS310 press(i2c_port);
 
   bool ok = false;
   while (ok == false) {

@@ -13,15 +13,11 @@ using namespace std;
 constexpr uint i2c_port = 0;
 constexpr uint i2c_scl = 1;
 constexpr uint i2c_sda = 0;
+const uint LED_PIN = 25;
 
 using namespace LIS3MDL;
 using namespace gci::sensors;
 
-TwoWire tw;
-// gciLIS3MDL mag(ADDR_PRIM, i2c_port); // default is 0, so don't need to do this
-gciLIS3MDL mag(i2c_port);
-
-const uint LED_PIN = 25;
 
 int main() {
   stdio_init_all();
@@ -30,7 +26,7 @@ int main() {
     sleep_ms(100);
   }
 
-  uint speed = tw.init(i2c_port, I2C_400KHZ, i2c_sda, i2c_scl);
+  uint speed = i2c_bus_init(i2c_port, I2C_400KHZ, i2c_sda, i2c_scl);
 
   printf(">> i2c instance: %u buad: %u\n", i2c_port, speed);
   printf(">> i2c SDA: %u SCL: %u\n", i2c_sda, i2c_scl);
@@ -40,6 +36,8 @@ int main() {
 
   gpio_init(LED_PIN);
   gpio_set_dir(LED_PIN, GPIO_OUT);
+
+  gciLIS3MDL mag(i2c_port);
 
   while (true) {
     int err = mag.init(RANGE_4GAUSS,ODR_155HZ);

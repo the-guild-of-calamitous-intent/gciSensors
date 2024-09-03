@@ -10,10 +10,13 @@
 // #include <stdio.h>  // FIXME: remove
 #include <string.h> // memcpy
 
-#if !defined(PICO_SDK) // FIXME: handle better
+#if defined(__linux__) // FIXME: handle better
 #include <unistd.h>
 void sleep_ms(uint32_t ms) { usleep(ms*1000); }
 void sleep_us(uint64_t us) { usleep(us); }
+#elif defined(ARDUINO)
+void sleep_ms(uint32_t ms) { delay(ms); }
+void sleep_us(uint64_t us) { delayMicroseconds(us); }
 #endif
 
 // namespace gci {
@@ -45,29 +48,36 @@ void sleep_us(uint64_t us) { usleep(us); }
 // using vecd_t = vec_t<double>;
 // using veci_t = vec_t<int16_t>;
 
-// // class Hertz {
-// // public:
-// //   Hertz(uint32_t v = 300) : threshold(v), epoch(millis()) {}
+class Hertz {
+public:
+  Hertz(uint32_t v = 300) : threshold(v) {
+    epoch = now_ms();
+  }
 
-// //   bool check() {
-// //     if (++count % threshold == 0) {
-// //       uint32_t now = millis();
-// //       hertz        = 1000.0f * float(count) / float(now - epoch);
-// //       epoch        = now;
-// //       count        = 0;
-// //       return true;
-// //     }
+  uint32_t now_ms() {
+    absolute_time_t t = get_absolute_time();
+    return to_ms_since_boot(t);
+  }
 
-// //     return false;
-// //   }
+  bool check() {
+    if (++count % threshold == 0) {
+      uint32_t now = now_ms();
+      hertz        = 1000.0f * static_cast<float>(count) / static_cast<float>(now - epoch);
+      epoch        = now;
+      count        = 0;
+      return true;
+    }
 
-// //   float hertz{0.0f};
+    return false;
+  }
 
-// // protected:
-// //   uint32_t epoch;
-// //   uint32_t count{0};
-// //   const uint32_t threshold;
-// // };
+  float hertz{0.0f};
+
+protected:
+  uint32_t epoch;
+  uint32_t count{0};
+  const uint32_t threshold;
+};
 
 // } // namespace sensors
 // } // namespace gci

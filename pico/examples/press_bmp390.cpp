@@ -13,14 +13,12 @@ using namespace std;
 constexpr uint i2c_port = 0;
 constexpr uint i2c_scl = 1;
 constexpr uint i2c_sda = 0;
+// const uint LED_PIN = 25;
 
 using namespace BMP390;
 using namespace gci::sensors;
 
-TwoWire tw;
-gciBMP390 bmp(0);
 
-const uint LED_PIN = 25;
 
 int main() {
   stdio_init_all();
@@ -29,7 +27,7 @@ int main() {
     sleep_ms(100);
   }
 
-  uint speed = tw.init(i2c_port, I2C_400KHZ, i2c_sda, i2c_scl);
+  uint speed = i2c_bus_init(i2c_port, I2C_400KHZ, i2c_sda, i2c_scl);
 
   printf(">> i2c instance: %u buad: %u\n", i2c_port, speed);
   printf(">> i2c SDA: %u SCL: %u\n", i2c_sda, i2c_scl);
@@ -37,8 +35,10 @@ int main() {
 
   printf("/// Press/Temp Started ///\n");
 
-  gpio_init(LED_PIN);
-  gpio_set_dir(LED_PIN, GPIO_OUT);
+  gciBMP390 bmp(i2c_port);
+
+  // gpio_init(LED_PIN);
+  // gpio_set_dir(LED_PIN, GPIO_OUT);
 
   while (true) {
     uint err = bmp.init(
