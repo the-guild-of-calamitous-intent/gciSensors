@@ -33,9 +33,10 @@ int main() {
 
   gciDPS310 press(i2c_port);
 
-  bool ok = false;
-  while (ok == false) {
-    ok = press.init(DPS_128HZ);
+  uint8_t err;
+  while (1) {
+    err = press.init(DPS_128HZ);
+    if (err == 0) break;
     printf("... oops\n");
     sleep_ms(100);
   }

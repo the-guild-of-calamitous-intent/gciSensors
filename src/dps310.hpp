@@ -52,6 +52,16 @@ constexpr uint32_t OVERSAMPLE_128X = 7;
 
 constexpr uint8_t DPS310_ADDR = 0x77; // default
 
+
+enum dps_error : uint8_t {
+  NONE = 0,
+  ERROR_MEAS_CFG,
+  ERROR_COEFF_NOT_READY,
+  ERROR_COEFF_FAIL,
+  ERROR_TMP_CFG,
+  ERROR_PRS_CFG
+};
+
 struct dps310_t {
   float pressure;
   float temperature;
@@ -64,13 +74,14 @@ public:
       : SensorI2C(addr, port) {}
   ~gciDPS310() {}
 
-  bool init(uint8_t sample_rate) {
+  uint8_t init(uint8_t sample_rate) {
     reset();
     do {
       sleep_ms(15); // pg 10, Table 8
     } while (sensor_ready() == false);
 
-    writeRegister(MEAS_CFG, 0x00); // set to idle/stop
+    // set to idle/stop
+    if (!writeRegister(MEAS_CFG, 0x00)) return ERROR_MEAS_CFG;
     sleep_ms(50);                  // how long?
 
     uint8_t pos;
@@ -152,19 +163,20 @@ public:
     readRegister(TMP_COEF_SRCE, &ext);
     ext &= 0x80; // ext already shifted
 
-    writeRegister(TMP_CFG, ext | trate | tos);
-    writeRegister(PRS_CFG, prate | pos);
+    if (!writeRegister(TMP_CFG, ext | trate | tos)) return ERROR_TMP_CFG;
+    if (!writeRegister(PRS_CFG, prate | pos)) return ERROR_PRS_CFG;
 
     int32_t incr = 10;
     do {
       sleep_ms(45); // pg 10, Table 8
-      if (incr-- == 0) return false;
+      if (incr-- == 0) return ERROR_COEFF_NOT_READY;
     } while (coeffs_ready() == false);
-    if (get_coeffs() == false) return false;
+    if (get_coeffs() == false) return ERROR_COEFF_FAIL;
 
-    writeRegister(MEAS_CFG, 0x07); // continous press/temp
+    // continous press/temp
+    if (!writeRegister(MEAS_CFG, 0x07)) return ERROR_MEAS_CFG;
 
-    return true;
+    return NONE;
   }
 
   // press ready to read: [TMP_RDY-2, PRS_RDY-1]
@@ -227,12 +239,6 @@ public:
 
   void reset() { writeRegister(RESET, 0x09); }
 
-  // // returns altitude in meters
-  // float altitude(float pressure, float seaLevelhPa = 1013.25f) {
-  //   float alt = 44330.0f * (1.0f - powf((pressure / 100.0f) / seaLevelhPa, 0.1903f));
-  //   return alt;
-  // }
-
 private:
   // // coefficients
   // int32_t c0;
@@ -244,15 +250,15 @@ private:
   // int32_t c20;
   // int32_t c21;
   // int32_t c30;
-  float c0;
-  float c1;
-  float c00;
-  float c10;
-  float c01;
-  float c11;
-  float c20;
-  float c21;
-  float c30;
+  float c0{0.0f};
+  float c1{0.0f};
+  float c00{0.0f};
+  float c10{0.0f};
+  float c01{0.0f};
+  float c11{0.0f};
+  float c20{0.0f};
+  float c21{0.0f};
+  float c30{0.0f};
 
   // scaling
   float pscale;

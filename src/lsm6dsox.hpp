@@ -126,13 +126,18 @@ enum sox_error : uint8_t {
   ERROR_WHOAMI           = 1,
   ERROR_GYRO_RANGE       = 2,
   ERROR_ACCEL_RANGE      = 3,
-  ERROR_ENABLE_FILTER    = 4,
-  ERROR_ENABLE_TIMESTAMP = 5,
-  ERROR_ENABLE_BDU       = 6,
-  ERROR_DISABLE_FIFO     = 7,
-  ERROR_DISABLE_I3C      = 8,
   ERROR_ENABLE_INT_ACCEL = 9,
-  ERROR_ENABLE_INT_GYRO  = 10
+  ERROR_ENABLE_INT_GYRO  = 10,
+  ERROR_CTRL1_XL = 11,
+  ERROR_CTRL2_G = 12,
+  ERROR_CTRL3_C = 13,
+  ERROR_CTRL4_C = 14,
+  ERROR_CTRL5_C = 15,
+  ERROR_CTRL6_C = 16,
+  ERROR_CTRL7_G = 17,
+  ERROR_CTRL8_XL = 18,
+  ERROR_CTRL9_XL = 19,
+  ERROR_CTRL10_C = 20
 };
 
 // constexpr int MAX_CHECK = 10;
@@ -176,7 +181,7 @@ public:
       return ERROR_ACCEL_RANGE;
     }
     if (!writeRegister(REG_CTRL1_XL, odr | accel_range))
-      return ERROR_ENABLE_BDU;
+      return ERROR_CTRL1_XL;
 
     if (gyro_range == GYRO_RANGE_125_DPS) g_scale = 125.0f / 32768.0f;
     else if (gyro_range == GYRO_RANGE_250_DPS) g_scale = 250.0f / 32768.0f;
@@ -185,36 +190,36 @@ public:
     else if (gyro_range == GYRO_RANGE_2000_DPS) g_scale = 2000.0f / 32768.0f;
     else return ERROR_GYRO_RANGE;
 
-    if (!writeRegister(REG_CTRL2_G, odr | gyro_range)) return ERROR_ENABLE_BDU;
+    if (!writeRegister(REG_CTRL2_G, odr | gyro_range)) return ERROR_CTRL2_G;
 
     // auto-increament during multi-byte reads
     // continous sampling BDU = 0
-    if (!writeRegister(REG_CTRL3_C, IF_INC)) return ERROR_ENABLE_BDU;
+    if (!writeRegister(REG_CTRL3_C, IF_INC)) return ERROR_CTRL3_C;
 
     // disable fifo
     // LSM6DSOX_FIFO_CTRL4 bypassmode (0)
     uint8_t DRDY_MASK = 0x08;
     // if (!writeRegister(REG_FIFO_CTRL4, 0x00)) return ERROR_DISABLE_FIFO;
-    if (!writeRegister(REG_FIFO_CTRL4, DRDY_MASK)) return ERROR_DISABLE_FIFO;
+    if (!writeRegister(REG_FIFO_CTRL4, DRDY_MASK)) return ERROR_CTRL4_C;
 
     // set gyroscope power mode to high performance and bandwidth to 16 MHz
-    if (!writeRegister(REG_CTRL7_G, 0x00)) return 80;
+    if (!writeRegister(REG_CTRL7_G, 0x00)) return ERROR_CTRL7_G;
 
     // Set LPF and HPF config register
     // LPF ODR/2, HPCF_XL = 0, LPF2_XL_EN = 0
     // disable HPF, HP_REF_MODE_XL = 0x00
-    if (!writeRegister(REG_CTRL8_XL, 0x00)) return ERROR_ENABLE_FILTER;
-    // if (!writeRegister(REG_CTRL8_XL, XL_FS_MODE)) return ERROR_ENABLE_FILTER;
+    if (!writeRegister(REG_CTRL8_XL, 0x00)) return ERROR_CTRL8_XL;
+    // if (!writeRegister(REG_CTRL8_XL, XL_FS_MODE)) return ERROR_CTRL8_XL;
 
     // disable I3C
     // LSM6DSOX_CTRL9_XL
     // LSM6DSOX_I3C_BUS_AVB
     // uint8_t val = 0xD0; // 0b1110000; // these are default
-    // if (!writeRegister(REG_CTRL9_XL, val)) return ERROR_DISABLE_I3C;
+    // if (!writeRegister(REG_CTRL9_XL, val)) return ERROR_CTRL9_XL;
 
     // enable timestamp
     if (!writeRegister(REG_CTRL10_C, TIMESTAMP_EN))
-      return ERROR_ENABLE_TIMESTAMP;
+      return ERROR_CTRL10_C;
 
     // enable INT1 and INT2 pins when data is ready
     if (!writeRegister(REG_INT1_CTRL, INT_DRDY_XL))
@@ -224,66 +229,6 @@ public:
 
     return ERROR_NONE;
   }
-
-  // Betaflight values
-  // Accel:
-  //   833Hz ODR, 16G, use LPF1 output
-  //   high performance mode
-  // Gyro:
-  //   6664Hz ODR, 2000dps
-  //   LPF1 cutoff 335.5Hz
-  //
-  // latch LSB/MSB at reads, pins high, pins push/pull, auto-increment reads
-  // disable i3c interface
-  // uint8_t init_betaflight() {
-  //   uint8_t id{0};
-  //   readRegister(REG_WHO_AM_I, &id);
-  //   if (!(id == WHO_AM_I)) return ERROR_WHOAMI;
-
-  //   a_scale = 16.0f / 32768.0f;
-  //   uint8_t XL_LPF1 = 0x00 << 1; // FIXME: double check
-  //   if (!writeRegister(REG_CTRL1_XL, RATE_833_HZ | ACCEL_RANGE_16_G | XL_LPF1))
-  //     return ERROR_ENABLE_BDU;
-
-  //   if (!writeRegister(REG_CTRL2_G, RATE_6_66_KHZ | GYRO_RANGE_2000_DPS))
-  //     return ERROR_ENABLE_BDU;
-  //   // Serial.println(int(readRegister(REG_CTRL2_G)));
-
-  //   // auto-increament during multi-byte reads
-  //   // continous sampling BDU = 0
-  //   if (!writeRegister(REG_CTRL3_C, IF_INC)) return ERROR_ENABLE_BDU;
-
-  //   // disable fifo
-  //   // LSM6DSOX_FIFO_CTRL4 bypassmode (0)
-  //   uint8_t DRDY_MASK = 0x08;
-  //   // if (!writeRegister(REG_FIFO_CTRL4, 0x00)) return ERROR_DISABLE_FIFO;
-  //   if (!writeRegister(REG_FIFO_CTRL4, DRDY_MASK))
-  //     return ERROR_DISABLE_FIFO; // ??
-
-  //   // set gyroscope power mode to high performance and bandwidth to 16 MHz
-  //   if (!writeRegister(REG_CTRL7_G, 0x00)) return 80;
-
-  //   // Set LPF and HPF config register
-  //   // LPF ODR/2, HPCF_XL = 0, LPF2_XL_EN = 0
-  //   // disable HPF, HP_REF_MODE_XL = 0x00
-  //   if (!writeRegister(REG_CTRL8_XL, 0x00)) return ERROR_ENABLE_FILTER;
-  //   // if (!writeRegister(REG_CTRL8_XL, XL_FS_MODE)) return ERROR_ENABLE_FILTER;
-
-  //   // disable I3C
-  //   // LSM6DSOX_CTRL9_XL
-  //   // LSM6DSOX_I3C_BUS_AVB
-  //   // uint8_t val = 0xD0; // 0b1110000; // these are default
-  //   // if (!writeRegister(REG_CTRL9_XL, val)) return ERROR_DISABLE_I3C;
-
-  //   // enable timestamp
-  //   if (!writeRegister(REG_CTRL10_C, TIMESTAMP_EN)) return ERROR_ENABLE_TIMESTAMP;
-
-  //   // enable INT1 and INT2 pins when data is ready
-  //   if (!writeRegister(REG_INT1_CTRL, INT_DRDY_XL)) return ERROR_ENABLE_INT_ACCEL; // accel
-  //   if (!writeRegister(REG_INT2_CTRL, INT_DRDY_G)) return ERROR_ENABLE_INT_GYRO; // gyro
-
-  //   return ERROR_NONE;
-  // }
 
   // MSB 10000101 LSB = 128 + 4 + 1 = 133
   bool reboot() { return writeRegister(REG_CTRL3_C, 133); }
