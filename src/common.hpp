@@ -47,7 +47,7 @@ struct vec_t {
   float x, y, z;
   // bool ok;  // error?
 
-  inline const float magnitude() const { return sqrt(x * x + y * y + z * z); }
+  inline const float magnitude() const { return sqrtf(x * x + y * y + z * z); }
 
   bool normalize() {
     float n = 1.0f / magnitude();
@@ -81,6 +81,33 @@ struct vec_raw_t {
 
 
 ///////////////////////////////////////////////////////////
+// Orientation
+///////////////////////////////////////////////////////////
+
+struct quat_t {
+  float w, x, y, z;
+  // bool ok;  // error?
+
+  inline const float magnitude() const { return sqrtf(x * x + y * y + z * z + w * w); }
+
+  bool normalize() {
+    float n = 1.0f / magnitude();
+    if (std::isinf(n)) return false;
+
+    w *= n;
+    x *= n;
+    y *= n;
+    z *= n;
+
+    return true;
+  }
+
+  float& operator[](size_t i) {
+    return (i == 0) ? w : (i == 1) ? x : (i == 2) ? y : z;
+  }
+};
+
+///////////////////////////////////////////////////////////
 // IMU (Accels, Gyros)
 ///////////////////////////////////////////////////////////
 
@@ -107,7 +134,7 @@ struct vec_msg_t {
   float x, y, z;
   bool ok;  // error?
 
-  inline const float magnitude() const { return sqrt(x * x + y * y + z * z); }
+  inline const float magnitude() const { return sqrtf(x * x + y * y + z * z); }
 
   bool normalize() {
     float n = 1.0f / magnitude();
@@ -157,29 +184,6 @@ struct pt_t {
   }
 };
 
-// class Hertz {
-// public:
-//   Hertz(uint32_t v = 300) : threshold(v), epoch(millis()) {}
-
-//   bool check() {
-//     if (++count % threshold == 0) {
-//       uint32_t now = millis();
-//       hertz        = 1000.0f * float(count) / float(now - epoch);
-//       epoch        = now;
-//       count        = 0;
-//       return true;
-//     }
-
-//     return false;
-//   }
-
-//   float hertz{0.0f};
-
-// protected:
-//   uint32_t epoch;
-//   uint32_t count{0};
-//   const uint32_t threshold;
-// };
 
 } // namespace sensors
 } // namespace gci

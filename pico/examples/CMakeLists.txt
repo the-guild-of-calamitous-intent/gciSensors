@@ -6,6 +6,7 @@ list(APPEND examples
     scan_bus
     gps
     press_dps310
+    imu
 )
 
 foreach(app ${examples})

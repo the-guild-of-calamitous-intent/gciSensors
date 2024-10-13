@@ -49,32 +49,32 @@ any member variables.
 TwoWire tw;
 tw.init(0, 400000, 8, 9);
 */
-class TwoWire {
+// class TwoWire {
 
-public:
-  TwoWire() {}
-  ~TwoWire() {}
+// public:
+//   TwoWire() {}
+//   ~TwoWire() {}
 
-  uint32_t init(const uint32_t port, const uint baud, const uint32_t pin_sda,
-            const uint32_t pin_scl) {
-    if (port != 0 && port != 1) return INVALID_PORT;
-    if (!(sda_valid[port] & (1 << pin_sda))) return INVALID_SDA_PIN;
-    if (!(scl_valid[port] & (1 << pin_scl))) return INVALID_SCL_PIN;
+//   uint32_t init(const uint32_t port, const uint baud, const uint32_t pin_sda,
+//             const uint32_t pin_scl) {
+//     if (port != 0 && port != 1) return INVALID_PORT;
+//     if (!(sda_valid[port] & (1 << pin_sda))) return INVALID_SDA_PIN;
+//     if (!(scl_valid[port] & (1 << pin_scl))) return INVALID_SCL_PIN;
 
-    gpio_set_function(pin_sda, GPIO_FUNC_I2C);
-    gpio_set_function(pin_scl, GPIO_FUNC_I2C);
-    gpio_pull_up(pin_sda);
-    gpio_pull_up(pin_scl);
-    // Make the I2C pins available to picotool
-    // THIS  WON'T WORK, cannot use variables, only constants
-    // bi_decl(bi_2pins_with_func(pin_sda, pin_scl, GPIO_FUNC_I2C));
+//     gpio_set_function(pin_sda, GPIO_FUNC_I2C);
+//     gpio_set_function(pin_scl, GPIO_FUNC_I2C);
+//     gpio_pull_up(pin_sda);
+//     gpio_pull_up(pin_scl);
+//     // Make the I2C pins available to picotool
+//     // THIS  WON'T WORK, cannot use variables, only constants
+//     // bi_decl(bi_2pins_with_func(pin_sda, pin_scl, GPIO_FUNC_I2C));
 
-    if (port == 0) return i2c_init(&i2c0_inst, baud);
-    else if (port == 1) return i2c_init(&i2c1_inst, baud);
+//     if (port == 0) return i2c_init(&i2c0_inst, baud);
+//     else if (port == 1) return i2c_init(&i2c1_inst, baud);
 
-    return UNKNOWN;
-  }
-};
+//     return UNKNOWN;
+//   }
+// };
 
 uint32_t i2c_bus_init(const uint32_t port, const uint32_t baud, const uint32_t pin_sda,
           const uint32_t pin_scl) {

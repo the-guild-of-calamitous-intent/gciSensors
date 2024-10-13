@@ -1,5 +1,16 @@
 # Raspberry Pi Pico
 
+![](../docs/rp2040.png)
+
+## `screen`
+
+```
+screen tty.usbmoden1234
+Ctrl-a-k
+```
+
+## Build
+
 Change these as necessary
 
 ```cmake

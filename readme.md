@@ -226,6 +226,17 @@ use. The other (`i2c-0`) is used for camera control.
 
 Need to fix this.
 
+## QWIIC Connector
+
+![](./docs/qwiic-pinout.jpg)
+
+| Pin | Color |
+|-----|-------|
+| GND | Black
+| 3V3 | Red
+| SDA | Blue
+| SCL | Yellow
+
 ## Other Stuff
 
 - KF code, look at: /Users/kevin/tmp/inertial-navigation
