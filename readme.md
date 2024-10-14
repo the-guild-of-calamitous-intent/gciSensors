@@ -182,10 +182,14 @@ while (1) {
 
 ## Filters
 
-So these aren't working too great right now ... mainly due to the
-magnitometer issue
+So these aren't working too great right now
 
+- `lpf_t(cutFreq, sampleFreq)`: simple low pass filter
+- `compfilter_t(alpha)`: quaternion complementary filter using accel and gyro, [ref](https://ahrs.readthedocs.io/en/latest/filters/complementary.html)
+- `tilt_compass_t`: uses accel and mag, [ref](https://ahrs.readthedocs.io/en/latest/filters/tilt.html)
 - [AHRS](https://ahrs.readthedocs.io/en/latest/filters.html)
+    - Mahony: uses accel and gyro
+    - Madgwick: uses accel, gyro and mag
 
 ## Pi Pico
 
@@ -285,6 +289,14 @@ GyroscopeAngle = FilteredAngle_k-1 + w * dt
 dt = sampling rate, tau = time constant greater than timescale of typical accelerometer noise
 
 I had a sampling rate of about 0.04 seconds and chose a time constant of about 1 second, giving alpha = 0.96. [ref](https://www.geekmomprojects.com/gyroscopes-and-accelerometers-on-a-chip/)
+
+## Math
+
+Added some structs:
+
+- `vec_t(x,y,z)`
+- `quat_t(w,x,y,z)`
+
 
 ## References
 

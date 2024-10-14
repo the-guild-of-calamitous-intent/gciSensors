@@ -18,14 +18,19 @@ using namespace LSM6DSOX;
 using namespace BMP390;
 using namespace gci::sensors;
 
+using vec_t = gci::sensors::vec_t;
+using quat_t = gci::sensors::quat_t;
+
 template<std::size_t N>
 class StaticCalibrate {
   std::array<float[3],N> buffer;
-  float x{0.0f}, y{0.0f}, z{0.0f};
-  size_t cnt{0};
+  size_t cnt{0}; // counter for push()
 
   public:
+  float x{0.0f}, y{0.0f}, z{0.0f};
+
   void push(float x, float y, float z) {
+    if (cnt == buffer.size()) return; // safety check
     buffer[cnt][0] = x;
     buffer[cnt][1] = y;
     buffer[cnt++][2] = z;
@@ -34,10 +39,11 @@ class StaticCalibrate {
   void calibrate() {
     float size = (float)buffer.size();
     x = y = z = 0.0f;
-    for (size_t i=buffer.size()-1; i >= 0; --i) {
-      x += buffer[i][0];
-      y += buffer[i][1];
-      z += buffer[i][2];
+    printf("size: %f\n", size);
+    for (size_t i=buffer.size(); i > 0; --i) {
+      x += buffer[i-1][0];
+      y += buffer[i-1][1];
+      z += buffer[i-1][2];
     }
     x /= size;
     y /= size;
@@ -45,11 +51,9 @@ class StaticCalibrate {
   }
 
   const size_t size() const { return buffer.size(); }
-
-  const float get_x() const { return x; }
-  const float get_y() const { return y; }
-  const float get_z() const { return z; }
 };
+
+///////////////////////////////////////////////////////////
 
 struct nav_t {
   vec_t a, g, m;
@@ -63,9 +67,43 @@ struct nav_t {
 
 gciLSM6DSOX IMU(i2c_port);
 gciBMP390 bmp(i2c_port);
+compfilter_t qcf(0.01f);
+Hertz hz(200);
 
-StaticCalibrate<256> cal;
-float bx, by, bz;
+void cal_imu() {
+  StaticCalibrate<256> acal;
+  StaticCalibrate<256> gcal;
+
+  for (size_t i=acal.size(); i>0; --i) {
+    lsm6dsox_t ret = IMU.read();
+    while (ret.ok == false) {
+      ret = IMU.read();
+      sleep_ms(3);
+      // printf(".");
+    }
+    acal.push(ret.a.x, ret.a.y, ret.a.z);
+    gcal.push(ret.g.x, ret.g.y, ret.g.z);
+    printf("%zu\n", i);
+  }
+  acal.calibrate();
+  gcal.calibrate();
+
+  float corr[12] = {
+    1.0,0.0,0.0, acal.x,
+    0.0,1.0,0.0, acal.y,
+    0.0,0.0,1.0, acal.z - 1.0f
+  };
+
+  IMU.set_accel_cal(corr);
+
+  corr[3] = gcal.x;
+  corr[7] = gcal.y;
+  corr[11] = gcal.z;
+  IMU.set_gyro_cal(corr);
+
+  printf("Accel calibration: %.3f %.3f %.3f\n", acal.x, acal.y, acal.z);
+  printf("Gyro calibration: %.3f %.3f %.3f\n", gcal.x, gcal.y, gcal.z);
+}
 
 void setup() {
   // setup serial IO to computer
@@ -93,9 +131,9 @@ void setup() {
     //
     // This seems to top out around ~1900Hz in this loop
     //
-    uint8_t err = IMU.init(ACCEL_RANGE_16_G, GYRO_RANGE_2000_DPS, RATE_104_HZ);
+    // uint8_t err = IMU.init(ACCEL_RANGE_16_G, GYRO_RANGE_2000_DPS, RATE_104_HZ);
     // uint8_t err = IMU.init(ACCEL_RANGE_16_G, GYRO_RANGE_2000_DPS, RATE_208_HZ);
-    // uint8_t err = IMU.init(ACCEL_RANGE_16_G, GYRO_RANGE_2000_DPS, RATE_416_HZ);
+    uint8_t err = IMU.init(ACCEL_RANGE_16_G, GYRO_RANGE_2000_DPS, RATE_416_HZ);
     // uint8_t err = IMU.init(ACCEL_RANGE_16_G, GYRO_RANGE_2000_DPS, RATE_833_HZ);
     // uint8_t err = IMU.init(ACCEL_RANGE_16_G, GYRO_RANGE_2000_DPS, RATE_1_66_KHZ);
     // uint8_t err = IMU.init(ACCEL_RANGE_16_G, GYRO_RANGE_2000_DPS, RATE_3_33_KHZ);
@@ -105,30 +143,8 @@ void setup() {
     sleep_ms(500);
   }
 
-  for (size_t i=0; i<cal.size(); ++i) {
-    lsm6dsox_t ret = IMU.read();
-    while (ret.ok == false) {
-      ret = IMU.read();
-      sleep_ms(100);
-      printf(".");
-    }
-    cal.push(ret.a.x, ret.a.y, ret.a.z);
-
-    // state.a.x = ret.a.x;
-    // state.a.y = ret.a.y;
-    // state.a.z = ret.a.z;
-
-    // state.g.x = ret.g.x;
-    // state.g.y = ret.g.y;
-    // state.g.z = ret.g.z;
-    sleep_ms(1);
-  }
-  cal.calibrate();
-  bx = cal.get_x();
-  by = cal.get_y();
-  bz = cal.get_z();
-
-  printf("IMU configured: %.3f %.3f %.3f\n", bx, by, bz);
+  cal_imu();
+  printf("IMU configured\n");
 
   // configure pressure/temperature sensor
   while (true) {
@@ -142,7 +158,7 @@ void setup() {
 }
 
 void get_imu() {
-  lsm6dsox_t ret = IMU.read();
+  lsm6dsox_t ret = IMU.read_cal();
   if (ret.ok == false) return;
 
   state.a.x = ret.a.x;
@@ -152,6 +168,12 @@ void get_imu() {
   state.g.x = ret.g.x;
   state.g.y = ret.g.y;
   state.g.z = ret.g.z;
+
+  quat_t q = qcf.update(ret.a, ret.g, 0.01f);
+  float r, p, y;
+  q.to_euler(&r, &p, &y, true);
+  printf("Euler[deg]: %8.3f %8.3f %8.3f\r", r, p, y);
+  // printf("Q: %.3f %.3f %.3f %.3f\r", q.w, q.x, q.y, q.z);
 
   // printf("Accels: %6.3f %6.3f %6.3f\n", ret.a.x, ret.a.y, ret.a.z);
   // printf("Gyros: %f %f %f dps\n", ret.g.x, ret.g.y, ret.g.z);
@@ -163,7 +185,7 @@ void get_bmp() {
   bmp390_t ans = bmp.read();
   if (ans.ok == false) return;
 
-  float alt = pressure_altitude(ans.pressure);
+  // float alt = pressure_altitude(ans.pressure);
   // printf("Press: %8.1f Pa  Temp: %5.2f C  Alt: %7.1f m\n",
   //   ans.pressure,
   //   ans.temperature,
@@ -174,7 +196,7 @@ void loop() {
   get_imu();
   get_bmp();
 
-  sleep_ms(10);
+  sleep_ms(100);
 }
 
 // main loop, doesn't do much

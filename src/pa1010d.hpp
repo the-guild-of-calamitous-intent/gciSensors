@@ -5,9 +5,10 @@
 \**************************************/
 #pragma once
 
+
 #include "sensor.hpp"
 #include "pmtk.hpp"
-#include <cstring>
+#include <string.h>
 
 namespace PA1010D {
 

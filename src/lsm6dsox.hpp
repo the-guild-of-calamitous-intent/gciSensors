@@ -233,8 +233,8 @@ public:
   // MSB 10000101 LSB = 128 + 4 + 1 = 133
   bool reboot() { return writeRegister(REG_CTRL3_C, 133); }
 
-  void set_acal(float cal[12]) { memcpy(acal, cal, 12 * sizeof(float)); }
-  void set_gcal(float cal[12]) { memcpy(gcal, cal, 12 * sizeof(float)); }
+  void set_accel_cal(float cal[12]) { memcpy(acal, cal, 12 * sizeof(float)); }
+  void set_gyro_cal(float cal[12]) { memcpy(gcal, cal, 12 * sizeof(float)); }
 
   const lsm6dsox_raw_t read_raw() {
     lsm6dsox_raw_t ret;

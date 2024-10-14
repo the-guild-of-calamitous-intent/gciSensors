@@ -5,10 +5,10 @@
 \**************************************/
 #pragma once
 
+
 #include "sensor.hpp"
 #include <string.h> // memcpy
-
-#include <stdio.h>
+// #include <stdio.h>
 
 namespace LIS3MDL {
 
