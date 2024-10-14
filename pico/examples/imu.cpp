@@ -69,6 +69,7 @@ gciLSM6DSOX IMU(i2c_port);
 gciBMP390 bmp(i2c_port);
 compfilter_t qcf(0.01f);
 Hertz hz(200);
+lpf_t lpfx(50,100), lpfy(50,100), lpfz(50,100);
 
 void cal_imu() {
   StaticCalibrate<256> acal;
@@ -169,7 +170,14 @@ void get_imu() {
   state.g.y = ret.g.y;
   state.g.z = ret.g.z;
 
-  quat_t q = qcf.update(ret.a, ret.g, 0.01f);
+  // filter the gyro for fun
+  vec_t g{
+    lpfx.filter(ret.g.x),
+    lpfy.filter(ret.g.y),
+    lpfz.filter(ret.g.z)
+  };
+
+  quat_t q = qcf.update(ret.a, g, 0.01f);
   float r, p, y;
   q.to_euler(&r, &p, &y, true);
   printf("Euler[deg]: %8.3f %8.3f %8.3f\r", r, p, y);
@@ -196,7 +204,7 @@ void loop() {
   get_imu();
   get_bmp();
 
-  sleep_ms(100);
+  sleep_ms(10);
 }
 
 // main loop, doesn't do much
