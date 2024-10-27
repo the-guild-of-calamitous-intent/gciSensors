@@ -50,8 +50,9 @@ int main() {
   bi_decl(bi_1pin_with_name(SPI_CS, "SPI1 CS"));
   // bi_decl(bi_1pin_with_name(INT, "SPI1 Interrupt"));
 
-  LPS22 lps22(1);
-  bool found = lps22.init(SPI_CS);
+  LPS22SPI lps22(1);
+  lps22.set_cs(SPI_CS);
+  bool found = lps22.init();
   if (found) printf("success!\n");
   else printf("failed!!!\n");
 

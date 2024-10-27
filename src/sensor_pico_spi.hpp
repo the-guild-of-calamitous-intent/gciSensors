@@ -9,6 +9,8 @@ public:
     else if (port == 1) spi = spi1;
   }
 
+  void set_cs(uint32_t cs) { CS = cs; }
+
 protected:
   spi_inst_t *spi{nullptr};
   uint32_t CS{0};
@@ -17,8 +19,7 @@ protected:
     gpio_put(CS, select ? 0 : 1); // Active low
   }
 
-  void read_registers(spi_inst_t *spi, uint8_t reg, uint8_t *buf,
-                      uint16_t len) {
+  void read_registers(uint8_t reg, uint8_t *buf, uint16_t len) {
     // bool r = spi_is_readable(spi);
     // bool w = spi_is_writable(spi);
 
@@ -36,12 +37,12 @@ protected:
     // spi_write_read_blocking(spi, &reg, buf, 1); doesn't work
 
     spi_cs(false);
-    // sleep_ms(10);
+    sleep_ms(10);
 
     // printf("Sent: 0x%02x, Received: 0x%02x\n", reg, buf[0]);
   }
 
-  void write_register(spi_inst_t *spi, uint8_t reg, uint8_t data) {
+  void write_register(uint8_t reg, uint8_t data) {
     uint8_t buf[2];
     buf[0] = reg & 0x7f; // remove read bit as this is a write
     buf[1] = data;
@@ -49,6 +50,6 @@ protected:
     spi_write_blocking(spi, buf, 2);
     spi_cs(false);
 
-    // sleep_ms(10);
+    sleep_ms(10);
   }
 };

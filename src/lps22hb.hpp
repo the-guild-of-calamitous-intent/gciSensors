@@ -6,7 +6,7 @@ References:
 #pragma once
 
 #include <math.h>
-#include "spi/sensor_spi_pico.hpp"
+#include "sensor.hpp"
 
 // 10 MHz max SPI frequency
 constexpr uint32_t LPS22_MAX_SPI_CLK_HZ = 10000000;
@@ -69,12 +69,13 @@ struct lps22_t {
 //
 // interesting:
 // https://github.com/STMicroelectronics/stm32-lps22hb/blob/main/lps22hb.c
-class LPS22 : public SensorSPI {
 
+template<typename SensorT>
+class LPS22 : public SensorT {
 public:
-  LPS22(uint32_t port) : SensorSPI(port) {}
+  LPS22(uint32_t port) : SensorT(port) {}
 
-  bool init(uint32_t CS) {
+  bool init() {
     // // This example will use SPI1 at 10 MHz.
     // spi_init(spi, LPS22_MAX_SPI_CLK_HZ);
 
@@ -87,10 +88,10 @@ public:
     // gpio_set_dir(CS, GPIO_OUT);
     // gpio_put(CS, 1); // CS high is inactive
 
-    this->CS = CS;
+    // SensorT::CS = CS;
 
     uint8_t id;
-    read_registers(spi, LPS22_WHO_AM_I, &id, 1);
+    SensorT::read_registers(LPS22_WHO_AM_I, &id, 1);
     // printf("id: %d\n", (int)id); // 0xB1 == 177
 
     if ((id != LPS22_CHIP_ID)) {
@@ -99,17 +100,17 @@ public:
 
     // SWRESET - reset regs to default
     uint8_t reg = LPS22_CTRL_REG2_SWRESET;
-    write_register(spi, LPS22_CTRL_REG2, reg);
+    SensorT::write_register(LPS22_CTRL_REG2, reg);
 
     // Enable continous, 75Hz, LPF (ODR/9 = 8Hz)
     reg = LPS22_CTRL_REG1_ODR_1HZ;
     reg |= LPS22_CTRL_REG1_LPFP_DIV_9;
     reg |= LPS22_CTRL_REG1_BDU_EN;
-    write_register(spi, LPS22_CTRL_REG1, reg);
+    SensorT::write_register(LPS22_CTRL_REG1, reg);
 
     // disable I2C
     reg = LPS22_CTRL_REG2_I2C_DIS;
-    write_register(spi, LPS22_CTRL_REG2, reg);
+    SensorT::write_register(LPS22_CTRL_REG2, reg);
 
     // Enable DRDY on pin when data ready
     // CTRL_REG3, INT_H_L, defaults to 0 -> active high
@@ -117,7 +118,7 @@ public:
     reg = LPS22_CTRL_REG3_DRDY_EN;
     reg |= LPS22_CTRL_REG3_INT_S_DRDY;
     // reg |= LPS22_CTRL_REG3_OPEN_DRAIN;
-    write_register(spi, LPS22_CTRL_REG3, reg);
+    SensorT::write_register(LPS22_CTRL_REG3, reg);
 
     // FIFO_CTRL = 0, bypass mode
 
@@ -126,7 +127,7 @@ public:
 
   lps22_t read() {
     uint8_t sensor_data[5]{0,0,0,0,0};
-    read_registers(spi, LPS22_PRESSURE_OUT_XL, sensor_data, 5);
+    SensorT::read_registers(LPS22_PRESSURE_OUT_XL, sensor_data, 5);
 
     int32_t p = (int32_t)sensor_data[0];
     p |= (int32_t)(sensor_data[1] << 8);
@@ -147,3 +148,4 @@ public:
   }
 };
 
+using LPS22SPI = LPS22<SensorSPI>;

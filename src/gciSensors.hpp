@@ -51,4 +51,4 @@ inline uint16_t to_16b(uint8_t msb, uint8_t lsb) {
 #include "lsm6dsox.hpp"
 #include "pa1010d.hpp"
 // spi
-#include "spi/lps22hb.hpp"
+#include "lps22hb.hpp"
