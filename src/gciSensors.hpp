@@ -13,6 +13,13 @@
 // namespace gci {
 // namespace sensors {
 
+struct bus_t {
+  uint32_t port{0};
+  // uint32_t DI{0},DO{0},CLK{0},CS{0};
+  uint32_t spi_cs{0};
+  uint8_t i2c_addr{0};
+};
+
 
 // } // namespace sensors
 // } // namespace gci
@@ -37,10 +44,11 @@ inline uint16_t to_16b(uint8_t msb, uint8_t lsb) {
 // } // namespace sensors
 // } // namespace gci
 
-// sensor drivers
+// i2c
 #include "bmp3.hpp"
 #include "dps310.hpp"
 #include "lis3mdl.hpp"
 #include "lsm6dsox.hpp"
 #include "pa1010d.hpp"
-
+// spi
+#include "spi/lps22hb.hpp"
