@@ -20,17 +20,17 @@ This library is primarily just drivers for I2C sensors I use.
 
 ## Units
 
-| Sensor Type | Units        | Abbreviation
-|-------------|--------------|--------------|
-| Accels      | gravity      | g
-| Gyros       | degrees/sec  | dps
-| Mags        | gauss        | gs
-| Temperature | Celcius      | C
-| Pressure    | Pascal       | Pa
-| Altitude    | meter        | m
+| Sensor Type | Units           | Abbreviation
+|-------------|-----------------|--------------|
+| Accels      | gravity         | g
+| Gyros       | degrees/sec     | dps
+| Mags        | gauss           | gs
+| Temperature | Celcius         | C
+| Pressure    | Pascal          | Pa
+| Altitude    | meter           | m
 | Lat/Lon     | decimal degrees | deg
-| Rate        | hertz        | Hz
-| Time        | seconds      | sec
+| Rate        | hertz           | Hz
+| Time        | seconds         | sec
 
 ## LSM6DSOX
 
