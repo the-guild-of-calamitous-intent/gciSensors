@@ -59,6 +59,7 @@ endif()
 
 LIST(APPEND pico_libs
     pico_stdlib
+    hardware_spi
     hardware_i2c)
 
 
