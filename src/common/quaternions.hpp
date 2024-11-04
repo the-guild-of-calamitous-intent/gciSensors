@@ -17,7 +17,7 @@ namespace sensors {
 constexpr float deg2rad = static_cast<float>(M_PI) / 180.0f;
 constexpr float rad2deg = 180.0f / static_cast<float>(M_PI);
 
-struct quat_t {
+struct __attribute__((packed)) quat_t {
   quat_t(): w(1.0f), x(0.0f), y(0.0f), z(0.0f) {}
   quat_t(float w, float x, float y, float z): w(w), x(x), y(y), z(z) {}
   float w, x, y, z;
@@ -34,10 +34,6 @@ struct quat_t {
     z *= n;
 
     return true;
-  }
-
-  float& operator[](size_t i) {
-    return (i == 0) ? w : (i == 1) ? x : (i == 2) ? y : z;
   }
 
   // anwer = q(this) * r

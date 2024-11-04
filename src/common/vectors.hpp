@@ -18,7 +18,7 @@ namespace sensors {
 ///////////////////////////////////////////////////////////
 
 // template <typename T>
-struct vec_t {
+struct __attribute__((packed)) vec_t {
   vec_t(): x(0.0f), y(0.0f), z(0.0f) {}
   vec_t(float x, float y, float z): x(x), y(y), z(z) {}
   float x, y, z;
@@ -34,10 +34,6 @@ struct vec_t {
     z *= n;
 
     return true;
-  }
-
-  float& operator[](size_t i) {
-    return (i == 0) ? x : (i == 1) ? y : z;
   }
 };
 

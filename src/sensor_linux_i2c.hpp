@@ -92,8 +92,8 @@ struct i2c_inst_t {
   }
 
   void fdclose() {
-    if (fd != 0) sensors::close(fd);
-    fd = 0;
+    // if (fd != 0) ::close(fd);
+    // fd = 0;
   }
 };
 
