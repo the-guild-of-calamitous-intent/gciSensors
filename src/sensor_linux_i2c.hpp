@@ -157,6 +157,40 @@ public:
     return true;
   }
 
+  bool writeRegisters(const uint8_t reg, size_t len, const uint8_t *data) {
+    // // i2c->set(addr);
+    // // return i2c->write(reg, data);
+
+    // // uint8_t outbuf[2];
+    // // struct i2c_msg msgs[2];
+
+    // // set(addr);
+    // if (ioctl(i2c->fd, I2C_SLAVE, addr) < 0) {
+    //   // printf("write error\n");
+    //   // ::close(i2c->fd); // something is wrong, so stop?
+    //   i2c->fdclose();
+    // }
+
+    // outbuf[0] = reg;
+    // outbuf[1] = data;
+    // // memcpy(&outbuf[1], &data, len);
+
+    // msgs[0].addr   = addr;
+    // msgs[0].flags  = 0;
+    // msgs[0].len    = len + 1;
+    // msgs[0].buf    = outbuf;
+
+    // i2c_data.msgs  = msgs;
+    // i2c_data.nmsgs = 1;
+
+    // if (ioctl(i2c->fd, I2C_RDWR, &i2c_data) < 0) {
+    //   // perror("ioctl(I2C_RDWR) in i2c_write");
+    //   return false;
+    // }
+
+    return true;
+  }
+
   bool readRegisters(const uint8_t reg, const uint8_t count,
                      uint8_t *const data) {
     // i2c->set(addr);

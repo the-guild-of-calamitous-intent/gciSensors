@@ -43,6 +43,12 @@ public:
     return true;
   }
 
+  bool writeRegister(const uint8_t reg, const uint8_t data) {
+    uint8_t out[2]{reg, data};
+    i2c_write_blocking(i2c, addr, out, 2, I2C_RELEASE_BUS);
+    return true;
+  }
+
   bool readRegisters(const uint8_t reg, const size_t data_size,
                      uint8_t *const data) {
     i2c_write_blocking(i2c, addr, &reg, 1, I2C_HOLD_BUS);

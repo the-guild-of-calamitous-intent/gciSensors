@@ -12,7 +12,8 @@
 
 namespace PA1010D {
 
-constexpr bool ascii_nema(const char c) {
+inline
+bool ascii_nema(const char c) {
   return (c >= '0' && c <= '9') || (c>='A' && c<='Z') || c == '*' || c == ',';
 }
 
@@ -29,14 +30,16 @@ public:
   gciPA1010D(const uint32_t port, const uint8_t addr = PA_ADDR)
       : SensorI2C(addr, port) {}
 
-  inline
-  int write(char command[], uint32_t cmd_size) {
-    return i2c_write_blocking(i2c, addr, (uint8_t*)command, cmd_size, false);
-  }
+  // inline
+  // int write(char command[], uint32_t cmd_size) {
+  //   // return i2c_write_blocking(i2c, addr, (uint8_t*)command, cmd_size, false);
+  //   return writeRegisters(addr, cmd_size, (uint8_t*)command) ? 0 : 1;
+  // }
 
   inline
   int write(const uint8_t* command, uint32_t cmd_size) {
-    return i2c_write_blocking(i2c, addr, command, cmd_size, false);
+    // return i2c_write_blocking(i2c, addr, command, cmd_size, false);
+    return writeRegisters(addr, cmd_size, (uint8_t*)command) ? 0 : 1;
   }
 
   // Get message from GPS and return the message string
