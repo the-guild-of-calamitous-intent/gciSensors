@@ -3,11 +3,11 @@
 
 
 using namespace std;
-using namespace gci::sensors;
+using namespace sensors;
 using namespace PA1010D;
 
 int main() {
-  gciPA1010D gps;
+  gciPA1010D gps(1);
 
   gps.write(PMTK::FULL_POWER, sizeof(PMTK::FULL_POWER));
   gps.write(PMTK::RMCGGAGSA, sizeof(PMTK::RMCGGAGSA));

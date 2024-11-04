@@ -9,7 +9,7 @@
 #include <math.h>
 
 
-namespace gci {
+// namespace gci {
 namespace sensors {
 
 
@@ -23,7 +23,7 @@ struct vec_t {
   vec_t(float x, float y, float z): x(x), y(y), z(z) {}
   float x, y, z;
 
-  inline const float magnitude() const { return sqrtf(x * x + y * y + z * z); }
+  inline float magnitude() const { return sqrtf(x * x + y * y + z * z); }
 
   bool normalize() {
     float n = 1.0f / magnitude();
@@ -53,4 +53,4 @@ struct vec_raw_t {
 
 
 } // namespace sensors
-} // namespace gci
+// } // namespace gci

@@ -6,8 +6,12 @@
 
 #pragma once
 
+#include "math.h"
+// #include "quaternions.hpp"
+#include "common/quaternions.hpp"
+#include "common/vectors.hpp"
 
-namespace gci {
+// namespace gci {
 namespace sensors {
 
 /*!
@@ -23,8 +27,8 @@ struct compfilter_t {
   quat_t q; // current state estimate
   float alpha;   // ratio between the two quaternion estimates
 
-  const quat_t update(vec_t a, vec_t w, vec_t m, float dt) {
-    quat_t qw = q + 0.5f * dt * q * quat_t(0.0f, w.x, w.y, w.z);
+  const quat_t update(sensors::vec_t a, sensors::vec_t w, sensors::vec_t m, float dt) {
+    sensors::quat_t qw = q + 0.5f * dt * q * sensors::quat_t(0.0f, w.x, w.y, w.z);
 
     if (!a.normalize()) return q;
 
@@ -45,14 +49,14 @@ struct compfilter_t {
       m.x*cr + sr * (m.y * sp + m.z * cp)
     );
 
-    quat_t qam = quat_t::from_euler(roll, pitch, yaw);
+    sensors::quat_t qam = sensors::quat_t::from_euler(roll, pitch, yaw);
 
     q = alpha * qw + (1.0f - alpha) * qam;
     return q;
   }
 
-  const quat_t update(vec_t a, const vec_t w, const float dt) {
-    quat_t qw = q + 0.5f * dt * q * quat_t(0.0f, w.x, w.y, w.z);
+  const sensors::quat_t update(sensors::vec_t a, const sensors::vec_t w, const float dt) {
+    sensors::quat_t qw = q + 0.5f * dt * q * sensors::quat_t(0.0f, w.x, w.y, w.z);
 
     a.normalize();
 
@@ -60,7 +64,7 @@ struct compfilter_t {
     float pitch = atan2f(-a.x, sqrtf(a.y * a.y + a.z * a.z));
     float yaw{0.0f}; // need magnetometer to calculate this, so default to 0.0
 
-    quat_t qam = quat_t::from_euler(roll, pitch, yaw);
+    sensors::quat_t qam = sensors::quat_t::from_euler(roll, pitch, yaw);
 
     q = alpha * qw + (1.0f - alpha) * qam; // match ahrs.readthedocs
     return q;
@@ -72,7 +76,9 @@ Ref: https://ahrs.readthedocs.io/en/latest/filters/tilt.html
 */
 struct tilt_compass_t {
 
-  const quat_t update(vec_t a, vec_t m) {
+  sensors::quat_t q;
+
+  const sensors::quat_t update(sensors::vec_t a, sensors::vec_t m) {
     // a.normalize();
     if (!a.normalize()) return q;
     float roll  = atan2f(a.y, a.z);
@@ -91,13 +97,11 @@ struct tilt_compass_t {
       m.x*cr + sr * (m.y * sp + m.z * cp)
     );
 
-    q = quat_t::from_euler(roll, pitch, yaw);
+    q = sensors::quat_t::from_euler(roll, pitch, yaw);
     return q;
   }
-
-  quat_t q;
 };
 
 
 } // namespace sensors
-} // namespace gci
+// } // namespace gci

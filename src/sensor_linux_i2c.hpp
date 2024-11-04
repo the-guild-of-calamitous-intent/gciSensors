@@ -74,25 +74,27 @@ extern "C" {
 #include <unistd.h>    // file read/write
 
 struct i2c_inst_t {
+
+  int fd;
+
   i2c_inst_t(const std::string& dev) {
     open(dev);
+  }
+  ~i2c_inst_t() {
+    fdclose();
   }
 
   void open(const std::string& device) {
     if ((fd = ::open(device.c_str(), O_RDWR)) < 0) {
       fd = 0;
-      printf("*** i2c_inst_t failed to open %s ***\n", device.c_str());
+      // printf("*** i2c_inst_t failed to open %s ***\n", device.c_str());
     }
   }
 
-  void close() {
-    if (fd != 0) ::close(fd);
+  void fdclose() {
+    if (fd != 0) sensors::close(fd);
     fd = 0;
   }
-
-  // operator int() { return fd; }
-
-  int fd;
 };
 
 // static i2c_inst_t i2c0_inst("/dev/i2c-0");
@@ -120,7 +122,7 @@ public:
     //   printf("Fail open %s\n", device);
     // }
   }
-  ~SensorI2C() { i2c->close(); }
+  ~SensorI2C() { i2c->fdclose(); }
 
   // void init_tw(const uint32_t baud) { i2c = nullptr; }
 
@@ -130,8 +132,9 @@ public:
 
     // set(addr);
     if (ioctl(i2c->fd, I2C_SLAVE, addr) < 0) {
-      printf("write error\n");
-      close(i2c->fd); // something is wrong, so stop?
+      // printf("write error\n");
+      // ::close(i2c->fd); // something is wrong, so stop?
+      i2c->fdclose();
     }
 
     outbuf[0] = reg;
@@ -147,7 +150,7 @@ public:
     i2c_data.nmsgs = 1;
 
     if (ioctl(i2c->fd, I2C_RDWR, &i2c_data) < 0) {
-      perror("ioctl(I2C_RDWR) in i2c_write");
+      // perror("ioctl(I2C_RDWR) in i2c_write");
       return false;
     }
 
@@ -163,8 +166,9 @@ public:
     // set(addr);
 
     if (ioctl(i2c->fd, I2C_SLAVE, addr) < 0) {
-      printf("write error\n");
-      close(i2c->fd); // something is wrong, so stop?
+      // printf("write error\n");
+      // ::close(i2c->fd); // something is wrong, so stop?
+      i2c->fdclose();
     }
 
     // send out to sensor
@@ -184,11 +188,16 @@ public:
     i2c_data.nmsgs = 2;
 
     if (ioctl(i2c->fd, I2C_RDWR, &i2c_data) < 0) {
-      perror("ioctl(I2C_RDWR) in i2c_read");
+      // perror("ioctl(I2C_RDWR) in i2c_read");
       return false;
     }
 
     return true;
+  }
+
+  inline
+  bool readRegister(const uint8_t reg, uint8_t *data) {
+    return readRegisters(reg, 1, data);
   }
 
   // void set(uint8_t address) {
@@ -206,13 +215,13 @@ public:
     return 0;
   }
 
-  uint8_t readRegister(uint8_t reg) {
-    uint8_t value;
-    if (!readRegisters(reg, 1, &value)) return 0;
-    return value;
-  }
+  // uint8_t readRegister(uint8_t reg) {
+  //   uint8_t value;
+  //   if (!readRegisters(reg, 1, &value)) return 0;
+  //   return value;
+  // }
 
-  inline size_t available() { return 0; }
+  // inline size_t available() { return 0; }
 
 protected:
   i2c_inst_t *i2c{nullptr};

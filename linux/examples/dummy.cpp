@@ -8,6 +8,6 @@ int main() {
 
   while(1) {
     printf("hello\n");
-    sleep_ms(1000);
+    sensors::sleep_ms(1000);
   }
 }

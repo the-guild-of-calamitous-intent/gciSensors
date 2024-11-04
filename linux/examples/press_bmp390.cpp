@@ -3,9 +3,9 @@
 
 using namespace std;
 using namespace BMP390;
-using namespace gci::sensors;
+using namespace sensors;
 
-gciBMP390 bmp;
+gciBMP390 bmp(1);
 
 int main() {
   printf("/// Press/Temp Started ///\n");
@@ -26,9 +26,9 @@ int main() {
     }
 
     printf("-----------------------------\n");
-    printf("Pressure: %f Pa\n", pt.press);
-    printf("Temperature: %f C\n", pt.temp);
-    printf("Altitude: %6.2f m\n", altitude(pt.press));
+    printf("Pressure: %f Pa\n", pt.pressure);
+    printf("Temperature: %f C\n", pt.temperature);
+    printf("Altitude: %6.2f m\n", pressure_altitude(pt.pressure));
 
     sleep_ms(10);
   }

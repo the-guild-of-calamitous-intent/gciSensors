@@ -104,8 +104,22 @@ constexpr float TEMP_SCALE            = 1.0f / 256.0f;
 //   uint8_t CTRL10_C;
 // };
 
-using lsm6dsox_t = gci::sensors::imu_t;
-using lsm6dsox_raw_t = gci::sensors::imu_raw_t;
+// using lsm6dsox_t = gci::sensors::imu_t;
+// using lsm6dsox_raw_t = gci::sensors::imu_raw_t;
+
+struct lsm6dsox_t {
+  sensors::vec_t a,g;
+  float temperature;
+  bool ok;
+  uint32_t timestamp;
+};
+
+struct lsm6dsox_raw_t {
+  sensors::vec_raw_t a,g;
+  int16_t temperature; // lsm6dsox is only int16_t
+  bool ok;
+  uint32_t timestamp;
+};
 
 // TDA: temperature
 // GDA: gyro
@@ -245,18 +259,18 @@ public:
 
     if (!readRegisters(REG_OUT_TEMP_L, sizeof(block.b), block.b)) return ret;
 
-    ret.a.x  = block.a.x;
-    ret.a.y  = block.a.y;
-    ret.a.z  = block.a.z;
-    ret.g.x  = block.g.x;
-    ret.g.y  = block.g.y;
-    ret.g.z  = block.g.z;
-    ret.temperature = block.temperature; // 52Hz, pg13, Table 4
+    ret.a.x  = block.regs.a.x;
+    ret.a.y  = block.regs.a.y;
+    ret.a.z  = block.regs.a.z;
+    ret.g.x  = block.regs.g.x;
+    ret.g.y  = block.regs.g.y;
+    ret.g.z  = block.regs.g.z;
+    ret.temperature = block.regs.temperature; // 52Hz, pg13, Table 4
 
     if (!readRegisters(REG_TIMESTAMP0, 4, block.b)) return ret;
 
     // pg 13, Table 4, temp ODR is ~52Hz
-    ret.ts = block.timestamp; // 25 usec per count
+    ret.timestamp = block.timestamp; // 25 usec per count
     ret.ok = true;
 
     return ret;
@@ -275,7 +289,7 @@ public:
     ret.g.y  = raw.g.y * g_scale;
     ret.g.z  = raw.g.z * g_scale;
     ret.temperature = static_cast<float>(raw.temperature) * TEMP_SCALE + 25.0f;
-    ret.ts   = raw.ts; // 25 usec per count
+    ret.timestamp   = raw.timestamp; // 25 usec per count
     ret.ok   = true;
 
     return ret;
@@ -298,7 +312,7 @@ public:
     ret.g.y  = gcal[4] * m.g.x + gcal[5] * m.g.y + gcal[6] * m.g.z - gcal[7];
     ret.g.z  = gcal[8] * m.g.x + gcal[9] * m.g.y + gcal[10] * m.g.z - gcal[11];
 
-    ret.ts   = m.ts; // 25 usec per count
+    ret.timestamp   = m.timestamp; // 25 usec per count
     ret.temperature = m.temperature;
     ret.ok   = true;
 
@@ -358,11 +372,11 @@ private:
   float gcal[12]{1., 0., 0., 0., 0., 1., 0., 0., 0., 0., 1., 0.};
 
   union block_t {
-    struct {
+    struct regs_t {
       int16_t temperature;       // 2b, -40C to 80C
-      gci::sensors::vec_raw_t g; // 2*3 = 6b
-      gci::sensors::vec_raw_t a; // 2*3 = 6b
-    };                           // 14b
+      sensors::vec_raw_t g; // 2*3 = 6b
+      sensors::vec_raw_t a; // 2*3 = 6b
+    } regs;                           // 14b
     uint32_t timestamp;
     uint8_t b[14];
   } block;

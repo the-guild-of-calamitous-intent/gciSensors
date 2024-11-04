@@ -13,5 +13,6 @@
 #elif defined(ARDUINO)
 #include "sensor_arduino.hpp"
 #elif defined(__linux__)
-#include "sensor_linux.hpp"
+#include "sensor_linux_i2c.hpp"
+#include "sensor_linux_spi.hpp"
 #endif

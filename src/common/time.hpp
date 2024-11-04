@@ -6,6 +6,8 @@
 #pragma once
 
 
+namespace sensors {
+
 #if defined(__linux__) // FIXME: handle better
 #include <unistd.h>
 inline void sleep_ms(uint32_t ms) { usleep(ms*1000); }
@@ -23,3 +25,5 @@ inline uint32_t now_ms() {
   return to_ms_since_boot(t);
 }
 #endif
+
+} // end namespace sensors

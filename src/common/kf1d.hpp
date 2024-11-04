@@ -8,7 +8,7 @@
 #include <math.h>
 #include "common/vectors.hpp"
 
-namespace gs = gci::sensors;
+namespace gs = sensors;
 
 /*
 1D Kalman Filter

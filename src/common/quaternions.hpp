@@ -7,7 +7,7 @@
 
 #include <math.h>
 
-namespace gci {
+// namespace gci {
 namespace sensors {
 
 ///////////////////////////////////////////////////////////
@@ -22,7 +22,7 @@ struct quat_t {
   quat_t(float w, float x, float y, float z): w(w), x(x), y(y), z(z) {}
   float w, x, y, z;
 
-  inline const float magnitude() const { return sqrtf(x * x + y * y + z * z + w * w); }
+  inline float magnitude() const { return sqrtf(x * x + y * y + z * z + w * w); }
 
   bool normalize() {
     float n = 1.0f / magnitude();
@@ -137,4 +137,4 @@ quat_t operator*(float scalar, const quat_t &q) {
 }
 
 } // namespace sensors
-} // namespace gci
+// } // namespace gci

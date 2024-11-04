@@ -3,9 +3,9 @@
 
 using namespace std;
 using namespace LIS3MDL;
-using namespace gci::sensors;
+using namespace sensors;
 
-gciLIS3MDL mag(LIS3MDL_ADDR);
+gciLIS3MDL mag(1);
 
 int main() {
   printf("/// Mag Started ///\n");

@@ -7,6 +7,9 @@
 #pragma once
 
 #include <stdint.h>
+#include <math.h>
+
+namespace sensors {
 
 // // returns altitude in meters
 // float altitude(float pressure, float seaLevelhPa = 1013.25) {
@@ -51,6 +54,7 @@
 // https://www.mide.com/air-pressure-at-altitude-calculator
 //
 // Returns meters above sealevel
+static
 float pressure_altitude(const float p) {
   // constexpr float Tb = 15; // temperature at sea level [C] - doesn't work
   // constexpr float Lb = -0.0098; // lapse rate [C/m] - doesn't work ... diff exp for pow??
@@ -107,3 +111,5 @@ struct lpf_t {
     return output;
   }
 };
+
+} // end namespace sensors

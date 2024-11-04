@@ -4,9 +4,11 @@
 using namespace std;
 
 using namespace LSM6DSOX;
-using namespace gci::sensors;
+// using namespace gci;
+// using namespace gci::sensors;
+using namespace sensors;
 
-gciLSM6DSOX IMU(LSM6DSOX_ADDRESS,1);
+gciLSM6DSOX IMU(1);
 
 const uint LED_PIN = 25;
 
@@ -27,8 +29,8 @@ int main() {
     printf("-----------------------------\n");
     printf("Accels: %f %f %f g\n", i.a.x, i.a.y, i.a.z);
     printf("Gyros: %f %f %f rps\n", i.g.x, i.g.y, i.g.z);
-    printf("Temperature: %f C\n", i.temp);
-    printf("Timestamp: %u msec\n", i.ts);
+    printf("Temperature: %f C\n", i.temperature);
+    printf("Timestamp: %u msec\n", i.timestamp);
 
   }
 

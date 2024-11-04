@@ -7,8 +7,8 @@
 
 
 #include "sensor.hpp"
+#include <stdint.h>
 #include <string.h> // memcpy
-// #include <stdio.h>
 
 namespace LIS3MDL {
 
@@ -53,33 +53,39 @@ enum Range : uint8_t {
   RANGE_16GAUSS = 0x60
 };
 
-using lis3mdl_t = gci::sensors::vec_msg_t;
-using lis3mdl_raw_t = gci::sensors::vec_msg_raw_t;
+// using lis3mdl_t = gci::sensors::vec_msg_t;
+// using lis3mdl_raw_t = gci::sensors::vec_msg_raw_t;
 
-// struct lis3mdl_t {
-//   float x, y, z;
-//   // float temperature;
-//   bool ok;
+struct lis3mdl_t {
+  float x, y, z;
+  bool ok;  // error?
 
-//   inline const float magnitude() const { return sqrt(x * x + y * y + z * z); }
+  inline float magnitude() const { return sqrtf(x * x + y * y + z * z); }
 
-//   bool normalize() {
-//     float n = 1.0f / magnitude();
-//     if (std::isinf(n)) return false;
+  bool normalize() {
+    float n = 1.0f / magnitude();
+    if (std::isinf(n)) return false;
 
-//     x *= n;
-//     y *= n;
-//     z *= n;
+    x *= n;
+    y *= n;
+    z *= n;
 
-//     return true;
-//   }
-// };
+    return true;
+  }
 
-// struct lis3mdl_raw_t {
-//   int16_t x, y, z;
-//   // int16_t temperature;
-//   bool ok;
-// };
+  float operator[](size_t i) {
+    return (i == 0) ? x : (i == 1) ? y : z;
+  }
+};
+
+struct lis3mdl_raw_t {
+  int16_t x, y, z;
+  bool ok;  // error?
+
+  int16_t operator[](size_t i) {
+    return (i == 0) ? x : (i == 1) ? y : z;
+  }
+};
 
 enum Odr : uint8_t {
   ODR_155HZ  = LIS3MDL_UHP, // 3
@@ -132,7 +138,7 @@ public:
 
   bool reboot() {
     if (!writeRegister(REG_CTRL_REG3, 0x03)) return false;
-    sleep_ms(100);
+    sensors::sleep_ms(100);
     return writeRegister(REG_CTRL_REG3, 0x00);
   }
 

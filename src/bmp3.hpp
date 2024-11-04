@@ -102,18 +102,27 @@ struct bmp3_reg_calib_data {
 constexpr uint8_t BMP390_ADDR     = 0x77;
 constexpr uint8_t BMP390_ADDR_ALT = 0x76;
 
-// struct bmp390_raw_t {
-//   uint32_t press, temp;
-//   bool ok;
-// };
+// using bmp390_t = gci::sensors::pt_t;
+// using bmp390_raw_t = gci::sensors::pt_raw_t;
 
-// struct bmp390_t {
-//   float press, temp;
-//   bool ok;
-// };
 
-using bmp390_t = gci::sensors::pt_t;
-using bmp390_raw_t = gci::sensors::pt_raw_t;
+struct bmp390_raw_t {
+  int32_t pressure, temperature;
+  bool ok;
+
+  int32_t operator[](size_t i) {
+    return (i == 0) ? pressure : temperature;
+  }
+};
+
+struct bmp390_t {
+  float pressure, temperature;
+  bool ok;
+
+  float operator[](size_t i) {
+    return (i == 0) ? pressure : temperature;
+  }
+};
 
 enum bmp_error : uint8_t {
   NO_ERROR,
@@ -384,7 +393,7 @@ protected:
       // Write the soft reset command in the sensor
       // datasheet, p 39, table 47, register ALWAYS reads 0x00
       writeRegister(REG_CMD, SOFT_RESET);
-      sleep_ms(10); // was 2 ... too quick?
+      sensors::sleep_ms(10); // was 2 ... too quick?
       // Read for command error status
       uint8_t reg_err{0};
       if(!readRegister(REG_ERR, &reg_err)) return false;
