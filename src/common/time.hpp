@@ -13,6 +13,7 @@ namespace sensors {
 inline void sleep_ms(uint32_t ms) { usleep(ms*1000); }
 inline void sleep_us(uint64_t us) { usleep(us); }
 // void sleep(uint32_t sec) - already defined
+// inline uint64_t now_us() { return u; }
 
 #elif defined(ARDUINO)
 inline void sleep_ms(uint32_t ms) { delay(ms); }

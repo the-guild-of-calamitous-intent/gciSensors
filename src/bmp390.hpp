@@ -27,6 +27,9 @@ Ultr Hi  | x16 | x2 | 27  |
 */
 #pragma once
 
+
+#if defined(__USE_SENSOR_BMP390__)
+
 #include "sensor.hpp"
 #include <math.h>
 #include <string.h> // memcpy
@@ -405,3 +408,5 @@ protected:
 };
 
 } // namespace BMP390
+
+#endif // use_sensor_bmp390

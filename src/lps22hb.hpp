@@ -8,6 +8,8 @@ References:
 #include <math.h>
 #include "sensor.hpp"
 
+#if defined(__USE_SENSOR_LPS22HB__)
+
 // 10 MHz max SPI frequency
 constexpr uint32_t LPS22_MAX_SPI_CLK_HZ = 10000000;
 
@@ -149,3 +151,5 @@ public:
 };
 
 using LPS22SPI = LPS22<SensorSPI>;
+
+#endif // use_sensor_lps22hb

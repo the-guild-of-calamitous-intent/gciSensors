@@ -45,7 +45,7 @@ inline uint16_t to_16b(uint8_t msb, uint8_t lsb) {
 // } // namespace gci
 
 // i2c
-#include "bmp3.hpp"
+#include "bmp390.hpp"
 #include "dps310.hpp"
 #include "lis3mdl.hpp"
 #include "lsm6dsox.hpp"

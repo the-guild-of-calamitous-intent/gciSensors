@@ -5,10 +5,10 @@
 \**************************************/
 #pragma once
 
-#include <stdint.h>
-#include <math.h>
-#include "quaternions.hpp"
-#include "vectors.hpp"
+// #include <stdint.h>
+// #include <math.h>
+// #include "quaternions.hpp"
+// #include "vectors.hpp"
 
 // namespace gci {
 // namespace sensors {

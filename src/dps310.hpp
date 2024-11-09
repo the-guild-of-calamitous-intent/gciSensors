@@ -2,6 +2,8 @@
 #pragma once
 
 
+#if defined(__USE_SENSOR_DPS310__)
+
 #include "sensor.hpp"
 #include <stdint.h>
 
@@ -369,3 +371,5 @@ private:
 };
 
 } // namespace DPS310
+
+#endif // use_sensor_dps310

@@ -5,7 +5,7 @@
 \**************************************/
 #pragma once
 
-// #include <cstdint>
+#include <stdint.h>
 
 // CR \r
 // LF \n
@@ -21,6 +21,8 @@
 // $PMTK001,314,3*36 -> (314) set nema output, PMTK::RMCGGA
 // $PMTK001,220,3*30 -> (220) set pos fix, PMTK::UPDATE_1HZ
 /////////////////////////////////////////////////////////////////////////////
+
+#if defined(__USE_PMTK__)
 
 namespace PMTK {
 // PMTK commands
@@ -56,3 +58,5 @@ constexpr uint8_t GSV[] = "$PMTK314,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n
 constexpr uint8_t RMCGGA[] = "$PMTK314,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*28\r\n"; // RMC and GGA
 constexpr uint8_t RMCGGAGSA[] = "$PMTK314,0,1,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n"; // RMC, GGA and GSA
 } // end namespace
+
+#endif // use_pmtk

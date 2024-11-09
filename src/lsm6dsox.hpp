@@ -8,6 +8,9 @@
 #include "sensor.hpp"
 #include <string.h> // memcpy
 
+
+#if defined(__USE_SENSOR_LSM6DSOX__)
+
 namespace LSM6DSOX {
 
 constexpr int LSM6DSOX_ADDRESS   = 0x6A;
@@ -111,7 +114,7 @@ struct lsm6dsox_t {
   sensors::vec_t a,g;
   float temperature;
   bool ok;
-  uint32_t timestamp;
+  uint64_t timestamp_us;
 };
 
 struct lsm6dsox_raw_t {
@@ -289,7 +292,7 @@ public:
     ret.g.y  = raw.g.y * g_scale;
     ret.g.z  = raw.g.z * g_scale;
     ret.temperature = static_cast<float>(raw.temperature) * TEMP_SCALE + 25.0f;
-    ret.timestamp   = raw.timestamp; // 25 usec per count
+    ret.timestamp_us   = raw.timestamp * 25; // 25 usec per count
     ret.ok   = true;
 
     return ret;
@@ -312,7 +315,7 @@ public:
     ret.g.y  = gcal[4] * m.g.x + gcal[5] * m.g.y + gcal[6] * m.g.z - gcal[7];
     ret.g.z  = gcal[8] * m.g.x + gcal[9] * m.g.y + gcal[10] * m.g.z - gcal[11];
 
-    ret.timestamp   = m.timestamp; // 25 usec per count
+    ret.timestamp_us   = m.timestamp_us; // 25 usec per count
     ret.temperature = m.temperature;
     ret.ok   = true;
 
@@ -383,6 +386,8 @@ private:
 };
 
 } // namespace LSM6DSOX
+
+#endif // use_sensor_lsm6dsox
 
 
 

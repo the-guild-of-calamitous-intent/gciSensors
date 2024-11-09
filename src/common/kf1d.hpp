@@ -8,8 +8,6 @@
 #include <math.h>
 #include "common/vectors.hpp"
 
-namespace gs = sensors;
-
 /*
 1D Kalman Filter
 */
@@ -41,28 +39,28 @@ struct kf1d_t {
 1D Kalman Filter * 3, these are all independent 1D filters
 */
 struct kf1d3_t {
-  gs::vec_t P{1.0f,1.0f,1.0f};  // Initial estimate error
-  gs::vec_t F{1.0f,1.0f,1.0f};  // Assuming constant velocity
-  gs::vec_t x{1.0f,1.0f,1.0f};  // state estimate
-  gs::vec_t Q;       // processes noise
-  gs::vec_t R;       // measurement noise
+  sensors::vec_t P{1.0f,1.0f,1.0f};  // Initial estimate error
+  sensors::vec_t F{1.0f,1.0f,1.0f};  // Assuming constant velocity
+  sensors::vec_t x{1.0f,1.0f,1.0f};  // state estimate
+  sensors::vec_t Q;       // processes noise
+  sensors::vec_t R;       // measurement noise
 
-  kf1d3_t(gs::vec_t q, gs::vec_t r): Q(q), R(r) {}
+  kf1d3_t(sensors::vec_t q, sensors::vec_t r): Q(q), R(r) {}
 
-  const gs::vec_t filter(gs::vec_t z) {
+  const sensors::vec_t filter(sensors::vec_t z) {
     // Prediction
-    gs::vec_t xx;
+    sensors::vec_t xx;
     xx.x = x.x * F.x;
     xx.y = x.y * F.y;
     xx.z = x.z * F.z;
 
-    gs::vec_t P;
+    sensors::vec_t P;
     P.x = P.x + Q.x;
     P.y = P.y + Q.y;
     P.z = P.z + Q.z;
 
     // Update
-    gs::vec_t K;
+    sensors::vec_t K;
     K.x = P.x / (P.x + R.x);
     K.y = P.y / (P.y + R.y);
     K.z = P.z / (P.z + R.z);

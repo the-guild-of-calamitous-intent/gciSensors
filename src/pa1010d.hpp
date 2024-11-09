@@ -6,6 +6,8 @@
 #pragma once
 
 
+#if defined(__USE_SENSOR_PA1010D__)
+
 #include "sensor.hpp"
 #include "pmtk.hpp"
 #include <string.h>
@@ -94,3 +96,5 @@ public:
 };
 
 } // end namespace
+
+#endif // use_sensor_pa1010d

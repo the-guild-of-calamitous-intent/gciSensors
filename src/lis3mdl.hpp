@@ -6,6 +6,8 @@
 #pragma once
 
 
+#if defined(__USE_SENSOR_LIS3MDL__)
+
 #include "sensor.hpp"
 #include <stdint.h>
 #include <string.h> // memcpy
@@ -227,6 +229,8 @@ protected:
 };
 
 } // namespace LIS3MDL
+
+#endif // use_sensor_lis3mdl
 
 // 1 g = 0.0001 T = 0.1 mT = 100 uT = 100,000 nT
 // m (1E3) * (1E-4) => (1E-1) = 0.1
