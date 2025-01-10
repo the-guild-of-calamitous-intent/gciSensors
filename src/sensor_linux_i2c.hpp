@@ -157,7 +157,7 @@ public:
     return true;
   }
 
-  bool writeRegisters(const uint8_t reg, size_t len, const uint8_t *data) {
+  bool writeRegister(const uint8_t reg, size_t len, const uint8_t *data) {
     // // i2c->set(addr);
     // // return i2c->write(reg, data);
 

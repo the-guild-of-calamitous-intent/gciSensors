@@ -6,9 +6,9 @@
 #pragma once
 
 
-namespace sensors {
+// namespace sensors {
 
-#if defined(__linux__) // FIXME: handle better
+#if defined(__linux__) or defined(__APPLE__) // FIXME: handle better
 #include <unistd.h>
 inline void sleep_ms(uint32_t ms) { usleep(ms*1000); }
 inline void sleep_us(uint64_t us) { usleep(us); }
@@ -25,6 +25,7 @@ inline uint32_t now_ms() {
   absolute_time_t t = get_absolute_time();
   return to_ms_since_boot(t);
 }
+// inline void sleep_ms(uint32_t ms) { ::sleep_ms(ms); }
 #endif
 
-} // end namespace sensors
+// } // end namespace sensors

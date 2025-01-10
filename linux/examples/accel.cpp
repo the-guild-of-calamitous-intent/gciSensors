@@ -1,5 +1,7 @@
 #include <stdio.h>
+#define __USE_SENSOR_LSM6DSOX__
 #include <gciSensors.hpp>
+
 
 using namespace std;
 
@@ -10,7 +12,7 @@ using namespace sensors;
 
 gciLSM6DSOX IMU(1);
 
-const uint LED_PIN = 25;
+// const uint32_t LED_PIN = 25;
 
 int main() {
   printf("/// Accel/Gyros START ///\n");
@@ -30,7 +32,7 @@ int main() {
     printf("Accels: %f %f %f g\n", i.a.x, i.a.y, i.a.z);
     printf("Gyros: %f %f %f rps\n", i.g.x, i.g.y, i.g.z);
     printf("Temperature: %f C\n", i.temperature);
-    printf("Timestamp: %u msec\n", i.timestamp);
+    printf("Timestamp: %llu msec\n", i.timestamp_us);
 
   }
 

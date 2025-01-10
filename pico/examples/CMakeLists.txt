@@ -1,12 +1,12 @@
 list(APPEND examples
-    # accel
+    accel
     # accel-bf
-    # mag
-    # press_bmp390
-    # scan_bus
-    # gps
-    # press_dps310
-    # imu
+    mag
+    press_bmp390
+    press_dps310
+    scan_bus
+    gps
+    imu
     lps22_spi
 )
 

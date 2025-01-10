@@ -20,10 +20,10 @@ struct kf1d_t {
 
   kf1d_t(float q, float r): Q(q), R(r) {}
 
-  float filter(float z) {
+  float filter(const float z) {
     // Prediction
     float xx = x * F;
-    float P = P + Q;
+    P = P + Q;
 
     // Update
     float K = P / (P + R);

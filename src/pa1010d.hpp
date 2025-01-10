@@ -6,7 +6,9 @@
 #pragma once
 
 
-#if defined(__USE_SENSOR_PA1010D__)
+// #if defined(__USE_SENSOR_PA1010D__)
+
+#if defined(PICO_BOARD)
 
 #include "sensor.hpp"
 #include "pmtk.hpp"
@@ -32,16 +34,16 @@ public:
   gciPA1010D(const uint32_t port, const uint8_t addr = PA_ADDR)
       : SensorI2C(addr, port) {}
 
-  // inline
-  // int write(char command[], uint32_t cmd_size) {
-  //   // return i2c_write_blocking(i2c, addr, (uint8_t*)command, cmd_size, false);
-  //   return writeRegisters(addr, cmd_size, (uint8_t*)command) ? 0 : 1;
-  // }
+  inline
+  int write(char command[], uint32_t cmd_size) {
+    // return i2c_write_blocking(i2c, addr, (uint8_t*)command, cmd_size, false);
+    return writeRegister(addr, cmd_size, (uint8_t*)command) ? 0 : 1;
+  }
 
   inline
   int write(const uint8_t* command, uint32_t cmd_size) {
     // return i2c_write_blocking(i2c, addr, command, cmd_size, false);
-    return writeRegisters(addr, cmd_size, (uint8_t*)command) ? 0 : 1;
+    return writeRegister(addr, cmd_size, (uint8_t*)command) ? 0 : 1;
   }
 
   // Get message from GPS and return the message string
@@ -97,4 +99,6 @@ public:
 
 } // end namespace
 
-#endif // use_sensor_pa1010d
+// #endif // use_sensor_pa1010d
+
+#endif // defined pico

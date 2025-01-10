@@ -1,3 +1,8 @@
+/**************************************\
+ * The MIT License (MIT)
+ * Copyright (c) 2022 Kevin Walchko
+ * see LICENSE for full details
+\**************************************/
 /*
 References:
 - https://www.st.com/resource/en/datasheet/dm00140895.pdf
@@ -8,7 +13,7 @@ References:
 #include <math.h>
 #include "sensor.hpp"
 
-#if defined(__USE_SENSOR_LPS22HB__)
+// #if defined(__USE_SENSOR_LPS22HB__)
 
 // 10 MHz max SPI frequency
 constexpr uint32_t LPS22_MAX_SPI_CLK_HZ = 10000000;
@@ -152,4 +157,4 @@ public:
 
 using LPS22SPI = LPS22<SensorSPI>;
 
-#endif // use_sensor_lps22hb
+// #endif // use_sensor_lps22hb

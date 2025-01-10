@@ -6,7 +6,7 @@
 #pragma once
 
 
-#if defined(__USE_SENSOR_LIS3MDL__)
+// #if defined(__USE_SENSOR_LIS3MDL__)
 
 #include "sensor.hpp"
 #include <stdint.h>
@@ -55,8 +55,8 @@ enum Range : uint8_t {
   RANGE_16GAUSS = 0x60
 };
 
-// using lis3mdl_t = gci::sensors::vec_msg_t;
-// using lis3mdl_raw_t = gci::sensors::vec_msg_raw_t;
+// using lis3mdl_t = gci::vec_msg_t;
+// using lis3mdl_raw_t = gci::vec_msg_raw_t;
 
 struct lis3mdl_t {
   float x, y, z;
@@ -140,7 +140,7 @@ public:
 
   bool reboot() {
     if (!writeRegister(REG_CTRL_REG3, 0x03)) return false;
-    sensors::sleep_ms(100);
+    sleep_ms(100);
     return writeRegister(REG_CTRL_REG3, 0x00);
   }
 
@@ -230,7 +230,7 @@ protected:
 
 } // namespace LIS3MDL
 
-#endif // use_sensor_lis3mdl
+// #endif // use_sensor_lis3mdl
 
 // 1 g = 0.0001 T = 0.1 mT = 100 uT = 100,000 nT
 // m (1E3) * (1E-4) => (1E-1) = 0.1

@@ -9,7 +9,7 @@
 #include <string.h> // memcpy
 
 
-#if defined(__USE_SENSOR_LSM6DSOX__)
+// #if defined(__USE_SENSOR_LSM6DSOX__)
 
 namespace LSM6DSOX {
 
@@ -387,7 +387,7 @@ private:
 
 } // namespace LSM6DSOX
 
-#endif // use_sensor_lsm6dsox
+// #endif // use_sensor_lsm6dsox
 
 
 

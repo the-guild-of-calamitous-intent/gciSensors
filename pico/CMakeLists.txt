@@ -64,7 +64,7 @@ LIST(APPEND pico_libs
 
 
 add_library(${PROJECT_NAME} INTERFACE)
-target_include_directories(${PROJECT_NAME} INTERFACE ../src .)
+target_include_directories(${PROJECT_NAME} INTERFACE ../src)
 target_link_libraries(${PROJECT_NAME} INTERFACE ${pico_libs})
 
 if (BUILD_EXAMPLES)

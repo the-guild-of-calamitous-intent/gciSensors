@@ -1,6 +1,9 @@
 #include <stdio.h>
 
-using namespace std;
+
+#define __USE_SENSOR_LSM6DSOX__
+// #define __USE_SENSOR_BMP390__
+// #define __USE_SENSOR_DPS310__
 
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
@@ -14,8 +17,10 @@ constexpr uint i2c_scl  = 1; // I2C0_SCL_PIN;
 constexpr uint i2c_sda  = 0; // I2C0_SDA_PIN;
 constexpr uint LED_PIN  = 25;
 
+
+using namespace std;
 using namespace LSM6DSOX;
-using namespace gci::sensors;
+using namespace sensors;
 
 gciLSM6DSOX IMU(i2c_port);
 
@@ -57,7 +62,7 @@ int main() {
     printf("Accels: %f %f %f g\n", i.a.x, i.a.y, i.a.z);
     printf("Gyros: %f %f %f dps\n", i.g.x, i.g.y, i.g.z);
     printf("Temperature: %f C\n", i.temperature);
-    printf("Timestamp: %lu msec\n", i.ts);
+    printf("Timestamp: %llu msec\n", i.timestamp_us);
 
   }
 }

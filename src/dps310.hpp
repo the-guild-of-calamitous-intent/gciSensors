@@ -1,8 +1,12 @@
-
+/**************************************\
+ * The MIT License (MIT)
+ * Copyright (c) 2022 Kevin Walchko
+ * see LICENSE for full details
+\**************************************/
 #pragma once
 
 
-#if defined(__USE_SENSOR_DPS310__)
+// #if defined(__USE_SENSOR_DPS310__)
 
 #include "sensor.hpp"
 #include <stdint.h>
@@ -80,12 +84,12 @@ public:
   uint8_t init(uint8_t sample_rate) {
     reset();
     do {
-      sensors::sleep_ms(15); // pg 10, Table 8
+      sleep_ms(15); // pg 10, Table 8
     } while (sensor_ready() == false);
 
     // set to idle/stop
     if (!writeRegister(MEAS_CFG, 0x00)) return ERROR_MEAS_CFG;
-    sensors::sleep_ms(50);                  // how long?
+    sleep_ms(50);                  // how long?
 
     uint8_t pos;
     uint8_t prate;
@@ -171,7 +175,7 @@ public:
 
     int32_t incr = 10;
     do {
-      sensors::sleep_ms(45); // pg 10, Table 8
+      sleep_ms(45); // pg 10, Table 8
       if (incr-- == 0) return ERROR_COEFF_NOT_READY;
     } while (coeffs_ready() == false);
     if (get_coeffs() == false) return ERROR_COEFF_FAIL;
@@ -372,4 +376,4 @@ private:
 
 } // namespace DPS310
 
-#endif // use_sensor_dps310
+// #endif // use_sensor_dps310

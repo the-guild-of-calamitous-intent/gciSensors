@@ -1,7 +1,5 @@
 #include <stdio.h>
 
-using namespace std;
-
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
 #include "hardware/gpio.h"
@@ -15,8 +13,10 @@ constexpr uint i2c_scl = 1;
 constexpr uint i2c_sda = 0;
 // const uint LED_PIN = 25;
 
+
+using namespace std;
 using namespace BMP390;
-using namespace gci::sensors;
+using namespace sensors;
 
 
 

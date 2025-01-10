@@ -14,7 +14,7 @@ constexpr uint i2c_port = 0;
 constexpr uint i2c_scl = 1;
 constexpr uint i2c_sda = 0;
 
-using namespace gci::sensors;
+using namespace sensors;
 using namespace PA1010D;
 
 int main() {

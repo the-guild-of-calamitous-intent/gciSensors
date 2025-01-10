@@ -14,6 +14,7 @@
 class Hertz {
 public:
   Hertz(uint32_t v = 300) : threshold(v) {
+    // epoch = sensors::now_ms();
     epoch = now_ms();
   }
 
@@ -25,6 +26,7 @@ public:
 
   bool check() {
     if (++count % threshold == 0) {
+      // uint32_t now = sensors::now_ms();
       uint32_t now = now_ms();
       hertz        = 1000.0f * static_cast<float>(count) / static_cast<float>(now - epoch);
       epoch        = now;

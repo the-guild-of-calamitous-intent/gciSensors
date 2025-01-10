@@ -43,9 +43,12 @@ public:
     return true;
   }
 
-  bool writeRegister(const uint8_t reg, const uint8_t data) {
-    uint8_t out[2]{reg, data};
-    i2c_write_blocking(i2c, addr, out, 2, I2C_RELEASE_BUS);
+  bool writeRegister(const uint8_t reg, const uint32_t data_size, const uint8_t* data) {
+    // uint8_t out[2]{reg, data};
+    uint8_t *out = (uint8_t*)malloc(data_size + 1);
+    out[0] = reg;
+    memcpy(&out[1], data, data_size);
+    i2c_write_blocking(i2c, addr, out, data_size, I2C_RELEASE_BUS);
     return true;
   }
 

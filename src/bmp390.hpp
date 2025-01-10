@@ -28,7 +28,7 @@ Ultr Hi  | x16 | x2 | 27  |
 #pragma once
 
 
-#if defined(__USE_SENSOR_BMP390__)
+// #if defined(__USE_SENSOR_BMP390__)
 
 #include "sensor.hpp"
 #include <math.h>
@@ -105,8 +105,8 @@ struct bmp3_reg_calib_data {
 constexpr uint8_t BMP390_ADDR     = 0x77;
 constexpr uint8_t BMP390_ADDR_ALT = 0x76;
 
-// using bmp390_t = gci::sensors::pt_t;
-// using bmp390_raw_t = gci::sensors::pt_raw_t;
+// using bmp390_t = gci::pt_t;
+// using bmp390_raw_t = gci::pt_raw_t;
 
 
 struct bmp390_raw_t {
@@ -396,7 +396,7 @@ protected:
       // Write the soft reset command in the sensor
       // datasheet, p 39, table 47, register ALWAYS reads 0x00
       writeRegister(REG_CMD, SOFT_RESET);
-      sensors::sleep_ms(10); // was 2 ... too quick?
+      sleep_ms(10); // was 2 ... too quick?
       // Read for command error status
       uint8_t reg_err{0};
       if(!readRegister(REG_ERR, &reg_err)) return false;
@@ -409,4 +409,4 @@ protected:
 
 } // namespace BMP390
 
-#endif // use_sensor_bmp390
+// #endif // use_sensor_bmp390

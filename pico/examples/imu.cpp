@@ -16,10 +16,10 @@ constexpr uint i2c_sda = 0; // I2C0_SDA_PIN;
 using namespace std;
 using namespace LSM6DSOX;
 using namespace BMP390;
-using namespace gci::sensors;
+using namespace sensors;
 
-using vec_t = gci::sensors::vec_t;
-using quat_t = gci::sensors::quat_t;
+using vec_t = sensors::vec_t;
+using quat_t = sensors::quat_t;
 
 template<std::size_t N>
 class StaticCalibrate {

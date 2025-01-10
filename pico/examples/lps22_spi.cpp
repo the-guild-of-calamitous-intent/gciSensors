@@ -13,7 +13,7 @@
 
 #include "gciSensors.hpp"
 
-using namespace gci::sensors;
+using namespace sensors;
 
 constexpr int SPI_CL = 10;
 constexpr int SPI_DO = 11;

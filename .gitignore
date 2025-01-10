@@ -6,3 +6,4 @@ old
 MadgwickAHRS*
 __pycache__
 docs/notebooks/calibration/*.pkl
+dev

@@ -1,7 +1,4 @@
 #include <stdio.h>
-
-using namespace std;
-
 #include "pico/stdlib.h"
 #include "pico/binary_info.h"
 #include "hardware/gpio.h"
@@ -12,6 +9,7 @@ using namespace std;
 
 using namespace std;
 using namespace DPS310;
+using namespace sensors;
 
 constexpr uint i2c_port = 0;
 constexpr uint i2c_scl = 1;

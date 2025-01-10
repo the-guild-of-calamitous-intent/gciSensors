@@ -16,7 +16,7 @@ constexpr uint i2c_sda = 0;
 const uint LED_PIN = 25;
 
 using namespace LIS3MDL;
-using namespace gci::sensors;
+// using namespace gci::sensors;
 
 
 int main() {
