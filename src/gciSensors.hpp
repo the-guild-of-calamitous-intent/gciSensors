@@ -13,12 +13,13 @@
 // namespace gci {
 // namespace sensors {
 
-struct bus_t {
-  uint32_t port{0};
-  // uint32_t DI{0},DO{0},CLK{0},CS{0};
-  uint32_t spi_cs{0};
-  uint8_t i2c_addr{0};
-};
+// is this useful?
+// struct bus_t {
+//   uint32_t port{0};
+//   // uint32_t DI{0},DO{0},CLK{0},CS{0};
+//   uint32_t spi_cs{0};
+//   uint8_t i2c_addr{0};
+// };
 
 
 // } // namespace sensors
@@ -29,6 +30,7 @@ struct bus_t {
 #include "common/messages.hpp"
 #include "common/algorithms.hpp"
 #include "common/hertz.hpp"
+#include "common/lowpassfilter.hpp"
 
 // namespace gci {
 // namespace sensors {

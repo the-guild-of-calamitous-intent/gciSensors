@@ -54,7 +54,7 @@ namespace sensors {
 // https://www.mide.com/air-pressure-at-altitude-calculator
 //
 // Returns meters above sealevel
-inline
+static
 float pressure_altitude(const float p) {
   // constexpr float Tb = 15; // temperature at sea level [C] - doesn't work
   // constexpr float Lb = -0.0098; // lapse rate [C/m] - doesn't work ... diff exp for pow??
@@ -72,6 +72,23 @@ float pressure_altitude(const float p) {
   return scale * (powf(p * inv_Pb, exp) - 1.0f);
 }
 
+// static
+// double pressure_altitude(const double p) {
+//   // constexpr float Tb = 15; // temperature at sea level [C] - doesn't work
+//   // constexpr float Lb = -0.0098; // lapse rate [C/m] - doesn't work ... diff exp for pow??
+//   constexpr double Tb  = 288.15;           // temperature at sea level [K]
+//   constexpr double Lb  = -0.0065;          // lapse rate [K/m]
+//   constexpr double R   = 8.31446261815324; // universal gas const [Nm/(mol K)]
+//   constexpr double M   = 0.0289644;        // molar mass of Earth's air [kg/mol]
+//   constexpr double g0  = 9.80665;          // gravitational const [m/s^2]
+//   constexpr double Pb  = 101325.0;         // pressure at sea level [Pa]
+
+//   constexpr double exp = -R * Lb / (g0 * M);
+//   constexpr double scale  = Tb / Lb;
+//   constexpr double inv_Pb = 1.0 / Pb;
+
+//   return scale * (pow(p * inv_Pb, exp) - 1.0);
+// }
 
 // static
 // void average(LSM6DSOX::lsm6dsox_t ave, LSM6DSOX::lsm6dsox_t d, uint8_t window, uint8_t cnt) {
@@ -89,27 +106,27 @@ float pressure_altitude(const float p) {
 // }
 
 
-// First-order low-pass filter structure
-struct lpf_t {
-  float alpha{0.0f};  // Smoothing factor
-  float y_prev{0.0f}; // Previous output
+// // First-order low-pass filter structure
+// struct lpf_t {
+//   float alpha{0.0f};  // Smoothing factor
+//   float y_prev{0.0f}; // Previous output
 
-  lpf_t(float cutoffFrequency, float samplingFrequency) {
-    float tau = 1.0f / (2.0f * 3.141592653589793f * cutoffFrequency); // Time constant
-    alpha = 1.0f / (1.0f + tau * samplingFrequency);
-    y_prev = 0.0f;
-  }
+//   lpf_t(float cutoffFrequency, float samplingFrequency) {
+//     float tau = 1.0f / (2.0f * 3.141592653589793f * cutoffFrequency); // Time constant
+//     alpha = 1.0f / (1.0f + tau * samplingFrequency);
+//     y_prev = 0.0f;
+//   }
 
-  // Apply the low-pass filter to a new input sample
-  float filter(float input) {
-    // Update the filter
-    float output = alpha * input + (1.0f - alpha) * y_prev;
+//   // Apply the low-pass filter to a new input sample
+//   float filter(float input) {
+//     // Update the filter
+//     float output = alpha * input + (1.0f - alpha) * y_prev;
 
-    // Save the current output for the next iteration
-    y_prev = output;
+//     // Save the current output for the next iteration
+//     y_prev = output;
 
-    return output;
-  }
-};
+//     return output;
+//   }
+// };
 
 } // end namespace sensors

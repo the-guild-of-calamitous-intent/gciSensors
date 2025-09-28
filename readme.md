@@ -267,6 +267,10 @@ Need to fix this.
 - [ ] PA1010D GPS, fix linux `i2c_write_bytes()`
 - [ ] Add unit tests
 - [ ] Add some simple filters that use these sensors
+  - [x] Complementary filter
+  - [ ] Low pass filter
+  - [ ] 1D Kalman filter
+  - [ ] Tilt compass
 - [ ] Update Arduino examples
 - [ ] Do a better job of cross platform dev/test (apple, linux, arduino)
 - [ ] Investigate fixed point math for calibration, probably FP(16,16) would work
@@ -278,7 +282,7 @@ Need to fix this.
           - Mt Everest is around ~5.5mi high, ~313 hPa
       - temperature: 0-100 C (no calibration to do here)
 
-## Filter
+## Complementary Filter
 
 ```
 FilteredAngle_k = alpha * GyroscopeAngle + (1 − alpha) * AccelerometerAngle
@@ -294,8 +298,8 @@ I had a sampling rate of about 0.04 seconds and chose a time constant of about 1
 
 Added some structs:
 
-- `vec_t(x,y,z)`
-- `quat_t(w,x,y,z)`
+- `sensors::vec_t(x,y,z)`
+- `sensors::quat_t(w,x,y,z)`
 
 
 ## References

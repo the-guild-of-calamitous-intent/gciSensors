@@ -5,7 +5,7 @@
 ## `screen`
 
 ```
-screen tty.usbmoden1234
+screen /dev/tty.usbmoden1234
 Ctrl-a-k
 ```
 

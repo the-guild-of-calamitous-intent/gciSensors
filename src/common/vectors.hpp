@@ -35,6 +35,10 @@ struct __attribute__((packed)) vec_t {
 
     return true;
   }
+  
+  float operator[](size_t i) {
+    return (i == 0) ? x : (i == 1) ? y : z;
+  }
 };
 
 
